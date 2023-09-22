@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "03d1ef0b4c68f9b53f2bc27cd259e542",
+    "content-hash": "bf76722c806e396c145374eaaa0bdcb9",
     "packages": [
         {
             "name": "brick/math",
@@ -2378,6 +2378,56 @@
                 }
             ],
             "time": "2023-02-25T19:38:58+00:00"
+        },
+        {
+            "name": "piphp/gpio",
+            "version": "0.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/PiPHP/GPIO.git",
+                "reference": "9288aa1b56c7ca85b182bbfb5225313ca7354093"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/PiPHP/GPIO/zipball/9288aa1b56c7ca85b182bbfb5225313ca7354093",
+                "reference": "9288aa1b56c7ca85b182bbfb5225313ca7354093",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.3||^8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "PiPHP\\GPIO\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Andrew Carter",
+                    "email": "andrewcarter1992@gmail.com"
+                }
+            ],
+            "description": "A library for accessing the GPIO pins on a Raspberry Pi",
+            "keywords": [
+                "GPIO",
+                "pi",
+                "pin",
+                "pins",
+                "raspberry"
+            ],
+            "support": {
+                "issues": "https://github.com/PiPHP/GPIO/issues",
+                "source": "https://github.com/PiPHP/GPIO/tree/master"
+            },
+            "time": "2020-08-24T13:50:12+00:00"
         },
         {
             "name": "psr/clock",
