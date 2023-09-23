@@ -18,18 +18,14 @@ class PortsController extends Controller
     public function onLed(): JsonResponse
     {
         global $pinsOut;
-        for($i = 0; $i < 100; $i++) {
-            $pinsOut[23]->setValue(PinInterface::VALUE_HIGH);
-        }
-        return new JsonResponse(status: 201);
+        $pinsOut[23]->setValue(PinInterface::VALUE_HIGH);
+        return new JsonResponse(['message' => 'Led encendido']);
     }
 
     public function offLed(): JsonResponse
     {
         global $pinsOut;
-        for($i = 0; $i < 100; $i++) {
-            $pinsOut[23]->setValue(PinInterface::VALUE_LOW);
-        }
-        return new JsonResponse(status: 201);
+        $pinsOut[23]->setValue(PinInterface::VALUE_LOW);
+        return new JsonResponse(['message' => 'Led encendido']);
     }
 }
