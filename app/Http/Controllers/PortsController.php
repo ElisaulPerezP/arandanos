@@ -6,7 +6,6 @@ use Illuminate\Http\JsonResponse;
 
 
 
-
 class PortsController extends Controller
 {
     public function onLed(): JsonResponse
