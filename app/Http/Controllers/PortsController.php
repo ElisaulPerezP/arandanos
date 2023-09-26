@@ -3,36 +3,24 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
-
+use Illuminate\Routing\Route;
+use Illuminate\Support\Facades\Redirect;
 
 
 class PortsController extends Controller
 {
-    public function onLed(): JsonResponse
+    public function onLed(): void
     {
         $scriptPath = '/var/www/onLed.py';
         $command = "sudo python3 $scriptPath";
-
-        $output = shell_exec($command);
-
-        if ($output !== null) {
-            return new JsonResponse(['message' => 'Script de Python ejecutado correctamente', 'output' => $output]);
-        } else {
-            return new JsonResponse(['message' => 'Error al ejecutar el script de Python']);
-        }
+        shell_exec($command);
     }
 
-    public function offLed(): JsonResponse
+    public function offLed(): void
     {
         $scriptPath = '/var/www/offLed.py';
         $command = "sudo python3 $scriptPath";
+        shell_exec($command);
 
-        $output = shell_exec($command);
-
-        if ($output !== null) {
-            return new JsonResponse(['message' => 'Script de Python ejecutado correctamente', 'output' => $output]);
-        } else {
-            return new JsonResponse(['message' => 'Error al ejecutar el script de Python']);
-        }
     }
 }
