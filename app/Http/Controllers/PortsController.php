@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
-use PiPHP\GPIO\Pin\PinInterface;
+
 
 
 
