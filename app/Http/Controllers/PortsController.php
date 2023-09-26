@@ -3,29 +3,37 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
-use PiPHP\GPIO\GPIO;
 use PiPHP\GPIO\Pin\PinInterface;
 
-$gpio = new GPIO();
-
-$pinsOut[23] = $gpio->getOutputPin(23);
-$pinsOut[27] = $gpio->getOutputPin(27);
-$pinsOut[22] = $gpio->getOutputPin(22);
 
 
 class PortsController extends Controller
 {
     public function onLed(): JsonResponse
     {
-        global $pinsOut;
-        $pinsOut[23]->setValue(PinInterface::VALUE_HIGH);
-        return new JsonResponse(['message' => 'Led encendido']);
+        $scriptPath = '/var/www/onLed.py';
+        $command = "python3 $scriptPath";
+
+        $output = shell_exec($command);
+
+        if ($output !== null) {
+            return new JsonResponse(['message' => 'Script de Python ejecutado correctamente', 'output' => $output]);
+        } else {
+            return new JsonResponse(['message' => 'Error al ejecutar el script de Python']);
+        }
     }
 
     public function offLed(): JsonResponse
     {
-        global $pinsOut;
-        $pinsOut[23]->setValue(PinInterface::VALUE_LOW);
-        return new JsonResponse(['message' => 'Led encendido']);
+        $scriptPath = '/var/www/offLed.py';
+        $command = "python3 $scriptPath";
+
+        $output = shell_exec($command);
+
+        if ($output !== null) {
+            return new JsonResponse(['message' => 'Script de Python ejecutado correctamente', 'output' => $output]);
+        } else {
+            return new JsonResponse(['message' => 'Error al ejecutar el script de Python']);
+        }
     }
 }
