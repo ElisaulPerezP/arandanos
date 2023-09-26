@@ -12,7 +12,7 @@ class PortsController extends Controller
     public function onLed(): JsonResponse
     {
         $scriptPath = '/var/www/onLed.py';
-        $command = "python3 $scriptPath";
+        $command = "sudo python3 $scriptPath";
 
         $output = shell_exec($command);
 
@@ -26,7 +26,7 @@ class PortsController extends Controller
     public function offLed(): JsonResponse
     {
         $scriptPath = '/var/www/offLed.py';
-        $command = "python3 $scriptPath";
+        $command = "sudo python3 $scriptPath";
 
         $output = shell_exec($command);
 
