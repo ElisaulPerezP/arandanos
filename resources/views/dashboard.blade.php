@@ -19,6 +19,10 @@
                         <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Apagar LED</button>
                     </form>
                 </div>
+                <!-- Mostrar el mensaje -->
+                @if(isset($mensaje))
+                    <p>{{ $mensaje }}</p>
+                @endif
             </div>
         </div>
     </div>

@@ -2,25 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\JsonResponse;
-use Illuminate\Routing\Route;
-use Illuminate\Support\Facades\Redirect;
+use Illuminate\View\View;
 
 
 class PortsController extends Controller
 {
-    public function onLed(): void
+    public function onLed(): View
     {
         $scriptPath = '/var/www/onLed.py';
         $command = "sudo python3 $scriptPath";
-        shell_exec($command);
+        $respuesta = shell_exec($command);
+        return view('dashboard', [
+            'mensaje' => $respuesta ]);
     }
 
-    public function offLed(): void
+    public function offLed(): View
     {
         $scriptPath = '/var/www/offLed.py';
         $command = "sudo python3 $scriptPath";
-        shell_exec($command);
+        $respuesta = shell_exec($command);
+        return view('dashboard', [
+            'mensaje' => $respuesta ]);
 
     }
 }
