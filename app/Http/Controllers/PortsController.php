@@ -25,4 +25,44 @@ class PortsController extends Controller
             'mensaje' => $respuesta ]);
 
     }
+
+    public function on_bomba_1(): View
+    {
+    }
+
+    public function on_bomba_2(): View
+    {
+    }
+    public function on_bomba_1(): View
+    {
+    }
+
+    public function on_bomba_2(): View
+    {
+    }
+
+    public function stop(): View
+    {
+    }
+
+    public function on_1_2(): View
+    {
+    }
+
+    public function on_3_4(): View
+    {
+    }
+
+
+    public function on_5_6(): View
+    {
+    }
+
+     public function on_7_8): View
+    {
+    }
+public function on_9_10): View
+    {
+    }
 }
+
