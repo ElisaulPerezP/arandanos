@@ -1,7 +1,7 @@
 <?php
 return [
 'scripts' => [
-    'status' => '/var/www/status.py',
+    'status' => '/var/www/state.py',
     //'status' => '/home/elisaul/ws/arandanos/pythonScripts/status.py',
     'stop' => '/var/www/stop.py',
     'start' => '/var/www/start.py',
