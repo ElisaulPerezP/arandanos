@@ -1,0 +1,25 @@
+<?php
+return [
+'scripts' => [
+    //'status' => '/var/www/status.py',
+    'status' => '/home/elisaul/ws/arandanos/pythonScripts/status.py',
+    'stop' => '/var/www/stop.py',
+    'start' => '/var/www/start.py',
+    'onLed' => '/var/www/onLed.py',
+    'offLed' => '/var/www/offLed.py',
+    'on_bomba_1' => '/var/www/on_bomba_1.py',
+    'off_bomba_1' => '/var/www/off_bomba_1.py',
+    'on_bomba_2' => '/var/www/on_bomba_2.py',
+    'off_bomba_2' => '/var/www/off_bomba_2.py',
+    'on_1_2' => '/var/www/on_1_2.py',
+    'off_1_2' => '/var/www/off_1_2.py',
+    'on_3_4' => '/var/www/on_3_4.py',
+    'off_3_4' => '/var/www/off_3_4.py',
+    'on_5_6' => '/var/www/on_5_6.py',
+    'off_5_6' => '/var/www/off_5_6.py',
+    'on_7_8' => '/var/www/on_7_8.py',
+    'off_7_8' => '/var/www/off_7_8.py',
+    'on_9_10' => '/var/www/on_9_10.py',
+    'off_9_10' => '/var/www/off_9_10.py',
+],
+];

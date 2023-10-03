@@ -1,0 +1,131 @@
+<?php
+
+$scripts = include('scripts.php');
+
+return [
+'buttons' => [
+    'stop' => [
+        'name' => 'STOP',
+        'route' => 'STOP',
+        'script' =>  $scripts['scripts']['stop'],
+        'message' => 'Sistema en funcionamiento NORMAL',
+    ],
+    'start' => [
+        'name' => 'START',
+        'route' => 'START',
+        'script' =>  $scripts['scripts']['start'],
+        'message' => 'Sistema DETENIDO',
+    ],
+    'onLed' => [
+        'name' => 'Encender Luz',
+        'route' => 'led.on',
+        'script' =>  $scripts['scripts']['onLed'],
+        'message' => 'Luz Apagada',
+        'slider' => 50,
+    ],
+    'offLed' => [
+        'name' => 'Apagar Luz',
+        'route' => 'led.off',
+        'script' =>  $scripts['scripts']['offLed'],
+        'message' => 'Luz Encendida',
+    ],
+    'on_bomba_1' => [
+        'name' => 'Encender bomba 1',
+        'route' => 'on_pump_1',
+        'script' =>  $scripts['scripts']['on_bomba_1'],
+        'message' => 'Bomba 1 Apagada',
+        'slider' => 50,
+    ],
+    'off_bomba_1' => [
+        'name' => 'Apagar bomba 1',
+        'route' => 'off_pump_1',
+        'script' =>  $scripts['scripts']['off_bomba_1'],
+        'message' => 'Bomba 1 Encendida',
+        'slider' => 50,
+    ],
+    'on_bomba_2' => [
+        'name' => 'Encender bomba 2',
+        'route' => 'on_pump_2',
+        'script' =>  $scripts['scripts']['on_bomba_2'],
+        'message' => 'Bomba 2 Apagada',
+        'slider' => 50,
+    ],
+    'off_bomba_2' => [
+        'name' => 'Apagar bomba 2',
+        'route' => 'off_pump_2',
+        'script' => $scripts['scripts']['off_bomba_2'],
+        'message' => 'Bomba 2 Encendida',
+        'slider' => 50,
+    ],
+    'on_1_2' => [
+        'name' => 'Abrir 1 y 2',
+        'route' => 'on_1_2',
+        'script' => $scripts['scripts']['on_1_2'],
+        'message' => 'Solenoides 1 y 2 Cerrados',
+        'slider' => 50,
+    ],
+    'off_1_2' => [
+        'name' => 'Cerrar 1 y 2',
+        'route' => 'off_1_2',
+        'script' => $scripts['scripts']['off_1_2'],
+        'message' => 'Solenoides 1 y 2 Abiertos',
+        'slider' => 50,
+    ],
+    'on_3_4' => [
+        'name' => 'Abrir 3 y 4',
+        'route' => 'on_3_4',
+        'script' => $scripts['scripts']['on_3_4'],
+        'message' => 'Solenoides 3 y 4 Cerrados',
+        'slider' => 50,
+    ],
+    'off_3_4' => [
+        'name' => 'Cerrar 3 y 4',
+        'route' => 'off_3_4',
+        'script' => $scripts['scripts']['on_1_2'],
+        'message' => 'Solenoides 3 y 4 Abiertos',
+        'slider' => 50,
+    ],
+    'on_5_6' => [
+        'name' => 'Abrir 5 y 6',
+        'route' => 'on_5_6',
+        'script' => $scripts['scripts']['on_5_6'],
+        'message' => 'Solenoides 5 y 6 Cerrados',
+        'slider' => 50,
+    ],
+    'off_5_6' => [
+        'name' => 'Cerrar 5 y 6',
+        'route' => 'off_5_6',
+        'script' => $scripts['scripts']['off_5_6'],
+        'message' => 'Solenoides 5 y 6 Abiertos',
+        'slider' => 50,
+    ],
+    'on_7_8' => [
+        'name' => 'Abrir 7 y 8',
+        'route' => 'on_7_8',
+        'script' => $scripts['scripts']['on_7_8'],
+        'message' => 'Solenoides 7 y 8 Cerrados',
+        'slider' => 50,
+    ],
+    'off_7_8' => [
+        'name' => 'Cerrar 7 y 8',
+        'route' => 'off_7_8',
+        'script' => $scripts['scripts']['off_7_8'],
+        'message' => 'Solenoides 7 y 8 Abiertos',
+        'slider' => 50,
+    ],
+    'on_9_10' => [
+        'name' => 'Abrir 9 y 10',
+        'route' => 'on_9_10',
+        'script' => $scripts['scripts']['on_9_10'],
+        'message' => 'Solenoides 9 y 10 Cerrados',
+        'slider' => 50,
+    ],
+    'off_9_10' => [
+        'name' => 'Cerrar 9 y 10',
+        'route' => 'off_9_10',
+        'script' => $scripts['scripts']['off_9_10'],
+        'message' => 'Solenoides 9 y 10 Abiertos',
+        'slider' => 50,
+    ],
+],
+];
