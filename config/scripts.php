@@ -1,8 +1,8 @@
 <?php
 return [
 'scripts' => [
-    //'status' => '/var/www/status.py',
-    'status' => '/home/elisaul/ws/arandanos/pythonScripts/status.py',
+    'status' => '/var/www/status.py',
+    //'status' => '/home/elisaul/ws/arandanos/pythonScripts/status.py',
     'stop' => '/var/www/stop.py',
     'start' => '/var/www/start.py',
     'onLed' => '/var/www/onLed.py',
