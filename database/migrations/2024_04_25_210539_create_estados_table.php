@@ -16,7 +16,7 @@ class CreateEstadosTable extends Migration
             $table->boolean('bomba_1')->default(false);
             $table->boolean('bomba_2')->default(false);
             $table->boolean('bomba_fertilizante')->default(false);
-            $table->unsignedBigInteger('id_tabla_flujos');
+            $table->unsignedBigInteger('id_tabla_flujos')->nullable();
             $table->timestamps();
 
             $table->foreign('id_tabla_flujos')->references('id')->on('flujos')->onDelete('cascade');

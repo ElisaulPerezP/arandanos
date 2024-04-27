@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\PortsController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\EstadoController;
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CultivoLoginController;
 
@@ -30,5 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/cultivo/login', [CultivoLoginController::class, 'login'])->name('cultivo.login');
 });
+
+Route::resource('estados', EstadoController::class);
 
 require __DIR__.'/auth.php';
