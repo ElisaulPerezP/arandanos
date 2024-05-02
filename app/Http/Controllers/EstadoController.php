@@ -20,7 +20,6 @@ class EstadoController extends Controller
 
     public function store(Request $request)
     {
-        // Validación de la entrada del usuario
         $validated = $request->validate([
             'solenoide_1' => 'required|boolean',
             'solenoide_2' => 'required|boolean',
@@ -39,16 +38,14 @@ class EstadoController extends Controller
             'bomba_fertilizante' => 'required|boolean',
             'id_tabla_flujos' => 'integer|exists:flujos,id'
         ]);
-    
-        // Crear y guardar el nuevo estado
+
         $estado = Estado::create($validated);
     
-        // Retornar una respuesta JSON
         return response()->json([
             'success' => true,
             'message' => 'Estado creado con éxito.',
             'data' => $estado
-        ], 201); // HTTP status code 201 significa "Created"
+        ], 201);
     }
     public function show(Estado $estado)
     {
