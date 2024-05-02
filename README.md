@@ -1,66 +1,91 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+archivo de configuracion para una raspberry pi zero 2w con ubuntu server 22.04.4 instalado.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
 
-## About Laravel
+-------------------------------------------------------------------------------------------
+#!/bin/bash
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+# Detiene la ejecución si ocurre un error
+set -e
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+# Actualiza los paquetes del sistema
+sudo apt update
+sudo apt upgrade -y
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+# Instala Apache
+sudo apt install apache2 -y
 
-## Learning Laravel
+# Instala PHP
+sudo apt install php libapache2-mod-php php-xml php-dom php-curl php-zip -y
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+# Instala herramientas de descompresión
+sudo apt install unzip p7zip-full -y
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+# Instala SQLite
+sudo apt install sqlite3 php-sqlite3 -y
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+# Habilita el módulo PHP en Apache
+sudo a2enmod php8.1
+sudo systemctl restart apache2
 
-## Laravel Sponsors
+# Instala Python y RPi.GPIO para GPIOs
+sudo apt install python3 python3-pip -y
+sudo pip3 install RPi.GPIO
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+# Instalar Composer
+EXPECTED_CHECKSUM="$(wget -q -O - https://composer.github.io/installer.sig)"
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+ACTUAL_CHECKSUM="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
 
-### Premium Partners
+if [ "$EXPECTED_CHECKSUM" != "$ACTUAL_CHECKSUM" ]
+then
+    >&2 echo 'ERROR: Invalid installer checksum'
+    rm composer-setup.php
+    exit 1
+fi
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+sudo php composer-setup.php --quiet --install-dir=/usr/local/bin --filename=composer
+rm composer-setup.php
 
-## Contributing
+# Instalar nvm, npm y Node.js
+wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# Esta línea asume que el script de nvm se añadirá automáticamente al .bashrc o .zshrc
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+nvm install node # Esto instala la última versión de Node.js y npm
 
-## Code of Conduct
+echo "Instalación completada. Apache, PHP, SQLite, RPi.GPIO, Composer, nvm y npm están configurados."
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+-------------------------------------------------------------------------------------------
 
-## Security Vulnerabilities
+una vez preparado el sistema debe clonar este repocitorio de guit, generando una clave ssh
+recuerde, el comando para generarlo es:
+ssh-keygen -t rsa -C "escriba aqui algun comentario"
+le sera pedido un nombre, sugerencia use sshArandanosRaspberry.
+hecho eso ve la clave en consola:
+cat sshArandanosRaspberry
+copiela y añadala a las claves de desarroyo de github.
+inicie un agente ssh con el comando
+eval "$(ssh-agent -s)"
+e inscriba la clave con ssh-add /direccion/a/la/clave
+ahora clone el repositorio.
+git clone /direccion/del/repositorio/en/github
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---------------------------------------------------------------------------------------------
 
-## License
+ingrese a la carpeta del proyecto y lance el comando
+composer install
+y luego lance el comando
+npm install
+---------------------------------------------------------------------------------------------
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+genere la base de datos:
+touch database/arandanos.sqlite
+
+copiar el archivo de configuracion de entorno
+cp .env.example .env
+
+generar la clave de la aplicacion:
+php artisan key:generate
+
+-------------------------------------------------------------------------------------------
