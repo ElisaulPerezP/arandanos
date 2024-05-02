@@ -58,3 +58,34 @@ echo "Instalación completada. Apache, PHP, SQLite, RPi.GPIO, Composer, nvm y np
 
 -------------------------------------------------------------------------------------------
 
+una vez preparado el sistema debe clonar este repocitorio de guit, generando una clave ssh
+recuerde, el comando para generarlo es:
+ssh-keygen -t rsa -C "escriba aqui algun comentario"
+le sera pedido un nombre, sugerencia use sshArandanosRaspberry.
+hecho eso ve la clave en consola:
+cat sshArandanosRaspberry
+copiela y añadala a las claves de desarroyo de github.
+inicie un agente ssh con el comando
+eval "$(ssh-agent -s)"
+e inscriba la clave con ssh-add /direccion/a/la/clave
+ahora clone el repositorio.
+git clone /direccion/del/repositorio/en/github
+
+---------------------------------------------------------------------------------------------
+
+ingrese a la carpeta del proyecto y lance el comando
+composer install
+y luego lance el comando
+npm install
+---------------------------------------------------------------------------------------------
+
+genere la base de datos:
+touch database/arandanos.sqlite
+
+copiar el archivo de configuracion de entorno
+cp .env.example .env
+
+generar la clave de la aplicacion:
+php artisan key:generate
+
+-------------------------------------------------------------------------------------------
