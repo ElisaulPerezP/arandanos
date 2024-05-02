@@ -88,4 +88,60 @@ cp .env.example .env
 generar la clave de la aplicacion:
 php artisan key:generate
 
+migrar la base de datos:
+php artisan migrate
+
 -------------------------------------------------------------------------------------------
+
+ahora debes configurar apache.
+crea el archivo de configuracion del sitio arandanos:
+sudo nano /etc/apache2/sites-available/arandanos.conf
+
+
+
+arandanos.config debe tener este contenido:
+----------------------------------------------------------------------------------------------
+<VirtualHost *:80>
+    ServerName arandanos.local
+    ServerAlias www.arandanos.local
+    ServerAdmin webmaster@localhost
+    DocumentRoot /var/www/arandanos/public
+
+    <Directory /var/www/arandanos/public>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+-----------------------------------------------------------------------------------------------
+
+habilita el modulo rewrite:
+sudo a2enmod rewrite
+
+habilita el archivo de configuracion:
+sudo a2ensite arandanos.conf
+
+deshabilita el sitio por defecto de apache:
+sudo a2dissite 000-default.conf
+
+reinicia apache:
+sudo systemctl restart apache2
+---------------------------------------------------------------------------------------------
+
+edita el archivo sudo nano /etc/hosts
+
+añadiendo la linea:
+
+192.168.x.x  arandanos.local www.arandanos.local
+en la .x.x debe colocar la ip de la raspberry en la red local.
+---------------------------------------------------------------------------------------------
+
+para finalizar debe otorgar los permisos y propiedad a apache:
+sudo chown -R www-data:www-data /var/www/arandanos/storage
+sudo chown -R www-data:www-data /var/www/arandanos/bootstrap/cache
+sudo chmod -R 775 /var/www/arandanos/storage
+sudo chmod -R 775 /var/www/arandanos/bootstrap/cache
+
