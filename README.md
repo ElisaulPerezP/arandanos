@@ -15,7 +15,10 @@ sudo apt upgrade -y
 sudo apt install apache2 -y
 
 # Instala PHP
-sudo apt install php libapache2-mod-php php-xml php-dom php-curl -y
+sudo apt install php libapache2-mod-php php-xml php-dom php-curl php-zip -y
+
+# Instala herramientas de descompresión
+sudo apt install unzip p7zip-full -y
 
 # Instala SQLite
 sudo apt install sqlite3 php-sqlite3 -y
