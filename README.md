@@ -144,4 +144,8 @@ sudo chown -R www-data:www-data /var/www/arandanos/storage
 sudo chown -R www-data:www-data /var/www/arandanos/bootstrap/cache
 sudo chmod -R 775 /var/www/arandanos/storage
 sudo chmod -R 775 /var/www/arandanos/bootstrap/cache
+sudo chown -R www-data:www-data /var/www/arandanos/database
+sudo chmod 664 /var/www/arandanos/database/arandanos.sqlite
+sudo chmod 775 /var/www/arandanos/database
+sudo systemctl restart apache2
 
