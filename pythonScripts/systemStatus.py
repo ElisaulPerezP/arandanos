@@ -19,7 +19,7 @@ def post_estado():
 
     # Leer el estado de los GPIOs
     data = {
-        'solenoide_1': GPIO.input(17),
+        'solenoide_1': GPIO.input(29),
         'solenoide_2': GPIO.input(27),
         'solenoide_3': GPIO.input(22),
         'solenoide_4': GPIO.input(10),
