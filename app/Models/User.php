@@ -1,8 +1,6 @@
 <?php
-
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -23,6 +21,8 @@ class User extends Authenticatable
         'password',
         'cultivo_nombre', 
         'api_token',
+        'cultivo_registrado_at',
+        'token_adquirido_at',
     ];
 
     /**
@@ -43,5 +43,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'cultivo_registrado_at' => 'datetime',
+        'token_adquirido_at' => 'datetime',
     ];
 }

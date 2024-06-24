@@ -30,7 +30,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/registro', [CultivoLoginController::class, 'showRegistrationForm'])->name('registro');
     Route::post('/cultivo/login', [CultivoLoginController::class, 'login'])->name('cultivo.login');
+
+    Route::get('/riego', [RiegoController::class, 'adminRiegos'])->name('riego');
+    Route::get('/estadisticas', [EstadisticasController::class, 'verEstadisticas'])->name('estadisticas');
+});
+
+Route::middleware('auth')->group(function () {
+    // Rutas existentes...
+
+    Route::get('/update/registro', [CultivoLoginController::class, 'showUpdateForm'])->name('update.registro');
+    Route::post('/update/cultivo', [CultivoLoginController::class, 'updateCultivo'])->name('cultivo.update');
 });
 
 Route::resource('estados', EstadoController::class);
