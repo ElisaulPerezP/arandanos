@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight justify-content-center">
-            {{ __('Lista de Estados de Cultivos') }}
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Estados') }}
         </h2>
     </x-slot>
 
@@ -9,48 +9,28 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200">
-                    <!-- Tabla para mostrar estados -->
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                    <a href="{{ route('estados.create') }}" class="btn btn-primary mb-4">Crear Estado</a>
+                    <table class="min-w-full bg-white border">
+                        <thead>
                             <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    ID
-                                </th>
-                                @for ($i = 1; $i <= 12; $i++)
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Solenoide {{ $i }}
-                                    </th>
-                                @endfor
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Bomba 1
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Bomba 2
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Bomba Fertilizante
-                                </th>
+                                <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                                <th class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                                <th class="px-6 py-3 border-b border-gray-200 bg-gray-50"></th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody>
                             @foreach ($estados as $estado)
                                 <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        {{ $estado->id }}
-                                    </td>
-                                    @for ($i = 1; $i <= 12; $i++)
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            {{ $estado->{'solenoide_'.$i} ? 'ON' : 'OFF' }}
-                                        </td>
-                                    @endfor
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        {{ $estado->bomba_1 ? 'ON' : 'OFF' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        {{ $estado->bomba_2 ? 'ON' : 'OFF' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        {{ $estado->bomba_fertilizante ? 'ON' : 'OFF' }}
+                                    <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">{{ $estado->nombre }}</td>
+                                    <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">{{ $estado->descripcion }}</td>
+                                    <td class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+                                        <a href="{{ route('estados.show', $estado) }}" class="btn btn-info">Ver</a>
+                                        <a href="{{ route('estados.edit', $estado) }}" class="btn btn-warning">Editar</a>
+                                        <form action="{{ route('estados.destroy', $estado) }}" method="POST" class="inline-block">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger">Eliminar</button>
+                                        </form>
                                     </td>
                                 </tr>
                             @endforeach

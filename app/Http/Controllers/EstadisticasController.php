@@ -7,7 +7,7 @@ use App\Models\Estado;
 use App\Models\Cultivo;
 use App\Events\CultivoInactivo;
 
-class EstadoController extends Controller
+class EstadisticasController extends Controller
 {
     public function index()
     {

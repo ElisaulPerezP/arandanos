@@ -4,6 +4,8 @@ import os
 import time
 import select
 import argparse
+import signal
+import sys
 
 def export_pin(pin):
     """Exportar un pin GPIO."""
@@ -26,20 +28,34 @@ def unexport_pin(pin):
 
 def set_pin_direction(pin, direction):
     """Configurar la dirección de un pin GPIO."""
-    with open(f"/sys/class/gpio/gpio{pin}/direction", "w") as f:
+    with open(f"/sys/class/gpio/gpio{pin}/direction", "w") as f):
         f.write(direction)
 
 def set_pin_value(pin, value):
     """Configurar el valor de un pin GPIO."""
-    with open(f"/sys/class/gpio/gpio{pin}/value", "w") as f:
+    with open(f"/sys/class/gpio/gpio{pin}/value", "w") as f):
         f.write(value)
 
 def set_pin_edge(pin, edge):
     """Configurar el edge de un pin GPIO."""
-    with open(f"/sys/class/gpio/gpio{pin}/edge", "w") as f:
+    with open(f"/sys/class/gpio/gpio{pin}/edge", "w") as f):
         f.write(edge)
 
+def cleanup_pins(event_pin, control_pin):
+    """Poner el valor del pin en cero y desexportar los pines."""
+    set_pin_value(control_pin, "0")
+    unexport_pin(event_pin)
+    unexport_pin(control_pin)
+
+def signal_handler(sig, frame):
+    """Manejar señales de terminación."""
+    print("Terminación recibida. Limpiando y saliendo...")
+    cleanup_pins(event_pin, control_pin)
+    sys.exit(0)
+
 def main(event_pin, control_pin, max_count, max_time):
+    global event_pin, control_pin  # Hacer globales para acceso en signal_handler
+
     # Exportar y configurar los pines
     export_pin(event_pin)
     export_pin(control_pin)
@@ -59,6 +75,10 @@ def main(event_pin, control_pin, max_count, max_time):
     event_count = 0
     start_time = time.time()
 
+    # Registrar el manejador de señales
+    signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGINT, signal_handler)
+
     try:
         print("Esperando eventos... Presiona Ctrl+C para salir.")
         while event_count < max_count:
@@ -68,13 +88,13 @@ def main(event_pin, control_pin, max_count, max_time):
                 print(f"Tiempo máximo de ejecución de {max_time} segundos alcanzado.")
                 break
 
-            events = poller.poll(1000)  # Esperar hasta 1000 ms por un evento
+            events = poller.poll()  # Esperar hasta 1000 ms por un evento
             if events:
                 os.lseek(value_fd, 0, os.SEEK_SET)  # Resetear el puntero del archivo al inicio
                 os.read(value_fd, 1024).strip()  # Leer el valor (aunque no lo usemos)
                 event_count += 1  # Incrementar el contador de eventos
                 
-                # Controlar el pin de control basado en el contador de eventos
+                # Controlar el pin de control con alguna logica, esta es una logica basura para ejemplo
                 if event_count % 5 == 0:
                     set_pin_value(control_pin, "0")  # Apagar el pin
                 else:
@@ -82,9 +102,8 @@ def main(event_pin, control_pin, max_count, max_time):
     except KeyboardInterrupt:
         pass  # Solo pasar, el código de limpieza se ejecutará en finally
     finally:
-        # Limpiar configuración de GPIO
-        unexport_pin(event_pin)
-        unexport_pin(control_pin)
+        # Poner el valor del pin de control en cero antes de desexportar
+        cleanup_pins(event_pin, control_pin)
         os.close(value_fd)
         print(f"Pin {event_pin} y {control_pin} desexportados y programa terminado.")
         # Presentar el total de eventos detectados
@@ -99,4 +118,3 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     main(args.event_pin, args.control_pin, args.max_count, args.max_time)
-

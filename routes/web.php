@@ -3,6 +3,8 @@
 use App\Http\Controllers\PortsController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\EstadoController;
+use App\Http\Controllers\RiegoController;
+use App\Http\Controllers\EstadisticasController;
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CultivoLoginController;
@@ -45,5 +47,7 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::resource('estados', EstadoController::class);
+
+Route::post('/cambiar-estado', [EstadoController::class, 'cambiarEstado']);
 
 require __DIR__.'/auth.php';
