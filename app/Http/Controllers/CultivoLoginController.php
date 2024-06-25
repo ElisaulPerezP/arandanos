@@ -5,7 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\User;
 use Carbon\Carbon;
-
+use App\Models\Cultivo;
 class CultivoLoginController extends Controller
 {
     public function showRegistrationForm()
@@ -60,7 +60,7 @@ class CultivoLoginController extends Controller
                     'token_adquirido_at' => $currentDateTime,     // Almacena la fecha de adquisición del token
                 ]);
             } else {
-                // Opcional: crear el usuario si no existe (dependiendo de tu lógica de negocio)
+                // Crear el usuario si no existe
                 $user = User::create([
                     'email' => $request->email,
                     'password' => bcrypt($request->password), // Asegúrate de encriptar la contraseña
@@ -71,13 +71,25 @@ class CultivoLoginController extends Controller
                 ]);
             }
 
+            // Verificar si el cultivo ya existe
+            $cultivo = Cultivo::where('nombre', $request->cultivo)->first();
+
+            if (!$cultivo) {
+                // Crear un nuevo registro de cultivo si no existe
+                Cultivo::create([
+                    'nombre' => $request->cultivo,
+                    'user_id' => $user->id,
+                    'estado_id' => null, // Ajusta esto según tus necesidades
+                    'comando_id' => null, // Ajusta esto según tus necesidades
+                ]);
+            }
+
             // Redirigir al dashboard con un mensaje de éxito
             return redirect()->route('dashboard')->with('success', 'Autenticación exitosa!');
         } else {
             return back()->withErrors(['msg' => 'Error en la autenticación']);
         }
     }
-
     public function showUpdateForm()
     {
         return view('registro');
@@ -104,7 +116,7 @@ class CultivoLoginController extends Controller
         if ($response->successful()) {
             $token = $response->json()['token'];  // Extrae el token del JSON de respuesta
 
-            // Encuentra el usuario por email
+            // Encuentra el usuario autenticado
             $user = auth()->user();
 
             $currentDateTime = Carbon::now();
@@ -116,6 +128,25 @@ class CultivoLoginController extends Controller
                 'cultivo_registrado_at' => $currentDateTime,  // Almacena la fecha de registro del cultivo
                 'token_adquirido_at' => $currentDateTime,     // Almacena la fecha de adquisición del token
             ]);
+
+            // Verificar si el cultivo ya existe
+            $cultivo = Cultivo::where('nombre', $request->cultivo)->first();
+
+            if ($cultivo) {
+                // Si el cultivo existe, actualiza el user_id asociado
+                $cultivo->update([
+                    'user_id' => $user->id,
+                    // Puedes actualizar otros campos del cultivo aquí si es necesario
+                ]);
+            } else {
+                // Crear un nuevo registro de cultivo si no existe
+                Cultivo::create([
+                    'nombre' => $request->cultivo,
+                    'user_id' => $user->id,
+                    'estado_id' => null, // Ajusta esto según tus necesidades
+                    'comando_id' => null, // Ajusta esto según tus necesidades
+                ]);
+            }
 
             // Redirigir al dashboard con un mensaje de éxito
             return redirect()->route('dashboard')->with('success', 'Cultivo actualizado exitosamente!');
