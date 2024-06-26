@@ -9,6 +9,8 @@ use App\Http\Controllers\EstadisticasController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CultivoLoginController;
 
+use App\Http\Controllers\SystemController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -49,5 +51,7 @@ Route::middleware('auth')->group(function () {
 Route::resource('estados', EstadoController::class);
 
 Route::post('/cambiar-estado', [EstadoController::class, 'cambiarEstado']);
+
+Route::get('system/start', [SystemController::class, 'start']);
 
 require __DIR__.'/auth.php';

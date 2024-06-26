@@ -15,15 +15,17 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
-        
-            'App\Events\CultivoInactivo' => [
-                'App\Listeners\ManejarCultivoInactivo',
-            ],
+        'App\Events\CultivoInactivo' => [
+            'App\Listeners\ManejarCultivoInactivo',
+        ],
+        'App\Events\InicioDeAplicacion' => [
+            'App\Listeners\EjecutarScriptsDeBase',
+        ],
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
-        
     ];
+
 
     /**
      * Register any events for your application.

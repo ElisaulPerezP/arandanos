@@ -1,6 +1,6 @@
 <?php
 return array (
-  'scriptsDisponibles' => 'riegoStandard.py',
-  'scriptsEjecutandose' => '',
-  'scritpsDeBase' => 'riegoStandard.py',
+  'scriptsDisponibles' => 'riegoStandard.py, stopManual.py',
+  'scriptsEjecutandose' => 'stopManual.py 2 1',
+  'scritpsDeBase' => 'stopManual.py 2 1',
 );
