@@ -61,7 +61,7 @@
                     <div>
                         <p>{{ __('Cultivo registrado:') }} {{ auth()->user()->cultivo_nombre }}</p>
                         <p>{{ __('Fecha de registro:') }} {{ auth()->user()->cultivo_registrado_at }}</p>
-                        <p>{{ __('Estado del cultivo:') }} {{ "aun nada" }}</p>
+                        <p>{{ __('Estado del cultivo:') }} {{ auth()->user()->cultivo->estadoActual->nombre }}</p>
                     </div>
 
                     <!-- Botón para actualizar cultivo -->

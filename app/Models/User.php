@@ -46,4 +46,8 @@ class User extends Authenticatable
         'cultivo_registrado_at' => 'datetime',
         'token_adquirido_at' => 'datetime',
     ];
+    public function cultivo()
+    {
+        return $this->hasOne(Cultivo::class, 'user_id', 'id');
+    }
 }
