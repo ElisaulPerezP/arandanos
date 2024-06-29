@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Events\SincronizarSistema;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -23,6 +24,18 @@ class EventServiceProvider extends ServiceProvider
         ],
         Registered::class => [
             SendEmailVerificationNotification::class,
+        ],
+        SincronizarSistema::class => [
+            SincronizarSistemaListener::class,
+        ],
+        CheckEvent::class => [
+            CheckEventListener::class,
+        ],
+        RestartEvent::class => [
+            RestartEventListener::class,
+        ],
+        RiegoEvent::class => [
+            RiegoEventListener::class,
         ],
     ];
 
