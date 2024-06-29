@@ -149,3 +149,21 @@ sudo chmod 664 /var/www/arandanos/database/arandanos.sqlite
 sudo chmod 775 /var/www/arandanos/database
 sudo systemctl restart apache2
 
+-----------------------------------------------------------------------------------------------
+# Colas y trabajadores
+en el archivo .env:
+
+QUEUE_CONNECTION=database
+
+correr el comando que lanza el  trabajador:
+
+php artisan queue:work
+
+inscribir el crontab del sistema:
+
+crontab -e
+
+en el archivo que aparece integrar esto como una nueva linea:
+
+* * * * * cd /var/www/arandanos && php artisan schedule:run >> /dev/null 2>&1
+
