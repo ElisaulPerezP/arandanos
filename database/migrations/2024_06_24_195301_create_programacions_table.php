@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class () extends Migration {
+class CreateProgramacionsTable extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -12,9 +13,9 @@ return new class () extends Migration {
     {
         Schema::create('programacions', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('hora_unix'); // Hora Unix para la programación
-            $table->foreignId('cultivo_id')->constrained()->onDelete('cascade'); // Asociación con Cultivo
-            $table->foreignId('comando_id')->constrained()->onDelete('cascade'); // Asociación con Comando
+            $table->unsignedBigInteger('hora_unix');
+            $table->foreignId('cultivo_id')->constrained()->onDelete('cascade');
+            $table->foreignId('comando_id')->constrained()->onDelete('cascade');
             $table->string('estado')->default('por enviar');
             $table->timestamps();
         });
@@ -27,5 +28,4 @@ return new class () extends Migration {
     {
         Schema::dropIfExists('programacions');
     }
-};
-
+}

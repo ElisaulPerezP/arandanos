@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class () extends Migration {
+class CreateCultivosAndRelatedTables extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -13,18 +14,20 @@ return new class () extends Migration {
         Schema::create('cultivos', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
-            $table->string('coordenadas');
+            $table->string('coordenadas')->nullable(); // Se establece como nullable desde el inicio
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('estado_id')->constrained('estados')->onDelete('cascade');
-            $table->foreignId('comando_id')->nullable()->constrained('comandos')->onDelete('set null'); // Comando actual
+            $table->foreignId('estado_id')->nullable()->constrained('estados')->onDelete('cascade'); // Se establece como nullable desde el inicio
+            $table->foreignId('comando_id')->nullable()->constrained('comandos')->onDelete('set null');
             $table->timestamps();
         });
+
         Schema::create('cultivo_comando', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cultivo_id')->constrained('cultivos')->onDelete('cascade');
             $table->foreignId('comando_id')->constrained('comandos')->onDelete('cascade');
             $table->timestamps();
         });
+
         Schema::create('estado_cultivo', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cultivo_id')->constrained('cultivos')->onDelete('cascade');
@@ -47,5 +50,4 @@ return new class () extends Migration {
         });
         Schema::dropIfExists('cultivos');
     }
-
-};
+}

@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class () extends Migration {
+class CreateComandosTable extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -12,11 +13,10 @@ return new class () extends Migration {
     {
         Schema::create('comandos', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre'); // Nombre del comando
-            $table->string('descripcion'); // Nombre del comando
+            $table->string('nombre');
+            $table->string('descripcion');
             $table->timestamps();
         });
-
     }
 
     /**
@@ -26,4 +26,4 @@ return new class () extends Migration {
     {
         Schema::dropIfExists('comandos');
     }
-};
+}

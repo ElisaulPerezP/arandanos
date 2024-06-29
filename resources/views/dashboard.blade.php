@@ -59,20 +59,28 @@
 
                     <!-- Detalles del cultivo -->
                     <div>
-                        <p>{{ __('Cultivo registrado:') }} {{ auth()->user()->cultivo_nombre }}</p>
-                        <p>{{ __('Fecha de registro:') }} {{ auth()->user()->cultivo_registrado_at }}</p>
-                        <p>{{ __('Estado del cultivo:') }} {{ auth()->user()->cultivo->estadoActual->nombre }}</p>
+                        <p>{{ __('Cultivo registrado:') }} {{ auth()->user()->cultivo_nombre ?? 'N/A' }}</p>
+                        <p>{{ __('Fecha de registro:') }} {{ auth()->user()->cultivo_registrado_at ?? 'N/A' }}</p>
+                        <p>{{ __('Estado del cultivo:') }} 
+                            @if (auth()->user()->cultivo)
+                                {{ auth()->user()->cultivo->estadoActual->nombre ?? 'N/A' }}
+                            @else
+                                {{ 'N/A' }}
+                            @endif
+                        </p>
                     </div>
 
                     <!-- Botón para actualizar cultivo -->
-                    <div class="mt-6">
-                        <a href="{{ route('update.registro') }}" class="inline-flex items-center px-4 py-2 bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
-                            {{ __('Actualizar Cultivo') }}
-                        </a>
-                    </div>
+                    @if (auth()->user()->cultivo)
+                        <div class="mt-6">
+                            <a href="{{ route('update.registro') }}" class="inline-flex items-center px-4 py-2 bg-blue-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
+                                {{ __('Actualizar Cultivo') }}
+                            </a>
+                        </div>
+                    @endif
 
                     <!-- Botón para iniciar el sistema si el estado es inactivo -->
-                    @if (auth()->user()->cultivo->estadoActual->nombre === 'Inactivo')
+                    @if (auth()->user()->cultivo && auth()->user()->cultivo->estadoActual && auth()->user()->cultivo->estadoActual->nombre === 'Inactivo')
                         <div class="mt-6">
                             <a href="{{ url('system/start') }}" class="inline-flex items-center px-4 py-2 bg-green-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:border-green-900 focus:ring ring-green-300 disabled:opacity-25 transition ease-in-out duration-150">
                                 {{ __('Iniciar Sistema') }}

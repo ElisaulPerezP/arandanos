@@ -1,21 +1,28 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 class CreateFlujosTable extends Migration
 {
-    public function up()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
         Schema::create('flujos', function (Blueprint $table) {
             $table->id();
-            $table->enum('estado', ['acentado', 'reportado']); // Campo estado con valores específicos
-            $table->integer('valor'); // Campo valor como entero
+            $table->enum('estado', ['acentado', 'reportado']);
+            $table->integer('valor');
             $table->timestamps();
         });
     }
 
-    public function down()
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
         Schema::dropIfExists('flujos');
     }
