@@ -42,7 +42,7 @@ class SincronizarSistema
 
         // Preparar estado actual (modificar según tu lógica para obtener el estado actual)
         $this->estadoActual = [
-            'estadoActual' => $this->cultivo->estadoActual,
+            'estado_id' => $this->cultivo->estado_id,
         ];
     }
 }
