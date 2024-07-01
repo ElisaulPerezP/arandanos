@@ -14,13 +14,12 @@ class CreateCultivosAndRelatedTables extends Migration
         Schema::create('cultivos', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
-            $table->string('coordenadas')->nullable(); // Se establece como nullable desde el inicio
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('estado_id')->nullable()->constrained('estados')->onDelete('cascade'); // Se establece como nullable desde el inicio
-            $table->foreignId('comando_id')->nullable()->constrained('comandos')->onDelete('set null');
+            $table->string('coordenadas');
+            $table->foreignId('estado_id')->constrained('estados');
+            $table->foreignId('comando_id')->constrained('comandos');
             $table->timestamps();
         });
-
+        
         Schema::create('cultivo_comando', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cultivo_id')->constrained('cultivos')->onDelete('cascade');

@@ -10,21 +10,21 @@ class Cultivo extends Model
 {
     use HasFactory;
     use HasApiTokens;
+
     protected $fillable = [
-        'nombre', 'coordenadas', 'user_id', 'estado_id', 'comando_id',
+        'nombre', 'coordenadas', 'estado_id', 'comando_id',
     ];
-    public function propietario()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
+
     public function estadoActual()
     {
         return $this->belongsTo(Estado::class, 'estado_id');
     }
+
     public function comandoActual()
     {
         return $this->belongsTo(Comando::class, 'comando_id');
     }
+
     public function estados()
     {
         return $this->belongsToMany(Estado::class, 'estado_cultivo');
@@ -35,6 +35,7 @@ class Cultivo extends Model
         // Retorna la última conexión basada en la fecha_unix más reciente
         return $this->hasOne(Conexion::class)->latestOfMany('fecha_unix');
     }
+
     public function conexiones()
     {
         return $this->hasMany(Conexion::class);
@@ -54,6 +55,7 @@ class Cultivo extends Model
     {
         return $this->belongsToMany(Comando::class, 'cultivo_comando'); // Especifica el nombre correcto de la tabla pivot
     }
+
     public function getUltimasConexiones()
     {
         return $this->conexiones()->latest('fecha_unix')->limit(10)->get();

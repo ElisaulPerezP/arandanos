@@ -72,13 +72,12 @@ class CultivoLoginController extends Controller
             }
 
             // Verificar si el cultivo ya existe
-            $cultivo = Cultivo::where('nombre', $request->cultivo)->first();
-
-            if (!$cultivo) {
+            if (Cultivo::exists()) {
+                return redirect()->route('dashboard')->withErrors(['msg' => 'Ya tienes un cultivo registrado.']);
+            }
                 // Crear un nuevo registro de cultivo si no existe
                 Cultivo::create([
                     'nombre' => $request->cultivo,
-                    'user_id' => $user->id,
                     'estado_id' => null, // Ajusta esto según tus necesidades
                     'comando_id' => null, // Ajusta esto según tus necesidades
                 ]);
@@ -86,9 +85,6 @@ class CultivoLoginController extends Controller
 
             // Redirigir al dashboard con un mensaje de éxito
             return redirect()->route('dashboard')->with('success', 'Autenticación exitosa!');
-        } else {
-            return back()->withErrors(['msg' => 'Error en la autenticación']);
-        }
     }
     public function showUpdateForm()
     {

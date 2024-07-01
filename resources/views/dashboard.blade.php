@@ -59,15 +59,14 @@
 
                     <!-- Detalles del cultivo -->
                     <div>
-                        <p>{{ __('Cultivo registrado:') }} {{ auth()->user()->cultivo_nombre ?? 'N/A' }}</p>
-                        <p>{{ __('Fecha de registro:') }} {{ auth()->user()->cultivo_registrado_at ?? 'N/A' }}</p>
-                        <p>{{ __('Estado del cultivo:') }} 
-                            @if (auth()->user()->cultivo)
-                                {{ auth()->user()->cultivo->estadoActual->nombre ?? 'N/A' }}
-                            @else
-                                {{ 'N/A' }}
-                            @endif
-                        </p>
+                    @if($cultivo)
+                            <p>{{ __('Cultivo registrado:') }} {{ $cultivo->nombre }}</p>
+                            <p>{{ __('Coordenadas:') }} {{ $cultivo->coordenadas }}</p>
+                            <p>{{ __('Estado Actual:') }} {{ $cultivo->estadoActual->nombre ?? 'N/A' }}</p>
+                            <p>{{ __('Comando Actual:') }} {{ $cultivo->comandoActual->nombre ?? 'N/A' }}</p>
+                        @else
+                            <p>{{ __('No hay un cultivo registrado.') }}</p>
+                        @endif
                     </div>
 
                     <!-- Botón para actualizar cultivo -->
