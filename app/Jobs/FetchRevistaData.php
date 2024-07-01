@@ -27,9 +27,10 @@ class FetchRevistaData implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(Cultivo $cultivo)
+    public function __construct()
     {
-        $this->cultivo = $cultivo;
+        // Obtén el único cultivo registrado
+        $this->cultivo = Cultivo::first();
     }
 
     /**
@@ -37,21 +38,19 @@ class FetchRevistaData implements ShouldQueue
      */
     public function handle()
     {
-        $propietario = $this->cultivo->propietario;
-        $cultivo= $this->cultivo;
+        $cultivo = $this->cultivo;
 
-        if (!$propietario || !$propietario->api_token) {
-            Log::error('No valid api_token found for the propietario.');
+        if (!$cultivo) {
+            Log::error('No cultivo found.');
             return;
         }
 
-        $token = $propietario->api_token;
         $baseUrl = env('API_URL', '');
 
         $url = $baseUrl . '/api/revista';
         Log::info('URL', ['Url' => $url]);
 
-        $response = Http::withToken($token)
+        $response = Http::withToken($cultivo->api_token)
             ->withHeaders([
                 'Accept' => 'application/json',
                 'User-Agent' => 'PostmanRuntime/7.32.3',
@@ -74,7 +73,7 @@ class FetchRevistaData implements ShouldQueue
                         // No hacer nada
                         break;
                     case 2:
-                        event(new SincronizarSistema($token, $cultivo));
+                        event(new SincronizarSistema());
                         break;
                     case 3:
                         event(new CultivoInactivo());

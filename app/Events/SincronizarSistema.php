@@ -19,15 +19,13 @@ class SincronizarSistema
     public $programaciones;
     public $estados;
     public $estadoActual;
-    public $token;
     public $cultivo;
     /**
      * Create a new event instance.
      */
-    public function __construct($token, Cultivo $cultivo)
+    public function __construct()
     {
-        $this->token = $token;
-        $this->cultivo = $cultivo;
+        $this->cultivo = Cultivo::first();;
         // Preparar comandos
         $this->comandos = Comando::all()->pluck('descripcion', 'nombre')->toArray();
 
@@ -44,7 +42,7 @@ class SincronizarSistema
 
         // Preparar estado actual (modificar según tu lógica para obtener el estado actual)
         $this->estadoActual = [
-            'estadoActual' => $cultivo->estadoActual,
+            'estadoActual' => $this->cultivo->estadoActual,
         ];
     }
 }

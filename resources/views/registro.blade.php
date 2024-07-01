@@ -31,7 +31,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('cultivo.update') }}">
+                    <form method="POST" action="{{ route('cultivo.login') }}">
                         @csrf  <!-- Token CSRF para protección contra ataques -->
                         
                         <!-- Campo para el Email del Usuario -->

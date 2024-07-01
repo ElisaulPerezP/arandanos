@@ -8,11 +8,10 @@ use Laravel\Sanctum\HasApiTokens;
 
 class Cultivo extends Model
 {
-    use HasFactory;
-    use HasApiTokens;
+    use HasFactory, HasApiTokens;
 
     protected $fillable = [
-        'nombre', 'coordenadas', 'estado_id', 'comando_id',
+        'nombre', 'coordenadas', 'estado_id', 'comando_id', 'api_token',
     ];
 
     public function estadoActual()

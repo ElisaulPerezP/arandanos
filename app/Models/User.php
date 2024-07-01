@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,8 +20,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'cultivo_nombre', 
-        'api_token',
         'cultivo_registrado_at',
         'token_adquirido_at',
     ];
@@ -46,8 +45,4 @@ class User extends Authenticatable
         'cultivo_registrado_at' => 'datetime',
         'token_adquirido_at' => 'datetime',
     ];
-    public function cultivo()
-    {
-        return $this->hasOne(Cultivo::class, 'user_id', 'id');
-    }
 }

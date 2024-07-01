@@ -42,49 +42,36 @@ class CultivoLoginController extends Controller
             $token = $response->json()['token'];  // Extrae el token del JSON de respuesta
 
             // Encuentra el usuario por email
-            $user = User::where('email', $request->email)->first();
-
+            //$user = User::where('email', $request->email)->first();
+            $user = auth()->user();
             $currentDateTime = Carbon::now();
+            
 
             // Si el usuario ya tiene un cultivo registrado, redirigir con un mensaje de error
-            if ($user && $user->cultivo_nombre) {
-                return redirect()->route('dashboard')->withErrors(['msg' => 'Ya tienes un cultivo registrado.']);
-            }
-
-            // Si el usuario existe, actualiza su token y nombre del cultivo
-            if ($user) {
+            if (Cultivo::exists()) {
+                $cultivo = Cultivo::first();
+                $cultivo->update([
+                    'nombre' => $request->cultivo,
+                    'api_token' => $token,
+                ]);
                 $user->update([
-                    'api_token' => $token,                   // Almacena el token
-                    'cultivo_nombre' => $request->cultivo,   // Almacena el nombre del cultivo
                     'cultivo_registrado_at' => $currentDateTime,  // Almacena la fecha de registro del cultivo
                     'token_adquirido_at' => $currentDateTime,     // Almacena la fecha de adquisición del token
                 ]);
-            } else {
-                // Crear el usuario si no existe
-                $user = User::create([
-                    'email' => $request->email,
-                    'password' => bcrypt($request->password), // Asegúrate de encriptar la contraseña
-                    'api_token' => $token,
-                    'cultivo_nombre' => $request->cultivo,
-                    'cultivo_registrado_at' => $currentDateTime,
-                    'token_adquirido_at' => $currentDateTime,
-                ]);
-            }
-
-            // Verificar si el cultivo ya existe
-            if (Cultivo::exists()) {
-                return redirect()->route('dashboard')->withErrors(['msg' => 'Ya tienes un cultivo registrado.']);
-            }
+                return redirect()->route('dashboard')->withErrors(['msg' => 'Token actualizado']);
+            }else {
                 // Crear un nuevo registro de cultivo si no existe
                 Cultivo::create([
                     'nombre' => $request->cultivo,
-                    'estado_id' => null, // Ajusta esto según tus necesidades
-                    'comando_id' => null, // Ajusta esto según tus necesidades
+                    'api_token'  => $token,
                 ]);
+                return redirect()->route('dashboard')->with('success', 'Autenticación exitosa!');
             }
 
             // Redirigir al dashboard con un mensaje de éxito
             return redirect()->route('dashboard')->with('success', 'Autenticación exitosa!');
+        } 
+        return redirect()->route('dashboard')->with('error', 'Error de autenticacion.');
     }
     public function showUpdateForm()
     {
@@ -114,40 +101,21 @@ class CultivoLoginController extends Controller
 
             // Encuentra el usuario autenticado
             $user = auth()->user();
-
+            $cultivo = Cultivo::first();
             $currentDateTime = Carbon::now();
 
             // Actualiza su token y nombre del cultivo
             $user->update([
-                'api_token' => $token,                   // Almacena el token
-                'cultivo_nombre' => $request->cultivo,   // Almacena el nombre del cultivo
                 'cultivo_registrado_at' => $currentDateTime,  // Almacena la fecha de registro del cultivo
                 'token_adquirido_at' => $currentDateTime,     // Almacena la fecha de adquisición del token
             ]);
 
-            // Verificar si el cultivo ya existe
-            $cultivo = Cultivo::where('nombre', $request->cultivo)->first();
-
-            if ($cultivo) {
-                // Si el cultivo existe, actualiza el user_id asociado
-                $cultivo->update([
-                    'user_id' => $user->id,
-                    // Puedes actualizar otros campos del cultivo aquí si es necesario
-                ]);
-            } else {
-                // Crear un nuevo registro de cultivo si no existe
-                Cultivo::create([
-                    'nombre' => $request->cultivo,
-                    'user_id' => $user->id,
-                    'estado_id' => null, // Ajusta esto según tus necesidades
-                    'comando_id' => null, // Ajusta esto según tus necesidades
-                ]);
-            }
-
+            $cultivo->update([
+                'nombre' => $request->cultivo,
+                'api_token'  => $token,
+            ]);
             // Redirigir al dashboard con un mensaje de éxito
             return redirect()->route('dashboard')->with('success', 'Cultivo actualizado exitosamente!');
-        } else {
-            return back()->withErrors(['msg' => 'Error en la actualización del cultivo']);
         }
     }
 }

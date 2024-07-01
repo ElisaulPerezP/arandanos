@@ -52,5 +52,7 @@ Route::resource('estados', EstadoController::class);
 Route::post('/cambiar-estado', [EstadoController::class, 'cambiarEstado']);
 
 Route::get('system/start', [SystemController::class, 'start']);
+Route::get('system/stop', [SystemController::class, 'stop']);
+
 
 require __DIR__.'/auth.php';

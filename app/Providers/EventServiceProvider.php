@@ -6,10 +6,16 @@ use App\Events\SincronizarSistema;
 use App\Events\CheckEvent;
 use App\Events\RestartEvent;
 use App\Events\RiegoEvent;
+use App\Events\StopSystem;
+use App\Events\InicioDeAplicacion;
+
 use App\Listeners\SincronizarSistemaListener;
 use App\Listeners\CheckEventListener;
 use App\Listeners\RestartEventListener;
 use App\Listeners\RiegoEventListener;
+use App\Listeners\StopSystemListener;
+use App\Listeners\IniciarAplicacionListener;
+
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -23,11 +29,11 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
-        'App\Events\CultivoInactivo' => [
-            'App\Listeners\ManejarCultivoInactivo',
+        StopSystem::class => [
+            StopSystemListener::class,
         ],
-        'App\Events\InicioDeAplicacion' => [
-            'App\Listeners\EjecutarScriptsDeBase',
+        InicioDeAplicacion::class => [
+            IniciarAplicacionListener::class,
         ],
         SincronizarSistema::class => [
             SincronizarSistemaListener::class,

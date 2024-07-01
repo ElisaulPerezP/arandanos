@@ -2,31 +2,33 @@
 
 namespace App\Listeners;
 
-use App\Events\CultivoInactivo;
+use App\Events\StopSystem;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use App\Models\Estado;
 use Illuminate\Support\Facades\Log;
+use App\Models\Cultivo;
 
-class ManejarCultivoInactivo
+class StopSystemListener
 {
     public function __construct()
     {
         //
     }
 
-    public function handle(CultivoInactivo $event)
+    public function handle(StopSystem $event)
     {
-        $cultivo = $event->cultivo;
+        $cultivo = Cultivo::first();
         $estadoInactivo = Estado::where('nombre', 'Inactivo')->first();
 
         if ($estadoInactivo) {
-            $cultivo->estado_id = $estadoInactivo->id;
-            $cultivo->save();
-
             // Lógica para detener procesos y scripts
             $this->detenerProcesos();
-
+            log::info('hola');
+            $cultivo->update([
+                'estado_id' => $estadoInactivo->id,
+            ]);
+            
             Log::info("El cultivo {$cultivo->id} ha sido marcado como inactivo y los procesos han sido detenidos.");
         } else {
             Log::error('Estado "Inactivo" no encontrado en la base de datos.');

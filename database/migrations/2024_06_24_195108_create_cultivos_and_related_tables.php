@@ -14,9 +14,10 @@ class CreateCultivosAndRelatedTables extends Migration
         Schema::create('cultivos', function (Blueprint $table) {
             $table->id();
             $table->string('nombre');
-            $table->string('coordenadas');
-            $table->foreignId('estado_id')->constrained('estados');
-            $table->foreignId('comando_id')->constrained('comandos');
+            $table->string('coordenadas')->nullable();
+            $table->foreignId('estado_id')->nullable()->constrained('estados')->nullOnDelete();
+            $table->foreignId('comando_id')->nullable()->constrained('comandos')->nullOnDelete();
+            $table->string('api_token', 80)->unique()->nullable()->default(null);
             $table->timestamps();
         });
         
@@ -42,11 +43,6 @@ class CreateCultivosAndRelatedTables extends Migration
     {
         Schema::dropIfExists('estado_cultivo');
         Schema::dropIfExists('cultivo_comando');
-        Schema::table('cultivos', function (Blueprint $table) {
-            $table->dropForeign(['user_id']);
-            $table->dropForeign(['comando_id']);
-            $table->dropForeign(['estado_id']);
-        });
         Schema::dropIfExists('cultivos');
     }
 }

@@ -16,8 +16,8 @@ class SincronizarSistemaListener implements ShouldQueue
     public function handle(SincronizarSistema $event)
     {
         $baseUrl = env('API_URL');
-        $token = $event->token;
         $cultivo = $event->cultivo;
+        $token = $cultivo->api_token;
 
         // Enviar comandos
         $comandosResponse = Http::withToken($token)->post("$baseUrl/api/comandos/reportar", $event->comandos);
@@ -32,7 +32,7 @@ class SincronizarSistemaListener implements ShouldQueue
                 Log::error('Failed to report mensaje', ['response' => $mensajeResponse->body()]);
             }
         }
-
+//TODO ESTA MIERDA HAY QUE CAMBIARLA, COMO QUE 1 EN LA URL? 
         // Enviar programaciones (modificar según el ID del cultivo, aquí es 2 como ejemplo)
         $programacionesResponse = Http::withToken($token)->post("$baseUrl/api/cultivos/1/programaciones/sincronizar", $event->programaciones);
         if ($programacionesResponse->failed()) {

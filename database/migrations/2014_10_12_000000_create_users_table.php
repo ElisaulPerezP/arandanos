@@ -19,8 +19,6 @@ class CreateUsersTable extends Migration
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
-            $table->string('cultivo_nombre')->nullable();
-            $table->string('api_token', 80)->unique()->nullable()->default(null);
             $table->timestamp('cultivo_registrado_at')->nullable();
             $table->timestamp('token_adquirido_at')->nullable();
         });
