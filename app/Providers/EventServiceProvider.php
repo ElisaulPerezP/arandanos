@@ -3,6 +3,13 @@
 namespace App\Providers;
 
 use App\Events\SincronizarSistema;
+use App\Events\CheckEvent;
+use App\Events\RestartEvent;
+use App\Events\RiegoEvent;
+use App\Listeners\SincronizarSistemaListener;
+use App\Listeners\CheckEventListener;
+use App\Listeners\RestartEventListener;
+use App\Listeners\RiegoEventListener;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -22,9 +29,6 @@ class EventServiceProvider extends ServiceProvider
         'App\Events\InicioDeAplicacion' => [
             'App\Listeners\EjecutarScriptsDeBase',
         ],
-        Registered::class => [
-            SendEmailVerificationNotification::class,
-        ],
         SincronizarSistema::class => [
             SincronizarSistemaListener::class,
         ],
@@ -37,15 +41,17 @@ class EventServiceProvider extends ServiceProvider
         RiegoEvent::class => [
             RiegoEventListener::class,
         ],
+        Registered::class => [
+            SendEmailVerificationNotification::class,
+        ],
     ];
-
 
     /**
      * Register any events for your application.
      */
     public function boot(): void
     {
-        //
+        parent::boot();
     }
 
     /**

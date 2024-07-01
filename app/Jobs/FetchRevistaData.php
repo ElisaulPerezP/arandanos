@@ -38,6 +38,7 @@ class FetchRevistaData implements ShouldQueue
     public function handle()
     {
         $propietario = $this->cultivo->propietario;
+        $cultivo= $this->cultivo;
 
         if (!$propietario || !$propietario->api_token) {
             Log::error('No valid api_token found for the propietario.');
@@ -45,48 +46,51 @@ class FetchRevistaData implements ShouldQueue
         }
 
         $token = $propietario->api_token;
-        $baseUrl = env('API_URL', 'https://default-url.com');
+        $baseUrl = env('API_URL', '');
+
         $url = $baseUrl . '/api/revista';
+        Log::info('URL', ['Url' => $url]);
 
-        $response = Http::withToken($token)->get($url);
-
+        $response = Http::withToken($token)
+            ->withHeaders([
+                'Accept' => 'application/json',
+                'User-Agent' => 'PostmanRuntime/7.32.3',
+            ])
+            ->get($url);
+        Log::info('response', ['response' => $response]);
         if ($response->successful()) {
             $data = $response->json();
             Log::info('Data fetched successfully.', $data);
 
             if ($data['message'] === 'Conexion registrada con exito.') {
                 $commandId = $data['command'];
-                $comando = Comando::find($commandId);
 
-                if ($comando) {
-                    $data['descripcion'] = $comando->descripcion;
-                } else {
-                    Log::error('Command not found in database.', ['commandId' => $commandId]);
-                    return;
-                }
+                // Buscar el comando en la base de datos y obtener la descripción
+                $comando = Comando::find($commandId);
+                $descripcion = $comando ? $comando->descripcion : '';
 
                 switch ($commandId) {
-                    case 0:
+                    case 1:
                         // No hacer nada
                         break;
-                    case 1:
-                        event(new SincronizarSistema());
-                        break;
                     case 2:
-                        event(new CultivoInactivo());
+                        event(new SincronizarSistema($token, $cultivo));
                         break;
                     case 3:
-                        event(new InicioDeAplicacion());
+                        event(new CultivoInactivo());
                         break;
                     case 4:
-                        event(new CheckEvent());
+                        event(new InicioDeAplicacion());
                         break;
                     case 5:
+                        event(new CheckEvent());
+                        break;
+                    case 6:
                         event(new RestartEvent());
                         break;
                     default:
-                        if ($commandId >= 6) {
-                            event(new RiegoEvent($data['descripcion']));
+                        if ($commandId >= 7) {
+                            event(new RiegoEvent($descripcion));
                         }
                         break;
                 }

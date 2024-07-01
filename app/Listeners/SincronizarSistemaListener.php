@@ -8,27 +8,47 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class SincronizarSistemaListener
+class SincronizarSistemaListener implements ShouldQueue
 {
     /**
      * Handle the event.
      */
     public function handle(SincronizarSistema $event)
     {
-        $data = $event->data;
+        $baseUrl = env('API_URL');
+        $token = $event->token;
+        $cultivo = $event->cultivo;
 
-        // Implement the logic for synchronization here
-        // For example, make an HTTP request to synchronize data
-        try {
-            $response = Http::withToken($data['token'])->post($data['url'], $data['payload']);
+        // Enviar comandos
+        $comandosResponse = Http::withToken($token)->post("$baseUrl/api/comandos/reportar", $event->comandos);
+        if ($comandosResponse->failed()) {
+            Log::error('Failed to report comandos', ['response' => $comandosResponse->body()]);
+        }
 
-            if ($response->successful()) {
-                Log::info('Synchronization successful.', $response->json());
-            } else {
-                Log::error('Synchronization failed.', ['status' => $response->status()]);
+        // Enviar mensajes
+        foreach ($event->mensajes as $mensaje) {
+            $mensajeResponse = Http::withToken($token)->post("$baseUrl/api/mensaje/reportar", $mensaje);
+            if ($mensajeResponse->failed()) {
+                Log::error('Failed to report mensaje', ['response' => $mensajeResponse->body()]);
             }
-        } catch (\Exception $e) {
-            Log::error('Synchronization error.', ['message' => $e->getMessage()]);
+        }
+
+        // Enviar programaciones (modificar según el ID del cultivo, aquí es 2 como ejemplo)
+        $programacionesResponse = Http::withToken($token)->post("$baseUrl/api/cultivos/1/programaciones/sincronizar", $event->programaciones);
+        if ($programacionesResponse->failed()) {
+            Log::error('Failed to report programaciones', ['response' => $programacionesResponse->body()]);
+        }
+
+        // Enviar estados
+        $estadosResponse = Http::withToken($token)->post("$baseUrl/api/estados/reportar", $event->estados);
+        if ($estadosResponse->failed()) {
+            Log::error('Failed to report estados', ['response' => $estadosResponse->body()]);
+        }
+
+        // Enviar estado actual
+        $estadoActualResponse = Http::withToken($token)->post("$baseUrl/api/estado/reportar", $event->cultivo->estadoActual);
+        if ($estadoActualResponse->failed()) {
+            Log::error('Failed to report estado actual', ['response' => $estadoActualResponse->body()]);
         }
     }
 }
