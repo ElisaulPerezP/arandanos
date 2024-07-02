@@ -27,7 +27,12 @@ class SincronizarSistema
     {
         $this->cultivo = Cultivo::first();;
         // Preparar comandos
-        $this->comandos = Comando::all()->pluck('descripcion', 'nombre')->toArray();
+        $this->comandos = Comando::all()->map(function ($comando) {
+            return [
+                'nombre' => $comando->nombre,
+                'descripcion' => $comando->descripcion,
+            ];
+        })->toArray();
 
         // Preparar mensajes
         $this->mensajes = Mensaje::all()->pluck('contenido')->mapWithKeys(function ($item) {
