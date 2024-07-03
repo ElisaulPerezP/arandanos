@@ -39,8 +39,13 @@ class SincronizarSistema
             return ['mensaje' => $item];
         })->toArray();
 
-        // Preparar programaciones
-        $this->programaciones = Programacion::all()->pluck('hora_unix', 'comando_id')->toArray();
+        $this->programaciones = Programacion::all()->map(function ($programacion) {
+            return [
+                'comando_id' => $programacion->comando_id,
+                'hora_unix' => $programacion->hora_unix,
+                'estado' => $programacion->estado,
+            ];
+        })->toArray();
 
         // Preparar estados
         $this->estados = Estado::all()->pluck('descripcion', 'nombre')->toArray();
