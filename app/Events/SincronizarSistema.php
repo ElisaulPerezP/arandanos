@@ -50,9 +50,9 @@ class SincronizarSistema
         // Preparar estados
         $this->estados = Estado::all()->pluck('descripcion', 'nombre')->toArray();
 
-        // Preparar estado actual (modificar según tu lógica para obtener el estado actual)
+        // Preparar estado actual para regresar a la base
         $this->estadoActual = [
-            'estado_id' => $this->cultivo->estado_id,
+            'estado_id' => 1,
         ];
     }
 }
