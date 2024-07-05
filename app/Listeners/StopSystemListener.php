@@ -24,7 +24,7 @@ class StopSystemListener
         if ($estadoInactivo) {
             // Lógica para detener procesos y scripts
             $this->detenerProcesos();
-            log::info('hola');
+            Log::info('hola');
             $cultivo->update([
                 'estado_id' => $estadoInactivo->id,
             ]);
@@ -71,7 +71,17 @@ class StopSystemListener
                 }
             }
         }
-//TODO: ESTA LOGICA LA DEBE MANEJAR SOLO UN LISTENER. SOLO UN LISTENER DEBE INTERVENIR ESTE ARCHIVO
+
+        // Ejecutar el script stopTotal.py con los argumentos pins.txt y pinsNegativ.txt
+        $stopScriptCommand = escapeshellcmd("sudo python3 pythonScripts/stopTotal.py pythonScripts/pins.txt pythonScripts/pinsNegativ.txt");
+        exec($stopScriptCommand, $stopOutput, $stopReturnVar);
+
+        if ($stopReturnVar !== 0) {
+            Log::error("Error al ejecutar stopTotal.py. Output: " . implode("\n", $stopOutput));
+        } else {
+            Log::info("Script stopTotal.py ejecutado exitosamente.");
+        }
+
         // Limpiar la clave 'scriptsEjecutandose' en el archivo de reporte
         $report['scriptsEjecutandose'] = '';
 
