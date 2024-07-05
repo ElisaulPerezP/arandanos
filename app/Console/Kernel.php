@@ -6,6 +6,7 @@ use App\Jobs\FetchRevistaData;
 use App\Models\Cultivo;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use App\Jobs\ProcessScheduledCommands;
 
 class Kernel extends ConsoleKernel
 {
@@ -20,6 +21,8 @@ class Kernel extends ConsoleKernel
                 FetchRevistaData::dispatch($cultivo);
             }
         })->everyMinute();
+
+        $schedule->job(new ProcessScheduledCommands)->everyMinute();
     }
 
     /**
