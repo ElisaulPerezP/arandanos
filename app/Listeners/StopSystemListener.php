@@ -18,13 +18,14 @@ class StopSystemListener
 
     public function handle(StopSystem $event)
     {
+        $scriptsEjecutandose = $event->scriptsEjecutandose;
+        
         $cultivo = Cultivo::first();
         $estadoInactivo = Estado::where('nombre', 'Inactivo')->first();
 
         if ($estadoInactivo) {
             // Lógica para detener procesos y scripts
-            $this->detenerProcesos();
-            Log::info('hola');
+            $this->detenerProcesos($scriptsEjecutandose);
             $cultivo->update([
                 'estado_id' => $estadoInactivo->id,
             ]);
@@ -35,35 +36,24 @@ class StopSystemListener
         }
     }
 
-    protected function detenerProcesos()
+    protected function detenerProcesos(array $scripts)
     {
         $reportFilePath = base_path('pythonScripts/scriptsReport.php');
-
+        
         // Verificar si el archivo de reporte existe
         if (!file_exists($reportFilePath)) {
             Log::error("El archivo de reporte no existe: {$reportFilePath}");
             return;
         }
 
-        // Incluir el archivo de reporte
         $report = include($reportFilePath);
-
-        // Verificar si la clave 'scriptsEjecutandose' está presente en el reporte
-        if (!isset($report['scriptsEjecutandose'])) {
-            Log::error("La clave 'scriptsEjecutandose' no está presente en el archivo de reporte.");
-            return;
-        }
-
-        // Obtener la lista de scripts ejecutándose
-        $scripts = explode(', ', $report['scriptsEjecutandose']);
-
-        // Detener cada script listado en 'scriptsEjecutandose'
+        
         foreach ($scripts as $script) {
             if (!empty($script)) {
-                // Ejecutar el comando pkill para detener el script
-                $command = escapeshellcmd("pkill -f $script");
+                // Obtener el nombre del script sin parámetros
+                $scriptName = explode(' ', $script)[0];
+                $command = escapeshellcmd("pkill -f " . $scriptName);
                 exec($command, $output, $returnVar);
-
                 if ($returnVar !== 0) {
                     Log::error("Error al detener el script: {$script}. Output: " . implode("\n", $output));
                 } else {
@@ -72,21 +62,11 @@ class StopSystemListener
             }
         }
 
-        // Ejecutar el script stopTotal.py con los argumentos pins.txt y pinsNegativ.txt
-        $stopScriptCommand = escapeshellcmd("sudo python3 pythonScripts/stopTotal.py pythonScripts/pins.txt pythonScripts/pinsNegativ.txt");
-        exec($stopScriptCommand, $stopOutput, $stopReturnVar);
-
-        if ($stopReturnVar !== 0) {
-            Log::error("Error al ejecutar stopTotal.py. Output: " . implode("\n", $stopOutput));
-        } else {
-            Log::info("Script stopTotal.py ejecutado exitosamente.");
-        }
-
-        // Limpiar la clave 'scriptsEjecutandose' en el archivo de reporte
+        // Vaciar el campo scriptsEjecutandose
         $report['scriptsEjecutandose'] = '';
 
-        // Guardar el reporte actualizado
         $content = "<?php\nreturn " . var_export($report, true) . ";\n";
         file_put_contents($reportFilePath, $content);
     }
 }
+

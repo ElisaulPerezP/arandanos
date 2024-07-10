@@ -19,7 +19,9 @@ class StopSystem
      */
     public function __construct()
     {
-        //
+        // Cargar los scripts scriptsEjecutandose archivo de configuración
+        $scriptsReport = include(base_path('pythonScripts/scriptsReport.php'));
+        $this->scriptsEjecutandose = explode(', ', $scriptsReport['scriptsEjecutandose']); 
     }
 
     /**
@@ -34,3 +36,4 @@ class StopSystem
         ];
     }
 }
+
