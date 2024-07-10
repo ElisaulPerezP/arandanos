@@ -167,3 +167,36 @@ en el archivo que aparece integrar esto como una nueva linea:
 
 * * * * * cd /var/www/arandanos && php artisan schedule:run >> /dev/null 2>&1
 
+----------------------------------------------------------------------------
+
+crear el servicio para que se ejecute el worker recien inicie el sistema
+
+sudo nano /etc/systemd/system/laravel-worker.service
+
+en el archivo escribir:
+[Unit]
+Description=Laravel Worker
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+Restart=always
+ExecStart=/usr/bin/php /var/www/arandanos/artisan queue:work --tries=3
+
+[Install]
+WantedBy=multi-user.target
+
+
+luego recargar el demonio de maxwel:
+sudo systemctl daemon-reload
+
+iniciar el servicio:
+sudo systemctl start laravel-worker
+
+por ultimo, habilitar el servicio:
+sudo systemctl enable laravel-worker
+
+opcional, revisar el servicio:
+sudo systemctl status laravel-worker
+
