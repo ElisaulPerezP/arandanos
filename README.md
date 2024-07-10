@@ -200,3 +200,23 @@ sudo systemctl enable laravel-worker
 opcional, revisar el servicio:
 sudo systemctl status laravel-worker
 
+------------------------------------------------------------------------
+cambiar la propiedad de la carpeta de sistema sys/class/gpio
+
+sudo chown -R www-data:www-data /sys/class/gpio
+sudo chmod -R 777 /sys/class/gpio
+
+entregar los permisos de gpio a www-data:
+abrir el archivo con el siguiente comando:
+
+sudo nano /etc/udev/rules.d/99-gpio.rules
+
+reemplazar su contenido con estas lineas:
+
+SUBSYSTEM=="gpio", KERNEL=="gpio*", ACTION=="add", RUN+="/bin/chown www-data:gpio /sys/class/gpio/export /sys/class/gpio/unexport"
+SUBSYSTEM=="gpio", KERNEL=="gpio*", ACTION=="add", RUN+="/bin/chmod 770 /sys/class/gpio/export /sys/class/gpio/unexport"
+SUBSYSTEM=="gpio", KERNEL=="gpio*", ACTION=="add", RUN+="/bin/sh -c 'chown www-data:gpio /sys/class/gpio/gpio*/direction /sys/class/gpio/gpio*/value'"
+SUBSYSTEM=="gpio", KERNEL=="gpio*", ACTION=="add", RUN+="/bin/sh -c 'chmod 770 /sys/class/gpio/gpio*/direction /sys/class/gpio/gpio*/value'"
+
+sudo udevadm control --reload-rules
+sudo udevadm trigger
