@@ -39,7 +39,7 @@ class SincronizarSistemaListener implements ShouldQueue
         Log::info('Programaciones data:', ['programaciones' => $event->programaciones]);
 
         // Realizar la solicitud HTTP
-        $programacionesResponse = Http::withToken($token)->post("$baseUrl/api/cultivos/{$cultivo->id}/programaciones/sincronizar", $event->programaciones);
+        $programacionesResponse = Http::withToken($token)->post("$baseUrl/api/cultivos/programaciones/sincronizar", $event->programaciones);
     
         // Verificar si la solicitud falló
         if ($programacionesResponse->failed()) {

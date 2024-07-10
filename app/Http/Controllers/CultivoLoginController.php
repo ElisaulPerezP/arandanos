@@ -67,9 +67,6 @@ class CultivoLoginController extends Controller
                 ]);
                 return redirect()->route('dashboard')->with('success', 'Autenticación exitosa!');
             }
-
-            // Redirigir al dashboard con un mensaje de éxito
-            return redirect()->route('dashboard')->with('success', 'Autenticación exitosa!');
         } 
         return redirect()->route('dashboard')->with('error', 'Error de autenticacion.');
     }
