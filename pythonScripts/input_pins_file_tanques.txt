@@ -1,0 +1,2 @@
+sensorNivel1:17
+sensorNivel2:18
