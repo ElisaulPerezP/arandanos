@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             EstadoSeeder::class,
             ComandoSeeder::class,
+            ComandoHardwareSeeder::class,
         ]);
     }
 }
