@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Events\CultivoInactivo;
 use App\Models\Cultivo;
+use App\Models\S0;
 use App\Models\S1;
 use App\Models\S2;
 use App\Models\S3;
@@ -16,22 +17,26 @@ use App\Http\Controllers\Controller;
 
 class ApiController extends Controller
 {
-    public function reportStop()
+    public function reportStop(Request $request)
     {
-
             event(new CultivoInactivo());
+            $estadoActual = EstadoSistema::create([])
+            $estadoActual = EstadoSistema::first();
+            $s0=S0::findOrFail($estadoActual->s0_id);
+            $s0->update([$request -> all()]);
+
             return response()->json(['message' => 'Parada reportada exitosamente, evento emitido'], 200);
 
     }
 
     public function getTanquesCommand()
     {
-        // Obtener el comando actual para el sistema s1, esta tabla solo tiene una entrada
+        // Obtener el comando actual para el sistema s1
         $estado = EstadoSistema::first();
         $comando = ComandoHardware::find($estado->s1_id);
 
         if ($comando) {
-            return response()->json(['actions' => json_decode($comando->comando)], 200);
+            return response()->json(['command' => $comando->comando], 200);
         }
 
         return response()->json(['message' => 'Comando no encontrado'], 404);
@@ -39,13 +44,19 @@ class ApiController extends Controller
 
     public function reportTanquesState(Request $request)
     {
+        //TODO, NO SE TRATA DE ACTUALIZAR, SE TRATA DE CREAR UNO NUEVO, Y LIGARLO A LA TABLA DE ESTADO
+
         // Actualizar el estado del sistema s1
         $estado = S1::find(1);
-        $estado->update($request->all());
+        $estado->update([
+            'estado' => $request->input('estado'),
+            'sensor1' => $request->input('sensor1'),
+            'sensor2' => $request->input('sensor2'),
+            'valvula14' => $request->input('valvula14'),
+        ]);
 
         return response()->json(['message' => 'Estado reportado exitosamente'], 200);
     }
-
     public function reportTanquesShutdown(Request $request)
     {
         // Actualizar el estado del sistema s1 a inactivo
@@ -68,6 +79,8 @@ class ApiController extends Controller
 
         return response()->json(['message' => 'Comando no encontrado'], 404);
     }
+
+//TODO, NO SE TRATA DE ACTUALIZAR, SE TRATA DE CREAR UNO NUEVO, Y LIGARLO A LA TABLA DE ESTADO
 
     public function reportState(Request $request)
     {
@@ -101,6 +114,8 @@ class ApiController extends Controller
         return response()->json(['message' => 'Comando no encontrado'], 404);
     }
 
+//TODO, NO SE TRATA DE ACTUALIZAR, SE TRATA DE CREAR UNO NUEVO, Y LIGARLO A LA TABLA DE ESTADO
+
     public function reportImpulsoresState(Request $request)
     {
         // Actualizar el estado del sistema s3
@@ -133,6 +148,8 @@ class ApiController extends Controller
         return response()->json(['message' => 'Comando no encontrado'], 404);
     }
 
+//TODO, NO SE TRATA DE ACTUALIZAR, SE TRATA DE CREAR UNO NUEVO, Y LIGARLO A LA TABLA DE ESTADO
+
     public function reportInyectoresState(Request $request)
     {
         // Actualizar el estado del sistema s4
@@ -141,6 +158,7 @@ class ApiController extends Controller
 
         return response()->json(['message' => 'Estado reportado exitosamente'], 200);
     }
+//TODO, NO SE TRATA DE ACTUALIZAR, SE TRATA DE CREAR UNO NUEVO, Y LIGARLO A LA TABLA DE ESTADO
 
     public function reportInyectoresShutdown(Request $request)
     {
@@ -151,6 +169,7 @@ class ApiController extends Controller
 
         return response()->json(['message' => 'Apagado con exito'], 200);
     }
+//TODO, NO SE TRATA DE ACTUALIZAR, SE TRATA DE CREAR UNO NUEVO, Y LIGARLO A LA TABLA DE ESTADO
 
     public function reportFlujoConteo(Request $request)
     {
@@ -160,6 +179,7 @@ class ApiController extends Controller
 
         return response()->json(['message' => 'Conteo reportado exitosamente'], 200);
     }
+//TODO, NO SE TRATA DE ACTUALIZAR, SE TRATA DE CREAR UNO NUEVO, Y LIGARLO A LA TABLA DE ESTADO
 
     public function reportFlujoApagado(Request $request)
     {

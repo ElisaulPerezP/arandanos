@@ -1,2 +1,0 @@
-edgeExample5.py sensor_pin led_pin  (este ejemplo de funcion se ejecuta con dos argumentos, el pin del sensor, y el pin de led, en multiplos de 5 apaga el led)
-edgeExample6.py sensor_pin led_pin cuentas (cuando el programa llega al numero de cuentas, termina.)

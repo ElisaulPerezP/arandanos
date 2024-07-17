@@ -1,2 +1,2 @@
-bomba1:14
-bomba2:13
+bomba1:2
+bomba2:3

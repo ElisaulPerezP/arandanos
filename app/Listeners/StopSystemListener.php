@@ -24,7 +24,6 @@ class StopSystemListener
         $estadoInactivo = Estado::where('nombre', 'Inactivo')->first();
 
         if ($estadoInactivo) {
-            // Lógica para detener procesos y scripts
             $this->detenerProcesos($scriptsEjecutandose);
             $cultivo->update([
                 'estado_id' => $estadoInactivo->id,
@@ -40,7 +39,6 @@ class StopSystemListener
     {
         $reportFilePath = base_path('pythonScripts/scriptsReport.php');
         
-        // Verificar si el archivo de reporte existe
         if (!file_exists($reportFilePath)) {
             Log::error("El archivo de reporte no existe: {$reportFilePath}");
             return;
