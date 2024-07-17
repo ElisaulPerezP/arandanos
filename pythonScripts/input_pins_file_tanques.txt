@@ -1,2 +1,2 @@
-sensorNivel1:17
-sensorNivel2:18
+sensorNivel1:22
+sensorNivel2:23

@@ -1,8 +1,5 @@
-valvula1:2
-valvula2:3
-valvula3:4
-valvula4:5
-valvula5:6
-valvula6:27
-valvula7:9
-valvula8:10
+valvula8:11
+valvula4:14
+valvula3:13
+valvula2:12
+

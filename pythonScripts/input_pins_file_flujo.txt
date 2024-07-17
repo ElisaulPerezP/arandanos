@@ -1,2 +1,2 @@
-sensorFlujo1:17
-sensorFlujo2:18
+sensorFlujo1:20
+sensorFlujo2:21

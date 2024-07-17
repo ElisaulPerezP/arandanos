@@ -1,1 +1,1 @@
-botonParada:18
+botonParada:19

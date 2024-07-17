@@ -54,6 +54,7 @@ def report_status(url, status_message):
         print(f"Excepción al reportar el estado: {e}")
 
 def get_selector_command(url):
+    """Obtener el comando de selección desde la API."""
     try:
         response = requests.get(url)
         if response.status_code == 200:
@@ -65,8 +66,8 @@ def get_selector_command(url):
         print(f"Excepción al obtener el comando: {e}")
         return None
 
-# Funciones auxiliares
 def load_pins_from_file(filename):
+    """Cargar los pines desde un archivo de configuración."""
     pins = {}
     with open(filename, 'r') as f:
         for line in f:
@@ -105,18 +106,18 @@ def main(input_file, output_file, output_neg_file, selector_url, estado_url, apa
         while not stop_threads:
             command = get_selector_command(selector_url)
             if command:
-                for action in command['actions']:
-                    pin_name = action.split(':')[1]
-                    if pin_name in output_pins:
-                        if action.startswith('on'):
-                            set_pin_value(output_pins[pin_name], "1")
-                        elif action.startswith('off'):
-                            set_pin_value(output_pins[pin_name], "0")
-                    elif pin_name in output_neg_pins:
-                        if action.startswith('on'):
-                            set_pin_value(output_neg_pins[pin_name], "0")
-                        elif action.startswith('off'):
-                            set_pin_value(output_neg_pins[pin_name], "1")
+                if command == 'llenar':
+                    # Encender todos los pines de salida
+                    for pin in output_pins.values():
+                        set_pin_value(pin, "1")
+                    for pin in output_neg_pins.values():
+                        set_pin_value(pin, "0")
+                elif command == 'esperar':
+                    # Apagar todos los pines de salida
+                    for pin in output_pins.values():
+                        set_pin_value(pin, "0")
+                    for pin in output_neg_pins.values():
+                        set_pin_value(pin, "1")
             time.sleep(0.33)
 
     # Función para reportar estado a la API

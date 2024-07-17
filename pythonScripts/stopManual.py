@@ -43,8 +43,8 @@ def read_pin_value(pin):
         return f.read().strip()
 
 # Funciones para interactuar con la API
-def report_stop(url):
-    payload = {'status': 'Parada activada'}
+def report_stop(url, value):
+    payload = {'estado': 'Parada activada','sensor3': value }
     try:
         response = requests.post(url, json=payload)
         if response.status_code == 200:
@@ -87,7 +87,7 @@ def main(input_file, stop_url):
                 os.lseek(value_fd, 0, os.SEEK_SET)  # Resetear el puntero del archivo al inicio
                 value = os.read(value_fd, 1024).strip()  # Leer el valor
                 if value == "1":
-                    report_stop(stop_url)
+                    report_stop(stop_url, value)
                     stop_threads = True
         
         os.close(value_fd)
