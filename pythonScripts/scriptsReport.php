@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 return array(
-    'scriptsDisponibles' => 'riegoStandard.py, stopManual.py, flujo.py, impulsores.py, inyectores.py, tanques.py, selector.py',
+    'scriptsDisponibles' => 'riegoStandard.py, stopManual.py, flujo.py, impulsores.py, inyectores.py, tanques.py, selector.py, stopTotal.py',
     'scriptsEjecutandose' => '',
     'scritpsDeBase' => implode(', ', [
         'stopManual.py ' . base_path('pythonScripts/input_pins_file_stop.txt') . ' ' . route('api.stop'),
@@ -13,4 +13,5 @@ return array(
         'tanques.py ' . base_path('pythonScripts/input_pins_file_tanques.txt') . ' ' . base_path('pythonScripts/output_pins_file_tanques.txt') . ' ' . base_path('pythonScripts/output_neg_pins_file_tanques.txt') . ' ' . route('api.tanques') . ' ' . route('api.tanques.estado') . ' ' . route('api.tanques.apagado'),
         'selector.py ' . base_path('pythonScripts/output_pins_file_selector.txt') . ' ' . base_path('pythonScripts/output_neg_pins_file_selector.txt') . ' ' . route('api.selector') . ' ' . route('api.selector.estado') . ' ' . route('api.selector.apagado')
     ]),
+    'scriptStopTotal' => 'stopTotal.py ' . base_path('pythonScripts/pins.txt') . ' ' . base_path('pythonScripts/pinsNegativ.txt')
 );

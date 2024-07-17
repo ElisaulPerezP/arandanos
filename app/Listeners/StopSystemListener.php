@@ -19,7 +19,8 @@ class StopSystemListener
     public function handle(StopSystem $event)
     {
         $scriptsEjecutandose = $event->scriptsEjecutandose;
-        
+        $scriptStopTotal = $event->scriptStopTotal;
+
         $cultivo = Cultivo::first();
         $estadoInactivo = Estado::where('nombre', 'Inactivo')->first();
 
@@ -28,7 +29,8 @@ class StopSystemListener
             $cultivo->update([
                 'estado_id' => $estadoInactivo->id,
             ]);
-            
+            $this->ejecutarStopTotal($scriptStopTotal);
+
             Log::info("El cultivo {$cultivo->id} ha sido marcado como inactivo y los procesos han sido detenidos.");
         } else {
             Log::error('Estado "Inactivo" no encontrado en la base de datos.');
@@ -38,14 +40,14 @@ class StopSystemListener
     protected function detenerProcesos(array $scripts)
     {
         $reportFilePath = base_path('pythonScripts/scriptsReport.php');
-        
+
         if (!file_exists($reportFilePath)) {
             Log::error("El archivo de reporte no existe: {$reportFilePath}");
             return;
         }
 
         $report = include($reportFilePath);
-        
+
         foreach ($scripts as $script) {
             if (!empty($script)) {
                 // Obtener el nombre del script sin parámetros
@@ -65,6 +67,19 @@ class StopSystemListener
 
         $content = "<?php\nreturn " . var_export($report, true) . ";\n";
         file_put_contents($reportFilePath, $content);
+    }
+
+    protected function ejecutarStopTotal($scriptStopTotal)
+    {
+        if (!empty($scriptStopTotal)) {
+            $command = escapeshellcmd("python3 " . base_path("pythonScripts/{$scriptStopTotal}"));
+            exec($command . " > /dev/null &", $output, $returnVar);
+            if ($returnVar !== 0) {
+                Log::error("Error al ejecutar el script stopTotal: {$scriptStopTotal}. Output: " . implode("\n", $output));
+            } else {
+                Log::info("Script stopTotal iniciado exitosamente: {$scriptStopTotal}");
+            }
+        }
     }
 }
 

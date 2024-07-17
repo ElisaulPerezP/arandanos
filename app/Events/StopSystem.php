@@ -4,9 +4,7 @@ namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
@@ -14,14 +12,18 @@ class StopSystem
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    public $scriptsEjecutandose;
+    public $scriptStopTotal;
+
     /**
      * Create a new event instance.
      */
     public function __construct()
     {
-        // Cargar los scripts scriptsEjecutandose archivo de configuración
+        // Cargar los scripts ejecutandose desde el archivo de configuración
         $scriptsReport = include(base_path('pythonScripts/scriptsReport.php'));
-        $this->scriptsEjecutandose = explode(', ', $scriptsReport['scriptsEjecutandose']); 
+        $this->scriptsEjecutandose = explode(', ', $scriptsReport['scriptsEjecutandose']);
+        $this->scriptStopTotal = $scriptsReport['scriptStopTotal'];
     }
 
     /**
@@ -36,4 +38,3 @@ class StopSystem
         ];
     }
 }
-
