@@ -20,10 +20,9 @@ class ApiController extends Controller
     public function reportStop(Request $request)
     {
             event(new CultivoInactivo());
-            $estadoActual = EstadoSistema::create([])
-            $estadoActual = EstadoSistema::first();
-            $s0=S0::findOrFail($estadoActual->s0_id);
-            $s0->update([$request -> all()]);
+            $s0=S0::create([$request->all()]);
+            $estadoActual = EstadoSistema::firstOrCreate([], ['s0_id' => $s0->id]);
+            $estadoActual->update(["s0_id" => $s0->id]);
 
             return response()->json(['message' => 'Parada reportada exitosamente, evento emitido'], 200);
 
