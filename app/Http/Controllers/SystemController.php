@@ -15,7 +15,7 @@ class SystemController extends Controller
     {
         // Disparar el evento InicioDeAplicacion
         event(new InicioDeAplicacion());
-
+        event(new SincronizarSistema());
         // Redirigir al dashboard con un mensaje de éxito
         return redirect()->route('dashboard')->with('success', 'El sistema ha iniciado y los scripts de base están ejecutándose.');
     }
@@ -23,7 +23,7 @@ class SystemController extends Controller
     {
         // Disparar el evento StopSystem
         event(new StopSystem());
-
+        event(new SincronizarSistema());
         // Redirigir al dashboard con un mensaje de éxito
         return redirect()->route('dashboard')->with('success', 'El sistema se ha tetenido con exito y los scripts de base han finalizado sin problemas.');
     }
