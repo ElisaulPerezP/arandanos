@@ -8,6 +8,8 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 use App\Models\Cultivo;
 use App\Models\Estado;
+use App\Events\SincronizarSistema;
+
 
 
 class IniciarAplicacionListener
@@ -32,6 +34,8 @@ class IniciarAplicacionListener
         $cultivo->update([ 
             'estado_id' => $estadoActivo->id, 
         ]);
+        event(new SincronizarSistema());
+        
     }
 
     protected function iniciarScripts(array $scripts)

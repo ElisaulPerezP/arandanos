@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Events\CultivoInactivo;
-use App\Events\SincronizarSistema;
 use App\Models\Cultivo;
 use App\Models\S0;
 use App\Models\S1;
@@ -24,7 +23,6 @@ class ApiController extends Controller
             $s0=S0::create([$request->all()]);
             $estadoActual = EstadoSistema::firstOrCreate([], ['s0_id' => $s0->id]);
             $estadoActual->update(["s0_id" => $s0->id]);
-            event(new SincronizarSistema());
             return response()->json(['message' => 'Parada reportada exitosamente, evento emitido'], 200);
 
     }

@@ -8,6 +8,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use App\Models\Estado;
 use Illuminate\Support\Facades\Log;
 use App\Models\Cultivo;
+use App\Events\SincronizarSistema;
 
 class StopSystemListener
 {
@@ -30,6 +31,8 @@ class StopSystemListener
                 'estado_id' => $estadoInactivo->id,
             ]);
             $this->ejecutarStopTotal($scriptStopTotal);
+            
+            event(new SincronizarSistema());
 
             Log::info("El cultivo {$cultivo->id} ha sido marcado como inactivo y los procesos han sido detenidos.");
         } else {
