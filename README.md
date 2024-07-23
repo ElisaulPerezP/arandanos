@@ -483,6 +483,43 @@ stopTotal.py /home/elisaul/ws/arandanos/pythonScripts/pins.txt /home/elisaul/ws/
 ```
 Este script gestiona los pines GPIO reportados en los archivos pins.txt (pines con lógica positiva) y pinsNegativ.txt (pines con lógica negativa). El script exporta, configura y enciende los pines listados en los archivos. Los pines con lógica positiva se encienden configurándolos a 1, mientras que los pines con lógica negativa se encienden configurándolos a 0.
 
+**Manejo del sistema**
+El modelo EstadoSistema alberga el estado actual del sistema. solo debe haber UNA entrada en esa tabla, correspondiente al estado actual del sistema. 
+
+sus campos fillables son:
+        's0_id',
+        's1_id',
+        's2_id',
+        's3_id',
+        's4_id',
+        's5_id',
+los cuales son id que apuntan al la tabla respectiva de cada sistema, anotando el estado actual. asi pues, si el estado de s0 es la entrada de la tabla s0 apuntada por la tabla estadoSistema. si se hace una anotacion nueva en s0 debe actualizarse estadoSistema para reflejar el cambio. asi, cualquier script subsistema que requiera del estado de s0 tendra una vision actualizada de s0 al consultar la tabla estadoSistema. 
+
+las responsabilidades de accion sobre el modelo estadoSistema se asignan asi:
+
+#### s0 Sistema de stop
+ Sera generada por la funcion reportStop en el controlador ApiController, en cuyo caso asignara el estado como 
+ payload = {'estado': 'Parada activada','sensor3': value }
+
+de encontrarse el estado actual 'Parada activada' se guardará 'Parada desactivada', y viseversa.  en ambos casos se acompaña la creacion del s0 con la actualizacion en la tabla de estado y la emicion del evento de inicio o detencion, 
+
+#### s1 sistema de tanques
+Sus entradas seran generadas por dos funcions en el controlador ApiController, reportTanquesState y reportTanquesShutdown, estas funciones guardan en base de datos el estado completo de los pines del sistema, o el estado a false, o inactivo. 
+Por otra parte, los comandos asociados a s1 en la base de datos, se iran modificando por parte de un job, hardware, del que se hablara mas adelante. 
+
+#### s2 sistema de electrovalvulas
+Sus entradas serán generadas por dos funciones en el controlador ApiController: reportState y reportShutdown. Estas funciones guardan en la base de datos el estado completo de los pines del sistema, o el estado a false (inactivo). Además, los comandos asociados a s2 en la base de datos se pueden obtener a través de la función getSelectorCommand.
+
+#### s3 Sistema de bombas
+Sus entradas serán generadas por dos funciones en el controlador ApiController: reportImpulsoresState y reportImpulsoresShutdown. Estas funciones guardan en la base de datos el estado completo de los pines del sistema, o el estado a false (inactivo). Los comandos asociados a s3 en la base de datos se pueden obtener a través de la función getImpulsoresCommand.
+
+#### s4 Sistema de inyeccion de fertilizante
+Sus entradas serán generadas por dos funciones en el controlador ApiController: reportInyectoresState y reportInyectoresShutdown. Estas funciones guardan en la base de datos el estado completo de los pines del sistema, o el estado a false (inactivo). Los comandos asociados a s4 en la base de datos se pueden obtener a través de la función
+
+#### s5 Sistema de sensado de flujo
+Sus entradas serán generadas por dos funciones en el controlador ApiController: reportFlujoConteo y reportFlujoApagado. Estas funciones guardan en la base de datos el conteo de flujo del sistema, o el estado a false (inactivo).
+
+
 
 
 ### Comentarios en el Código
