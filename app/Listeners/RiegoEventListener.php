@@ -224,6 +224,7 @@ protected function inyectarFertilizante($descripcion)
     }
     protected function apagarElectrovalvulas($descripcion)
     {
+        $programacion = Programacion::find($descripcion);
         // Parsear la descripcion para obtener el camellon
         parse_str(str_replace(',', '&', $descripcion), $params);
         $camellon = $params['camellon'];
