@@ -226,7 +226,7 @@ protected function inyectarFertilizante($descripcion)
     {
         $programacion = Programacion::find($descripcion);
         // Parsear la descripcion para obtener el camellon
-        parse_str(str_replace(',', '&', $descripcion), $params);
+        parse_str(str_replace(',', '&', $programacion->comando->descripcion), $params);
         $camellon = $params['camellon'];
     
         // Obtener la configuración actual de s2 y apagar la electrovalvula correspondiente
