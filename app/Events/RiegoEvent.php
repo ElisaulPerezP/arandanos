@@ -9,13 +9,13 @@ class RiegoEvent
 {
     use Dispatchable, SerializesModels;
 
-    public $descripcion;
+    public $programacion;
 
     /**
      * Create a new event instance.
      */
-    public function __construct($descripcion)
+    public function __construct($programacion)
     {
-        $this->descripcion = $descripcion;
+        $this->programacion = $programacion;
     }
 }

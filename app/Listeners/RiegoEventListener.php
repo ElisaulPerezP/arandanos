@@ -25,7 +25,7 @@ class RiegoEventListener implements ShouldQueue
      */
     public function handle(RiegoEvent $event)
     {
-        Log::info('Riego event handled', ['descripcion' => $event->descripcion]);
+        Log::info('Riego event handled', ['descripcion' => $event->programacion]);
 
         $startTime = Carbon::now();
         $timeoutTime = $startTime->addSeconds($this->timeout);
@@ -33,46 +33,46 @@ class RiegoEventListener implements ShouldQueue
         try {
             Log::info('si esta entrando al try');
             // Encender electrovalvulas
-            $this->encenderElectrovalvulas($event->descripcion);
+            $this->encenderElectrovalvulas($event->programacion);
 
             // Encender motor principal
             $this->encenderMotorPrincipal();
 
             // Inyectar fertilizante
-            $this->inyectarFertilizante($event->descripcion);
+            $this->inyectarFertilizante($event->programacion);
 
             // Monitorear flujo
-            $resultado = $this->monitorearFlujo($timeoutTime, $event->descripcion);
+            $resultado = $this->monitorearFlujo($timeoutTime, $event->programacion);
 
             // Llenar tanques si el riego fue exitoso
             if ($resultado) {
                 $this->llenarTanques();
-                $this->marcarEventoExitoso($event->descripcion);
+                $this->marcarEventoExitoso($event->programacion);
             } else {
-                $this->marcarEventoFallido($event->descripcion);
+                $this->marcarEventoFallido($event->programacion);
                 Log::info('no esta esperando respuesta');
             }
 
             // Apagar todos los sistemas después del riego
-            $this->apagarElectrovalvulas($event->descripcion);
+            $this->apagarElectrovalvulas($event->programacion);
             $this->apagarMotorPrincipal();
             $this->apagarInyectores();
 
         } catch (\Exception $e) {
-            Log::error('Error en el manejo del evento de riego', ['descripcion' => $event->descripcion, 'error' => $e->getMessage()]);
-            $this->marcarEventoFallido($event->descripcion);
+            Log::error('Error en el manejo del evento de riego', ['descripcion' => $event->programacion, 'error' => $e->getMessage()]);
+            $this->marcarEventoFallido($event->programacion);
 
             // Asegurarse de apagar todos los sistemas en caso de error
-            $this->apagarElectrovalvulas($event->descripcion);
+            $this->apagarElectrovalvulas($event->programacion);
             $this->apagarMotorPrincipal();
             $this->apagarInyectores();
         }
     }
 
-    protected function encenderElectrovalvulas($descripcion)
+    protected function encenderElectrovalvulas($programacion)
     {
         // Parsear la descripcion para obtener el camellon
-        parse_str(str_replace(',', '&', $descripcion), $params);
+        parse_str(str_replace(',', '&', $programacion->comando->descripcion), $params);
         $camellon = $params['camellon'];
 
         // Obtener la configuración actual de s2 y encender la electrovalvula correspondiente
@@ -110,10 +110,10 @@ class RiegoEventListener implements ShouldQueue
     Log::info('Motor principal encendido');
 }
 
-protected function inyectarFertilizante($descripcion)
+protected function inyectarFertilizante($programacion)
 {
     // Parsear la descripcion para obtener la concentracion
-    parse_str(str_replace(',', '&', $descripcion), $params);
+    parse_str(str_replace(',', '&', $programacion->comando->descripcion), $params);
     $concentracion = $params['concentracion'];
 
     // Obtener la configuración actual de s4 y activar los inyectores de fertilizante
@@ -144,10 +144,10 @@ protected function inyectarFertilizante($descripcion)
         return '{"actions":["pump1:on:' . $concentracion * 10 . '","pump2:on:' . $concentracion * 10 . '"]}';
     }
 
-    protected function monitorearFlujo($timeoutTime, $descripcion)
+    protected function monitorearFlujo($timeoutTime, $programacion)
     {
         // Parsear la descripción del evento para obtener el volumen
-        parse_str(str_replace(',', '&', $descripcion), $params);
+        parse_str(str_replace(',', '&', $programacion->comando->descripcion), $params);
         $volumen = $params['volumen'];
     
         // Calcular el volumen esperado en términos de cuentas
@@ -210,24 +210,24 @@ protected function inyectarFertilizante($descripcion)
         Log::info('Tanques llenando');
     }
 
-    protected function marcarEventoExitoso($descripcion)
+    protected function marcarEventoExitoso($programacion)
     {
         // Marcar el evento como exitoso en la base de datos
-        $programacion = Programacion::find($descripcion);
+        //$programacion = Programacion::find($programacion);
         $programacion->update(['estado' => 'ejecutado_exitosamente']);
-        Log::info('Evento de riego completado exitosamente', ['descripcion' => $descripcion]);
+        Log::info('Evento de riego completado exitosamente', ['descripcion' => $programacion->comando->descripcion]);
     }
 
-    protected function marcarEventoFallido($descripcion)
+    protected function marcarEventoFallido($programacion)
     {
         // Marcar el evento como fallido en la base de datos
-        $programacion = Programacion::find($descripcion);
+        //$programacion = Programacion::find($programacion);
         $programacion->update(['estado' => 'fallido']);
         Log::info('Evento de riego fallido', ['descripcion' => $programacion->comando->descripcion]);
     }
-    protected function apagarElectrovalvulas($descripcion)
+    protected function apagarElectrovalvulas($programacion)
     {
-        $programacion = Programacion::find($descripcion);
+        //$programacion = Programacion::find($descripcion);
         // Parsear la descripcion para obtener el camellon
         parse_str(str_replace(',', '&', $programacion->comando->descripcion), $params);
         $camellon = $params['camellon'];
