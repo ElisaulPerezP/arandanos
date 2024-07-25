@@ -53,6 +53,8 @@ class ProcessScheduledCommands implements ShouldQueue
             if ($event) {
                 event(new $event($programacion->id));
                 $programacion->update(['estado' => 'ejecutandose']);
+                Log::info('el evento de inicio se emitio');
+
             }
         }
     }
