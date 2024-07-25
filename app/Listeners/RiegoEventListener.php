@@ -31,6 +31,7 @@ class RiegoEventListener implements ShouldQueue
         $timeoutTime = $startTime->addSeconds($this->timeout);
 
         try {
+            Log::info('si esta entrando al try');
             // Encender electrovalvulas
             $this->encenderElectrovalvulas($event->descripcion);
 
@@ -49,6 +50,7 @@ class RiegoEventListener implements ShouldQueue
                 $this->marcarEventoExitoso($event->descripcion);
             } else {
                 $this->marcarEventoFallido($event->descripcion);
+                Log::info('no esta esperando respuesta');
             }
 
             // Apagar todos los sistemas después del riego
