@@ -221,7 +221,7 @@ protected function inyectarFertilizante($descripcion)
         // Marcar el evento como fallido en la base de datos
         $programacion = Programacion::find($descripcion);
         $programacion->update(['estado' => 'fallido']);
-        Log::info('Evento de riego fallido', ['descripcion' => $descripcion]);
+        Log::info('Evento de riego fallido', ['descripcion' => $programacion->comando->descripcion]);
     }
     protected function apagarElectrovalvulas($descripcion)
     {
