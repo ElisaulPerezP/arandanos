@@ -14,6 +14,7 @@ use App\Models\S1;
 use App\Models\EstadoSistema;
 use App\Models\Programacion;
 use Carbon\Carbon;
+use Database\Factories\S2Factory;
 
 class RiegoEventListener implements ShouldQueue
 {
@@ -228,11 +229,14 @@ protected function inyectarFertilizante($descripcion)
         // Parsear la descripcion para obtener el camellon
         parse_str(str_replace(',', '&', $programacion->comando->descripcion), $params);
         $camellon = $params['camellon'];
-    
+        $factoryDefaults = S2::factory()->make()->toArray();
         // Obtener la configuración actual de s2 y apagar la electrovalvula correspondiente
         $estadoSistema = EstadoSistema::first();
-        $s2Actual = S2::find($estadoSistema->s2);
+        $attributes = array_merge($factoryDefaults, [
+            'estado' => 'apagado' // O cualquier valor por defecto que necesites
+        ]);
     
+        $s2Actual = S2::firstOrCreate(['id' => $estadoSistema->s2], $attributes);
         // Crear una nueva instancia de S2 para el nuevo estado
         $s2Final = new S2;
         $s2Final->fill($s2Actual->toArray());
