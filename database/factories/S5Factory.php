@@ -12,10 +12,10 @@ class S5Factory extends Factory
     public function definition()
     {
         return [
-            'estado' => false,
-            'comando_id' => null,
-            'flux1' => 0,
-            'flux2' => 0,
+            'estado' => $this->faker->boolean,
+            'comando_id' => null,  // Permitir que sea nulo
+            'flux1' => $this->faker->randomNumber(),
+            'flux2' => $this->faker->randomNumber(),
         ];
     }
 }

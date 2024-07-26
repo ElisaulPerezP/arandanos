@@ -12,21 +12,21 @@ class S2Factory extends Factory
     public function definition()
     {
         return [
-            'estado' => false,
-            'comando_id' => null,
-            'valvula1' => false,
-            'valvula2' => false,
-            'valvula3' => false,
-            'valvula4' => false,
-            'valvula5' => false,
-            'valvula6' => false,
-            'valvula7' => false,
-            'valvula8' => false,
-            'valvula9' => false,
-            'valvula10' => false,
-            'valvula11' => false,
-            'valvula12' => false,
-            'valvula13' => false,
+            'estado' => $this->faker->boolean,
+            'comando_id' => null,  // Permitir que sea nulo
+            'valvula1' => $this->faker->boolean,
+            'valvula2' => $this->faker->boolean,
+            'valvula3' => $this->faker->boolean,
+            'valvula4' => $this->faker->boolean,
+            'valvula5' => $this->faker->boolean,
+            'valvula6' => $this->faker->boolean,
+            'valvula7' => $this->faker->boolean,
+            'valvula8' => $this->faker->boolean,
+            'valvula9' => $this->faker->boolean,
+            'valvula10' => $this->faker->boolean,
+            'valvula11' => $this->faker->boolean,
+            'valvula12' => $this->faker->boolean,
+            'valvula13' => $this->faker->boolean,
         ];
     }
 }

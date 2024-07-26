@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\S0;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Faker\Generator as Faker;
 
 class S0Factory extends Factory
 {
@@ -12,9 +13,9 @@ class S0Factory extends Factory
     public function definition()
     {
         return [
-            'estado' => false,
-            'comando_id' => null,
-            'sensor3' => false,
+            'estado' => $this->faker->boolean,
+            'comando_id' => null,  // Permitir que sea nulo
+            'sensor3' => $this->faker->boolean,
         ];
     }
 }

@@ -12,10 +12,10 @@ class S3Factory extends Factory
     public function definition()
     {
         return [
-            'estado' => false,
-            'comando_id' => null,
-            'pump1' => false,
-            'pump2' => false,
+            'estado' => $this->faker->boolean,
+            'comando_id' => null,  // Permitir que sea nulo
+            'pump1' => $this->faker->boolean,
+            'pump2' => $this->faker->boolean,
         ];
     }
 }

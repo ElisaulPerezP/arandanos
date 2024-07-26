@@ -12,10 +12,10 @@ class S4Factory extends Factory
     public function definition()
     {
         return [
-            'estado' => false,
-            'comando_id' => null,
-            'pump3' => false,
-            'pump4' => false,
+            'estado' => $this->faker->boolean,
+            'comando_id' => null,  // Permitir que sea nulo
+            'pump3' => $this->faker->boolean,
+            'pump4' => $this->faker->boolean,
         ];
     }
 }

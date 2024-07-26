@@ -12,11 +12,11 @@ class S1Factory extends Factory
     public function definition()
     {
         return [
-            'estado' => false,
-            'comando_id' => null,
-            'sensor1' => false,
-            'sensor2' => false,
-            'valvula14' => false,
+            'estado' => $this->faker->boolean,
+            'comando_id' => null,  // Permitir que sea nulo
+            'sensor1' => $this->faker->boolean,
+            'sensor2' => $this->faker->boolean,
+            'valvula14' => $this->faker->boolean,
         ];
     }
 }
