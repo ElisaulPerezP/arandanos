@@ -16,7 +16,7 @@ class CreateS5Table extends Migration
         Schema::create('s5', function (Blueprint $table) {
             $table->id();
             $table->boolean('estado');
-            $table->foreignId('comando_id')->constrained('comando_hardware');
+            $table->foreignId('comando_id')->nullable()->constrained('comando_hardware');
             $table->integer('flux1');
             $table->integer('flux2');
             $table->timestamps();

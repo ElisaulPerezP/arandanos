@@ -16,7 +16,7 @@ class CreateS1Table extends Migration
         Schema::create('s1', function (Blueprint $table) {
             $table->id();
             $table->boolean('estado');
-            $table->foreignId('comando_id')->constrained('comando_hardware');
+            $table->foreignId('comando_id')->nullable()->constrained('comando_hardware');
             $table->boolean('sensor1');
             $table->boolean('sensor2');
             $table->boolean('valvula14');

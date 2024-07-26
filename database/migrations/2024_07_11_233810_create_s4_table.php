@@ -16,7 +16,7 @@ class CreateS4Table extends Migration
         Schema::create('s4', function (Blueprint $table) {
             $table->id();
             $table->boolean('estado');
-            $table->foreignId('comando_id')->constrained('comando_hardware');
+            $table->foreignId('comando_id')->nullable()->constrained('comando_hardware');
             $table->boolean('pump3');
             $table->boolean('pump4');
             $table->timestamps();

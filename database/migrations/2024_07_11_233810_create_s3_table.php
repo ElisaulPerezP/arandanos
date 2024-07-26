@@ -16,7 +16,7 @@ class CreateS3Table extends Migration
         Schema::create('s3', function (Blueprint $table) {
             $table->id();
             $table->boolean('estado');
-            $table->foreignId('comando_id')->constrained('comando_hardware');
+            $table->foreignId('comando_id')->nullable()->constrained('comando_hardware');
             $table->boolean('pump1');
             $table->boolean('pump2');
             $table->timestamps();
