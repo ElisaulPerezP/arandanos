@@ -20,6 +20,7 @@ class ComandoHardwareSeeder extends Seeder
         // Comandos para s2
         for ($i = 1; $i <= 13; $i++) {
             ComandoHardware::create(['sistema' => 's2', 'comando' => "on:valvula$i"]);
+            ComandoHardware::create(['sistema' => 's2', 'comando' => "off:valvula$i"]);
         }
 
         // Comandos para s3

@@ -11,6 +11,7 @@ use App\Models\S3;
 use App\Models\S4;
 use App\Models\S5;
 use App\Models\S1;
+use App\Models\ComandoHardware;
 use App\Models\EstadoSistema;
 use App\Models\Programacion;
 use Carbon\Carbon;
@@ -81,8 +82,20 @@ class RiegoEventListener implements ShouldQueue
         $s2Final = new S2;
         $s2Final->fill($s2Actual->toArray());
 
-        // Actualizar el comando para encender la electrovalvula del camellon
-        $s2Final->comando = 'on:valvula' . $camellon;
+        $comandoBuscado = 'on:valvula' . $camellon;
+        $comandoHardware = ComandoHardware::where('sistema', 's2')
+                                           ->where('comando', $comandoBuscado)
+                                           ->first();
+    
+        // Si se encuentra el comando de hardware, asignar el comando_id
+        if ($comandoHardware) {
+            $s2Final->comando_id = $comandoHardware->id;
+        } else {
+            // Registrar un mensaje en el log si no se encuentra el comando
+            Log::info("El comando para encender la electrovalvula del camellon $camellon no pudo ser encontrado");
+
+        }
+    
         $s2Final->save();
 
         $estadoSistema->update(['s2' => $s2Final->id]);
@@ -98,8 +111,19 @@ class RiegoEventListener implements ShouldQueue
     $s3Final = new S3;
     $s3Final->fill($s3Actual->toArray());
 
-    // Actualizar el comando para encender las bombas principales
-    $s3Final->comando = '{"actions":["pump1:on","pump2:on"]}';
+    // Buscar el comando de hardware correcto
+    $comandoBuscado = '{"actions":["pump1:on","pump2:on"]}';
+    $comandoHardware = ComandoHardware::where('sistema', 's3')
+                                       ->where('comando', $comandoBuscado)
+                                       ->first();
+
+    // Si se encuentra el comando de hardware, asignar el comando_id
+    if ($comandoHardware) {
+        $s3Final->comando_id = $comandoHardware->id;
+    } else {
+        // Registrar un mensaje en el log si no se encuentra el comando
+        Log::info("El comando para encender las bombas principales no pudo ser encontrado");
+    }
 
     // Guardar el nuevo estado
     $s3Final->save();
@@ -126,7 +150,7 @@ protected function inyectarFertilizante($programacion)
 
     // Calcular el comando para los inyectores basado en la concentracion
     $comando = $this->calcularComandoInyectores($concentracion);
-    $s4Final->comando = $comando;
+    $s4Final->comando_id = $comando->id;
 
     // Guardar el nuevo estado
     $s4Final->save();
@@ -139,9 +163,19 @@ protected function inyectarFertilizante($programacion)
 
     protected function calcularComandoInyectores($concentracion)
     {
-        // Implementar la lógica para calcular el comando basado en la concentracion
-        // Por ejemplo:
-        return '{"actions":["pump1:on:' . $concentracion * 10 . '","pump2:on:' . $concentracion * 10 . '"]}';
+        $comandoBuscado = '{"actions":["pump1:on:' . ($concentracion * 10) . '","pump2:off:1"]}';
+        
+        // Buscar el comando de hardware correspondiente en la base de datos
+        $comandoHardware = ComandoHardware::where('sistema', 's4')
+                                        ->where('comando', $comandoBuscado)
+                                        ->first();
+        
+        if ($comandoHardware) {
+            return $comandoHardware;
+        } else {
+            // Manejar el caso donde no se encuentra el comando, si es necesario
+            Log::warning("El comando de inyectores para la concentración {$concentracion} no pudo ser encontrado");
+        }
     }
 
     protected function monitorearFlujo($timeoutTime, $programacion)
@@ -151,7 +185,7 @@ protected function inyectarFertilizante($programacion)
         $volumen = $params['volumen'];
     
         // Calcular el volumen esperado en términos de cuentas
-        $cuentasEsperadas = $volumen * 100;
+        $cuentasEsperadas = $volumen * 30;
     
         // Inicializar el contador de flujo
         $flujoAcumulado = 0;
@@ -160,19 +194,22 @@ protected function inyectarFertilizante($programacion)
             $estadoSistema = EstadoSistema::first();
             $s5Actual = $estadoSistema->s5;
     
-            // Obtener el estado actual del flujo
-            $flujoActual = $s5Actual['flujo'];
-    
-            // Acumular el flujo
-            $flujoAcumulado += $flujoActual;
-    
+        // Obtener el estado actual del flujo
+        $flujoActual1 = $s5Actual->flux1;
+        $flujoActual2 = $s5Actual->flux2;
+        $flujoActual = $flujoActual1 + $flujoActual2;
+
+        // Acumular el flujo
+        $flujoAcumulado += $flujoActual;
+    //TODO: AQUI HAY QUE CORREGIR UN DETALL PARA QUE SIRVA DE CONTADOR DE AGUA
             // Verificar si el flujo acumulado cumple con los requisitos
             if ($flujoAcumulado >= $cuentasEsperadas) {
-                Log::info('El flujo cumple con los requisitos', ['flujo_acumulado' => $flujoAcumulado, 'cuentas_esperadas' => $cuentasEsperadas]);
+                $s5Actual->update(['flux1' => 0, 'flux2' => 0]);
                 $s5Final=new S5;
                 $s5Final->fill($s5Actual->toArray());
-                $s5Final->flujo=0;
                 $estadoSistema->udpate(['s5'=>$s5Final->id]);
+                Log::info('El flujo cumple con los requisitos', ['flujo_acumulado' => $flujoAcumulado, 'cuentas_esperadas' => $cuentasEsperadas]);
+               
                 return true;
             }
     
@@ -181,26 +218,36 @@ protected function inyectarFertilizante($programacion)
         }
     
         // Si el flujo no cumple con los requisitos en el tiempo límite, retornar false
-        Log::warning('El flujo no cumple con los requisitos en el tiempo límite', ['flujo_acumulado' => $flujoAcumulado, 'cuentas_esperadas' => $cuentasEsperadas]);
+        $s5Actual->update(['flux1' => 0, 'flux2' => 0]);
         $s5Final=new S5;
         $s5Final->fill($s5Actual->toArray());
-        $s5Final->flujo=0;
         $estadoSistema->udpate(['s5'=>$s5Final->id]);
+        Log::info('El flujo no cumple con los requisitos', ['flujo_acumulado' => $flujoAcumulado, 'cuentas_esperadas' => $cuentasEsperadas]);
         return false;
     }
     protected function llenarTanques()
     {
         // Obtener la configuración actual de s1 y activar el llenado de tanques
         $estadoSistema = EstadoSistema::first();
-        $s1Actual = S1::find($estadoSistema->s1);
+        $s1Actual = $estadoSistema->s1;
     
         // Crear una nueva instancia de S1 para el nuevo estado
         $s1Final = new S1;
         $s1Final->fill($s1Actual->toArray());
     
-        // Actualizar el comando para llenar los tanques
-        $s1Final->comando = 'llenar';
-    
+        $comandoBuscado = 'llenar';
+
+        $comandoHardware = ComandoHardware::where('sistema', 's1')
+                                        ->where('comando', $comandoBuscado)
+                                        ->first();
+
+        // Si se encuentra el comando de hardware, asignar el comando_id
+        if ($comandoHardware) {
+            $s1Final->comando_id = $comandoHardware->id;
+        } else {
+            // Registrar un mensaje en el log si no se encuentra el comando
+            Log::info("El comando de llenado de tanques no pudo ser encontrado");
+        }
         // Guardar el nuevo estado
         $s1Final->save();
     
@@ -231,18 +278,29 @@ protected function inyectarFertilizante($programacion)
         // Parsear la descripcion para obtener el camellon
         parse_str(str_replace(',', '&', $programacion->comando->descripcion), $params);
         $camellon = $params['camellon'];
-        $factoryDefaults = S2::factory()->make()->toArray();
+        
         // Obtener la configuración actual de s2 y apagar la electrovalvula correspondiente
         $estadoSistema = EstadoSistema::first();
-        $attributes = array_merge($factoryDefaults, [
-            'estado' => 'apagado' // O cualquier valor por defecto que necesites
-        ]);
-    
-        $s2Actual = S2::firstOrCreate(['id' => $estadoSistema->s2], $attributes);
+        $s2Actual = $estadoSistema->s2;
+        
         // Crear una nueva instancia de S2 para el nuevo estado
         $s2Final = new S2;
         $s2Final->fill($s2Actual->toArray());
-    
+
+        // Buscar el comando de hardware correcto
+        $comandoBuscado = 'off:valvula' . $camellon;
+        $comandoHardware = ComandoHardware::where('sistema', 's2')
+                                           ->where('comando', $comandoBuscado)
+                                           ->first();
+
+                                
+     // Si se encuentra el comando de hardware, asignar el comando_id
+        if ($comandoHardware) {
+            $s2Final->comando_id = $comandoHardware->id;
+        } else {
+            Log::info('El comando de apagado de valvulas para el camellon $camellon  no pudo ser encontrado');
+        }
+
         // Actualizar el comando para apagar la electrovalvula del camellon
         $s2Final->comando = 'off:valvula' . $camellon;
     
@@ -260,15 +318,26 @@ protected function inyectarFertilizante($programacion)
     {
         // Obtener la configuración actual de s3 y apagar las bombas principales
         $estadoSistema = EstadoSistema::first();
-        $s3Actual = S3::find($estadoSistema->s3);
-    
+        $s3Actual = $estadoSistema->s3;
+
         // Crear una nueva instancia de S3 para el nuevo estado
         $s3Final = new S3;
         $s3Final->fill($s3Actual->toArray());
-    
-        // Actualizar el comando para apagar las bombas principales
-        $s3Final->comando = '{"actions":["pump1:off","pump2:off"]}';
-    
+
+        // Buscar el comando de hardware correcto
+        $comandoBuscado = '{"actions":["pump1:off","pump2:off"]}';
+        $comandoHardware = ComandoHardware::where('sistema', 's3')
+                                            ->where('comando', $comandoBuscado)
+                                            ->first();
+
+        // Si se encuentra el comando de hardware, asignar el comando_id
+        if ($comandoHardware) {
+            $s3Final->comando_id = $comandoHardware->id;
+        } else {
+            Log::info('El comando de apagado de las bombas no fue encontrado');
+
+        }
+
         // Guardar el nuevo estado
         $s3Final->save();
     
@@ -280,25 +349,35 @@ protected function inyectarFertilizante($programacion)
     
 
     protected function apagarInyectores()
-    {
-        // Obtener la configuración actual de s4 y apagar los inyectores de fertilizante
-        $estadoSistema = EstadoSistema::first();
-        $s4Actual = S4::find($estadoSistema->s4);
-    
-        // Crear una nueva instancia de S4 para el nuevo estado
-        $s4Final = new S4;
-        $s4Final->fill($s4Actual->toArray());
-    
-        // Actualizar el comando para apagar los inyectores
-        $s4Final->comando = '{"actions":["pump1:off","pump2:off"]}';
-    
-        // Guardar el nuevo estado
-        $s4Final->save();
-    
-        // Actualizar el estado del sistema
-        $estadoSistema->update(['s4' => $s4Final->id]);
-    
-        Log::info('Inyectores de fertilizante apagados');
-    }
+        {
+            // Obtener la configuración actual de s4 y apagar los inyectores de fertilizante
+            $estadoSistema = EstadoSistema::first();
+            $s4Actual =$estadoSistema->s4;
+
+            // Crear una nueva instancia de S4 para el nuevo estado
+            $s4Final = new S4;
+            $s4Final->fill($s4Actual->toArray());
+
+            // Buscar el comando de hardware correcto
+            $comandoBuscado = '{"actions":["pump1:off:1","pump2:off:1"]}';
+            $comandoHardware = ComandoHardware::where('sistema', 's4')
+                                            ->where('comando', $comandoBuscado)
+                                            ->first();
+
+            // Si se encuentra el comando de hardware, asignar el comando_id
+            if ($comandoHardware) {
+                $s4Final->comando_id = $comandoHardware->id;
+            } else {
+                Log::info('El comando de apagado de inyectores no pudo ser encontrado');
+            }
+
+            // Guardar el nuevo estado
+            $s4Final->save();
+
+            // Actualizar el estado del sistema
+            $estadoSistema->update(['s4' => $s4Final->id]);
+
+            Log::info('Inyectores de fertilizante apagados');
+        }
     
 }
