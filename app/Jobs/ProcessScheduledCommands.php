@@ -51,7 +51,7 @@ class ProcessScheduledCommands implements ShouldQueue
             };
 
             if ($event) {
-                event(new $event($programacion->id));
+                event(new $event($programacion));  // Pasar la instancia completa del modelo
                 $programacion->update(['estado' => 'ejecutandose']);
                 Log::info('Emitiendo evento: ' . $comando->nombre, ['programacion_id' => $programacion->id, 'event' => $event]);
             }
