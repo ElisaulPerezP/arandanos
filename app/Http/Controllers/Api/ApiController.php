@@ -221,7 +221,10 @@ class ApiController extends Controller
         // Crear una nueva entrada s3 con la información proporcionada en el request y el comando del antecesor
         $s3Nueva = S3::create(array_merge(
             $request->all(),
-            ['comando_id' => $s3Actual ? $s3Actual->comando_id : null]
+            [
+                'comando_id' => $s3Actual ? $s3Actual->comando_id : null,
+                'estado' => 'funcionando'
+            ]
         ));
 
         // Actualizar el EstadoSistema con la nueva entrada s3
@@ -240,7 +243,7 @@ class ApiController extends Controller
 
         // Crear una nueva entrada s3 con el estado inactivo y el comando del antecesor
         $s3Nueva = S3::create(array_merge(
-            ['estado' => false],
+            ['estado' => 'Detenido'],
             $request->except('estado'),
             ['comando_id' => $s3Actual ? $s3Actual->comando_id : null]
         ));
