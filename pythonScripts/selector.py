@@ -101,17 +101,19 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url):
         while not stop_threads:
             command = get_selector_command(selector_url)
             if command:
-                for action in command['actions']:
-                    pin_name = action.split(':')[1]
+                for action in command:
+                    action_parts = action.split(':')
+                    action_type = action_parts[0]  # on or off
+                    pin_name = action_parts[1]    # valvula1, valvula2, etc.
                     if pin_name in output_pins:
-                        if action.startswith('on'):
+                        if action_type == 'on':
                             set_pin_value(output_pins[pin_name], "1")
-                        elif action.startswith('off'):
+                        elif action_type == 'off':
                             set_pin_value(output_pins[pin_name], "0")
                     elif pin_name in output_neg_pins:
-                        if action.startswith('on'):
+                        if action_type == 'on':
                             set_pin_value(output_neg_pins[pin_name], "0")
-                        elif action.startswith('off'):
+                        elif action_type == 'off':
                             set_pin_value(output_neg_pins[pin_name], "1")
             time.sleep(0.33)
 
