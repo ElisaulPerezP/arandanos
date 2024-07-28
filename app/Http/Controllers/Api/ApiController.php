@@ -259,7 +259,7 @@ class ApiController extends Controller
         // Verificar si existe el estado y la relación s4
         if ($estado && $estado->s4) {
             // Obtener el comando desde la relación s4
-            $comando = $estado->s4->comando;
+            $comando = $estado->s4->comando->descripcion;
 
             // Retornar el comando si existe
             if ($comando) {
