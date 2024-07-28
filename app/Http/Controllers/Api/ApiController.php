@@ -35,7 +35,7 @@ class ApiController extends Controller
         // Crear un nuevo registro S0 con el nuevo estado y el comando del antecesor
         $s0 = S0::create([
             'estado' => $nuevoEstado,
-            'comando' => $estadoActual->s0->comando ?? null
+            'comando_id' => $estadoActual->s0->comando->id ?? null
         ]);
 
         // Actualizar el estado del sistema con el nuevo s0_id
@@ -63,7 +63,7 @@ class ApiController extends Controller
 
             // Retornar el comando si existe
             if ($comando) {
-                return response()->json(['command' => $comando], 200);
+                return response()->json(['command' => $comando->comando], 200);
             }
         }
 
@@ -87,7 +87,7 @@ class ApiController extends Controller
                 'sensor1' => $request->input('sensor1', $s1Actual->sensor1),
                 'sensor2' => $request->input('sensor2', $s1Actual->sensor2),
                 'valvula14' => $request->input('valvula14', $s1Actual->valvula14),
-                'comando' => $s1Actual->comando
+                'comando_id' => $s1Actual->comando->id
             ]);
 
             // Actualizar el EstadoSistema con la nueva entrada s1
@@ -116,7 +116,7 @@ class ApiController extends Controller
                 'sensor1' => $s1Actual->sensor1,
                 'sensor2' => $s1Actual->sensor2,
                 'valvula14' => $s1Actual->valvula14,
-                'comando' => $s1Actual->comando
+                'comando_id' => $s1Actual->comando->id
             ]);
 
             // Actualizar el EstadoSistema con la nueva entrada s1
@@ -141,7 +141,7 @@ class ApiController extends Controller
 
             // Retornar el comando si existe
             if ($comando) {
-                return response()->json(['actions' => json_decode($comando)], 200);
+                return response()->json(['actions' => json_decode($comando->comando)], 200);
             }
         }
 
@@ -202,7 +202,7 @@ class ApiController extends Controller
 
             // Retornar el comando si existe
             if ($comando) {
-                return response()->json(['actions' => json_decode($comando)], 200);
+                return response()->json(['actions' => json_decode($comando->comando)], 200);
             }
         }
 
@@ -221,7 +221,7 @@ class ApiController extends Controller
         // Crear una nueva entrada s3 con la información proporcionada en el request y el comando del antecesor
         $s3Nueva = S3::create(array_merge(
             $request->all(),
-            ['comando' => $s3Actual ? $s3Actual->comando : null]
+            ['comando_id' => $s3Actual ? $s3Actual->comando_id : null]
         ));
 
         // Actualizar el EstadoSistema con la nueva entrada s3
@@ -242,7 +242,7 @@ class ApiController extends Controller
         $s3Nueva = S3::create(array_merge(
             ['estado' => false],
             $request->except('estado'),
-            ['comando' => $s3Actual ? $s3Actual->comando : null]
+            ['comando_id' => $s3Actual ? $s3Actual->comando_id : null]
         ));
 
         // Actualizar el EstadoSistema con la nueva entrada s3
@@ -259,11 +259,11 @@ class ApiController extends Controller
         // Verificar si existe el estado y la relación s4
         if ($estado && $estado->s4) {
             // Obtener el comando desde la relación s4
-            $comando = $estado->s4->comando->comando;
+            $comando = $estado->s4->comando;
 
             // Retornar el comando si existe
             if ($comando) {
-                return response()->json(['actions' => json_decode($comando)], 200);
+                return response()->json(['actions' => json_decode($comando->comando)], 200);
             }
         }
 
@@ -324,7 +324,7 @@ class ApiController extends Controller
         // Crear una nueva entrada s5 con la información proporcionada en el request y el comando del antecesor
         $s5Nueva = S5::create(array_merge(
             $request->all(),
-            ['comando' => $s5Actual ? $s5Actual->comando : null]
+            ['comando_id' => $s5Actual ? $s5Actual->comando_id : null]
         ));
 
         // Actualizar el EstadoSistema con la nueva entrada s5
@@ -345,7 +345,7 @@ class ApiController extends Controller
         $s5Nueva = S5::create(array_merge(
             ['estado' => false],
             $request->except('estado'),
-            ['comando' => $s5Actual ? $s5Actual->comando : null]
+            ['comando_id' => $s5Actual ? $s5Actual->comando_id : null]
         ));
 
         // Actualizar el EstadoSistema con la nueva entrada s5

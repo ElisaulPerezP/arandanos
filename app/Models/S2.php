@@ -31,6 +31,6 @@ class S2 extends Model
 
     public function comando()
     {
-        return $this->belongsTo(Comando::class);
+        return $this->belongsTo(ComandoHardware::class);
     }
 }
