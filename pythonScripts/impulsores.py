@@ -113,7 +113,7 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url):
                             set_pin_value(output_neg_pins[pin_name], "0")
                         elif action.startswith('off'):
                             set_pin_value(output_neg_pins[pin_name], "1")
-            time.sleep(0.33)
+            time.sleep(8)
 
     # Función para reportar estado a la API
     def report_state():
@@ -125,7 +125,7 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url):
             for name, pin in output_neg_pins.items():
                 status_message[name] = 'encendida' if check_pin_value(pin) == "0" else 'apagada'
             report_status(estado_url, status_message)
-            time.sleep(10)
+            time.sleep(15)
 
     # Iniciar hilos
     command_thread = Thread(target=handle_commands)

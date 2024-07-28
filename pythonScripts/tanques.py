@@ -118,7 +118,7 @@ def main(input_file, output_file, output_neg_file, selector_url, estado_url, apa
                         set_pin_value(pin, "0")
                     for pin in output_neg_pins.values():
                         set_pin_value(pin, "1")
-            time.sleep(0.33)
+            time.sleep(10)
 
     # Función para reportar estado a la API
     def report_state():

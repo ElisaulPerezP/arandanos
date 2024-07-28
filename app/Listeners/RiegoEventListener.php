@@ -50,7 +50,6 @@ class RiegoEventListener implements ShouldQueue
                 $this->llenarTanques();
                 $this->marcarEventoExitoso($event->programacion);
             } else {
-                Log::info('no esta esperando respuesta');
                 $this->marcarEventoFallido($event->programacion);
                 
             }

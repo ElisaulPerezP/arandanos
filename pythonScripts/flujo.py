@@ -90,7 +90,7 @@ def main(input_file, post_url, stop_url):
     def report_state():
         nonlocal stop_threads
         while not stop_threads:
-            time.sleep(0.5)
+            time.sleep(10)
             current_counts = counts.copy()
             report_count(post_url, current_counts)
             counts[name] = 0
