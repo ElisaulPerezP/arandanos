@@ -212,7 +212,7 @@ protected function inyectarFertilizante($programacion)
                 $s5Actual->update(['flux1' => 0, 'flux2' => 0]);
                 $s5Final=new S5;
                 $s5Final->fill($s5Actual->toArray());
-                $estadoSistema->udpate(['s5'=>$s5Final->id]);
+                $estadoSistema->update(['s5'=>$s5Final->id]);
                 Log::info('El flujo cumple con los requisitos', ['flujo_acumulado' => $flujoAcumulado, 'cuentas_esperadas' => $cuentasEsperadas]);
                
                 return true;
@@ -226,7 +226,7 @@ protected function inyectarFertilizante($programacion)
         $s5Actual->update(['flux1' => 0, 'flux2' => 0]);
         $s5Final=new S5;
         $s5Final->fill($s5Actual->toArray());
-        $estadoSistema->udpate(['s5'=>$s5Final->id]);
+        $estadoSistema->update(['s5'=>$s5Final->id]);
         Log::info('El flujo no cumple con los requisitos', ['flujo_acumulado' => $flujoAcumulado, 'cuentas_esperadas' => $cuentasEsperadas]);
         return false;
     }
