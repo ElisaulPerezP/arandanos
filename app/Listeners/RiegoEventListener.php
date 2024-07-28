@@ -153,6 +153,9 @@ protected function inyectarFertilizante($programacion)
     $comando = $this->calcularComandoInyectores($concentracion);
     $s4Final->comando_id = $comando->id;
     $s4Final->estado = 'inyectando';
+    $s4Final->pump3 = true;
+    $s4Final->pump4 = false;
+
 
     // Guardar el nuevo estado
     $s4Final->save();
@@ -370,6 +373,7 @@ protected function inyectarFertilizante($programacion)
             if ($comandoHardware) {
                 $s4Final->comando_id = $comandoHardware->id;
                 $s4Final->estado = "apagando";
+
             } else {
                 Log::info('El comando de apagado de inyectores no pudo ser encontrado');
             }
