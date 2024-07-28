@@ -50,8 +50,9 @@ class RiegoEventListener implements ShouldQueue
                 $this->llenarTanques();
                 $this->marcarEventoExitoso($event->programacion);
             } else {
-                $this->marcarEventoFallido($event->programacion);
                 Log::info('no esta esperando respuesta');
+                $this->marcarEventoFallido($event->programacion);
+                
             }
 
             // Apagar todos los sistemas después del riego
@@ -302,7 +303,7 @@ protected function inyectarFertilizante($programacion)
         }
 
         // Actualizar el comando para apagar la electrovalvula del camellon
-        $s2Final->comando = 'off:valvula' . $camellon;
+        $s2Final->comando->descripcion = 'off:valvula' . $camellon;
     
         // Guardar el nuevo estado
         $s2Final->save();
