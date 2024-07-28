@@ -282,7 +282,8 @@ class ApiController extends Controller
         // Crear una nueva entrada s4 con la información proporcionada en el request y el comando del antecesor
         $s4Nueva = S4::create(array_merge(
             $request->all(),
-            ['comando' => $s4Actual ? $s4Actual->comando : null]
+            ['comando_id' => $s4Actual ? $s4Actual->comando_id : null],
+            ['estado' => $s4Actual ? $s4Actual->estado : null]
         ));
 
         // Actualizar el EstadoSistema con la nueva entrada s4
@@ -301,9 +302,9 @@ class ApiController extends Controller
 
         // Crear una nueva entrada s4 con el estado inactivo y el comando del antecesor
         $s4Nueva = S4::create(array_merge(
-            ['estado' => false],
+            ['estado' => 'apagado'],
             $request->except('estado'),
-            ['comando' => $s4Actual ? $s4Actual->comando : null]
+            ['comando_id' => $s4Actual ? $s4Actual->comando_id : null]
         ));
 
         // Actualizar el EstadoSistema con la nueva entrada s4
