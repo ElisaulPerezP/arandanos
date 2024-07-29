@@ -352,8 +352,6 @@ class ApiController extends Controller
             ['comando_id' => $s5Actual ? $s5Actual->comando_id : null],
             ['estado' => $request->input('status', 'Apagado con exito')],
             ['comando_id' => $s5Actual ? $s5Actual->comando_id : null],
-            ['flux1' => '0'],
-            ['flux2' => '0'],
         ));
 
         // Actualizar el EstadoSistema con la nueva entrada s5
