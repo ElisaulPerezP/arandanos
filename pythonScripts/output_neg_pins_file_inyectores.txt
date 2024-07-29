@@ -1,2 +1,2 @@
-bomba3:2
-bomba4:3
+pump3:2
+pump4:3
