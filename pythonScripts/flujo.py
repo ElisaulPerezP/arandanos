@@ -49,41 +49,43 @@ def report_count(url, counts):
     except Exception as e:
         print(f"Excepción al reportar el conteo: {e}")
 
-def load_first_pin_from_file(filename):
+def load_pins_from_file(filename):
+    sensors = {}
     with open(filename, 'r') as f:
-        line = f.readline()
-        name, pin = line.strip().split(':')
-        return {name: int(pin)}
+        for line in f:
+            name, pin = line.strip().split(':')
+            sensors[name] = int(pin)
+    return sensors
 
 def main(input_file, post_url, stop_url):
-    # Cargar el primer pin desde el archivo
-    sensor_pin = load_first_pin_from_file(input_file)
-    name, pin = next(iter(sensor_pin.items()))
+    # Cargar los pines desde el archivo
+    sensors = load_pins_from_file(input_file)
 
-    # Exportar y configurar el pin
-    export_pin(pin)
-    set_pin_direction(pin, "in")
-    set_pin_edge(pin, "rising")
+    # Exportar y configurar los pines
+    for pin in sensors.values():
+        export_pin(pin)
+        set_pin_direction(pin, "in")
+        set_pin_edge(pin, "rising")
 
     # Variables de control
     stop_threads = False
-    counts = {name: 0}
+    counts = {name: 0 for name in sensors.keys()}
 
     # Función para manejar el conteo de pulsos
-    def handle_counts():
+    def handle_counts(sensor_name, pin):
         nonlocal stop_threads
         # Abrir el archivo de valor del pin
         value_fd = os.open(f"/sys/class/gpio/gpio{pin}/value", os.O_RDONLY | os.O_NONBLOCK)
         poller = select.poll()
         poller.register(value_fd, select.POLLPRI)
-        
+
         while not stop_threads:
             events = poller.poll(1)  # Esperar hasta 1 µs por un evento
             if events:
                 os.lseek(value_fd, 0, os.SEEK_SET)  # Resetear el puntero del archivo al inicio
                 os.read(value_fd, 1024).strip()  # Leer el valor (aunque no lo usemos)
-                counts[name] += 1  # Incrementar el contador de eventos
-        
+                counts[sensor_name] += 1  # Incrementar el contador de eventos
+
         os.close(value_fd)
 
     # Función para reportar el conteo a la API
@@ -93,12 +95,17 @@ def main(input_file, post_url, stop_url):
             time.sleep(10)
             current_counts = counts.copy()
             report_count(post_url, current_counts)
-            counts[name] = 0
+            for name in counts:
+                counts[name] = 0
 
-    # Iniciar hilos
-    count_thread = Thread(target=handle_counts)
+    # Iniciar hilos para cada sensor
+    threads = []
+    for name, pin in sensors.items():
+        thread = Thread(target=handle_counts, args=(name, pin))
+        threads.append(thread)
+        thread.start()
+
     state_thread = Thread(target=report_state)
-    count_thread.start()
     state_thread.start()
 
     try:
@@ -107,11 +114,13 @@ def main(input_file, post_url, stop_url):
             time.sleep(1)
     except KeyboardInterrupt:
         stop_threads = True
-        count_thread.join()
+        for thread in threads:
+            thread.join()
         state_thread.join()
     finally:
-        # Desexportar el pin
-        unexport_pin(pin)
+        # Desexportar los pines
+        for pin in sensors.values():
+            unexport_pin(pin)
         # Reportar apagado
         report_count(stop_url, {'status': 'Apagado con exito'})
 

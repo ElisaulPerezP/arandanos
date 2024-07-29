@@ -349,7 +349,11 @@ class ApiController extends Controller
         // Crear una nueva entrada s5 con la información proporcionada en el request y el comando del antecesor
         $s5Nueva = S5::create(array_merge(
             $request->all(),
-            ['comando_id' => $s5Actual ? $s5Actual->comando_id : null]
+            ['comando_id' => $s5Actual ? $s5Actual->comando_id : null],
+            ['estado' => $request->input('status', 'Apagado con exito')],
+            ['comando_id' => $s5Actual ? $s5Actual->comando_id : null],
+            ['flux1' => '0'],
+            ['flux2' => '0'],
         ));
 
         // Actualizar el EstadoSistema con la nueva entrada s5
@@ -370,9 +374,10 @@ class ApiController extends Controller
 
         // Crear una nueva entrada s5 con el estado inactivo y el comando del antecesor
         $s5Nueva = S5::create(array_merge(
-            ['estado' => false],
-            $request->except('estado'),
-            ['comando_id' => $s5Actual ? $s5Actual->comando_id : null]
+            ['estado' => $request->input('status', 'Apagado con exito')],
+            ['comando_id' => $s5Actual ? $s5Actual->comando_id : null],
+            ['flux1' => '0'],
+            ['flux2' => '0'],
         ));
 
         // Actualizar el EstadoSistema con la nueva entrada s5

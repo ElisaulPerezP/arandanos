@@ -1,2 +1,2 @@
-sensorFlujo1:20
-sensorFlujo2:21
+flux1:20
+flux2:21
