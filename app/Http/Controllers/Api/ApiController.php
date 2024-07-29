@@ -213,25 +213,28 @@ class ApiController extends Controller
 
     public function reportImpulsoresState(Request $request)
     {
-        Log::info('Request received for reportImpulsoresState:', $request->all());
-
         // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
         $estadoSistema = EstadoSistema::firstOrCreate();
 
         // Obtener la entrada s3 actual si existe
         $s3Actual = $estadoSistema->s3;
 
-        // Crear una nueva entrada s3 con la información proporcionada en el request y el comando del antecesor
-        $s3Nueva = S3::create(array_merge(
-            $request->all(),
-            [
-                'comando_id' => $s3Actual ? $s3Actual->comando_id : null,
-                'estado' => 'funcionando'
-            ]
-        ));
+        $validatedData = $request->validate([
+            'pump1' => 'required|string',
+            'pump2' => 'required|string',
+            // Agrega aquí otros campos que sean necesarios
+        ]);
+
+        $data = array_merge($validatedData, [
+            'comando_id' => $s3Actual ? $s3Actual->comando_id : null,
+            'estado' => 'funcionando'
+        ]);
+
+       $s3Nueva = S3::create($data);
 
         // Actualizar el EstadoSistema con la nueva entrada s3
         $estadoSistema->update(['s3_id' => $s3Nueva->id]);
+        Log::info('Request received for reportImpulsoresState:', $data);
 
         return response()->json(['message' => 'Estado reportado exitosamente'], 200);
     }
@@ -281,7 +284,7 @@ class ApiController extends Controller
 
     public function reportInyectoresState(Request $request)
     {
-        Log::info('Request received for ReportInyectoresSstate:', $request->all());
+        
 
         // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
         $estadoSistema = EstadoSistema::firstOrCreate();
@@ -289,15 +292,23 @@ class ApiController extends Controller
         // Obtener la entrada s4 actual si existe
         $s4Actual = $estadoSistema->s4;
 
-        // Crear una nueva entrada s4 con la información proporcionada en el request y el comando del antecesor
-        $s4Nueva = S4::create(array_merge(
-            $request->all(),
-            ['comando_id' => $s4Actual ? $s4Actual->comando_id : null],
-            ['estado' => $s4Actual ? $s4Actual->estado : null]
-        ));
+        $validatedData = $request->validate([
+                'pump3' => 'required|string',
+                'pump4' => 'required|string',
+                // Agrega aquí otros campos que sean necesarios
+            ]);
+
+        $data = array_merge($validatedData, [
+            'comando_id' => $s4Actual ? $s4Actual->comando_id : null,
+            'estado' => 'funcionando'
+        ]);
+
+        $s4Nueva = S4::create($data);
 
         // Actualizar el EstadoSistema con la nueva entrada s4
         $estadoSistema->update(['s4_id' => $s4Nueva->id]);
+
+        Log::info('Request received for ReportInyectoresSstate:', $request->all());
 
         return response()->json(['message' => 'Estado reportado exitosamente'], 200);
     }
