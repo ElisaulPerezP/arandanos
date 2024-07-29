@@ -1,2 +1,2 @@
-bomba1:15
-bomba2:16
+pump1:15
+pump2:16
