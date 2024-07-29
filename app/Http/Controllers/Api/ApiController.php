@@ -15,6 +15,7 @@ use App\Models\EstadoSistema;
 use App\Models\ComandoHardware;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Log;
 
 class ApiController extends Controller
 {
@@ -212,6 +213,8 @@ class ApiController extends Controller
 
     public function reportImpulsoresState(Request $request)
     {
+        Log::info('Request received for reportImpulsoresState:', $request->all());
+
         // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
         $estadoSistema = EstadoSistema::firstOrCreate();
 
