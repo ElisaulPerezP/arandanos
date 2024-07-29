@@ -238,6 +238,8 @@ class ApiController extends Controller
 
     public function reportImpulsoresShutdown(Request $request)
     {
+        Log::info('Request received for reportImpulsoresSHutdown:', $request->all());
+
         // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
         $estadoSistema = EstadoSistema::firstOrCreate();
 
@@ -279,6 +281,8 @@ class ApiController extends Controller
 
     public function reportInyectoresState(Request $request)
     {
+        Log::info('Request received for ReportInyectoresSstate:', $request->all());
+
         // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
         $estadoSistema = EstadoSistema::firstOrCreate();
 
@@ -300,6 +304,8 @@ class ApiController extends Controller
 
     public function reportInyectoresShutdown(Request $request)
     {
+        Log::info('Request received for reportInyectoresShutdown:', $request->all());
+
         // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
         $estadoSistema = EstadoSistema::firstOrCreate();
 
@@ -321,6 +327,8 @@ class ApiController extends Controller
 
     public function reportFlujoConteo(Request $request)
     {
+        Log::info('Request received for reportFlujoCOnteo:', $request->all());
+
         // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
         $estadoSistema = EstadoSistema::firstOrCreate();
 
@@ -341,6 +349,8 @@ class ApiController extends Controller
 
     public function reportFlujoApagado(Request $request)
     {
+        Log::info('Request received for reportFLujoApagado:', $request->all());
+
         // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
         $estadoSistema = EstadoSistema::firstOrCreate();
 
