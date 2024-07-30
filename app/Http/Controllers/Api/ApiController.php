@@ -50,6 +50,7 @@ class ApiController extends Controller
 
         // Emitir el evento correspondiente
         event($evento);
+        Log::info('evento emitido con estaqdo', [$nuevoEstado]);
 
         return response()->json(['message' => "Estado cambiado a '$nuevoEstado', evento emitido"], 200);
     }
@@ -353,7 +354,6 @@ class ApiController extends Controller
         // Crear una nueva entrada s5 con la información proporcionada en el request y el comando del antecesor
         $s5Nueva = S5::create(array_merge(
             $request->all(),
-            ['comando_id' => $s5Actual ? $s5Actual->comando_id : null],
             ['estado' => $request->input('status', 'Apagado con exito')],
             ['comando_id' => $s5Actual ? $s5Actual->comando_id : null],
         ));
