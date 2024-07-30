@@ -82,13 +82,13 @@ def main(input_file, stop_url):
         poller.register(value_fd, select.POLLPRI)
 
         while not stop_threads:
-            events = poller.poll(1)  # Esperar hasta 1 µs por un evento
+            events = poller.poll(1000)  # Esperar hasta 1 segundo por un evento
             if events:
                 os.lseek(value_fd, 0, os.SEEK_SET)  # Resetear el puntero del archivo al inicio
                 value = os.read(value_fd, 1024).strip()  # Leer el valor
-                if value == "1":
-                    print(f"Evento detectado en el pin {pin}: valor {value}")
-                    report_stop(stop_url, value)
+                if value == b'1':
+                    print(f"Evento detectado en el pin {pin}: valor {value.decode()}")
+                    report_stop(stop_url, value.decode())
                     stop_threads = True
 
         os.close(value_fd)
