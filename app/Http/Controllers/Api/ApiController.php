@@ -38,7 +38,8 @@ class ApiController extends Controller
         // Crear un nuevo registro S0 con el nuevo estado y el comando del antecesor
         $s0Final = S0::create([
             'estado' => $nuevoEstado,
-            'comando_id' => $s0Actual->comando->id ?? null
+            'comando_id' => $s0Actual->comando->id ?? null,
+            'sensor3' => 0
         ]);
 
         // Actualizar el estado del sistema con el nuevo s0_id
