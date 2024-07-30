@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -31,15 +32,8 @@ class CreateEstadoSistemasTable extends Migration
      */
     public function down()
     {
-        Schema::table('estado_sistemas', function (Blueprint $table) {
-            $table->dropForeign(['s0_id']);
-            $table->dropForeign(['s1_id']);
-            $table->dropForeign(['s2_id']);
-            $table->dropForeign(['s3_id']);
-            $table->dropForeign(['s4_id']);
-            $table->dropForeign(['s5_id']);
-        });
-
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('estado_sistemas');
+        Schema::enableForeignKeyConstraints();
     }
 }

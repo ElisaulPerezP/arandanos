@@ -238,7 +238,7 @@ class ApiController extends Controller
 
         return response()->json(['message' => 'Estado reportado exitosamente'], 200);
     }
-
+//TODO: ENCONTRAR LOS COMADOS DE APAGADO DE CADA SISTEMA PARA ESCRIBIRLOS AQUI.
     public function reportImpulsoresShutdown(Request $request)
     {
         Log::info('Request received for reportImpulsoresSHutdown:', $request->all());
@@ -253,8 +253,8 @@ class ApiController extends Controller
         $s3Nueva = S3::create(array_merge(
             ['estado' => $request->input('status', 'Apagado con exito')],
             ['comando_id' => $s3Actual ? $s3Actual->comando_id : null],
-            ['pump1' => 'apagada'],
-            ['pump2' => 'apagada'],
+            ['pump1' => '0'],
+            ['pump2' => '0'],
         ));
 
         // Actualizar el EstadoSistema con la nueva entrada s3
@@ -278,7 +278,6 @@ class ApiController extends Controller
                 return response()->json(['actions' => json_decode($comando->comando)], 200);
             }
         }
-        Log::info('el comando de hardware reportado para el sistema de inyeccion es: ', $comando->comando);
         // Retornar un mensaje de error si no se encuentra el comando
         return response()->json(['message' => 'Comando no encontrado'], 404);
     }
