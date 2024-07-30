@@ -77,6 +77,8 @@ def load_pins_from_file(filename):
             parts = line.split(':')
             if len(parts) == 2:
                 name, pin = parts
+                if name in pins:
+                    print(f"Advertencia: Nombre duplicado encontrado en el archivo {filename}: {name}")
                 pins[name] = int(pin)
             else:
                 print(f"Formato incorrecto en la línea: {line}")
@@ -88,6 +90,12 @@ def main(input_file, output_file, output_neg_file, selector_url, estado_url, apa
     output_pins = load_pins_from_file(output_file)
     output_neg_pins = load_pins_from_file(output_neg_file)
 
+    # Verificar duplicados
+    all_names = list(sensor_pins.keys()) + list(output_pins.keys()) + list(output_neg_pins.keys())
+    if len(all_names) != len(set(all_names)):
+        raise ValueError("Nombres de pines duplicados encontrados entre los archivos de configuración.")
+
+    # Combinar todos los pines en un solo diccionario
     all_pins = {**sensor_pins, **output_pins, **output_neg_pins}
 
     # Exportar y configurar los pines
