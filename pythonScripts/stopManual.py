@@ -44,7 +44,7 @@ def read_pin_value(pin):
 
 # Funciones para interactuar con la API
 def report_stop(url, value):
-    payload = {'estado': 'Parada activada','sensor3': value }
+    payload = {'estado': 'Parada activada', 'sensor3': value}
     try:
         response = requests.post(url, json=payload)
         if response.status_code == 200:
@@ -80,16 +80,17 @@ def main(input_file, stop_url):
         value_fd = os.open(f"/sys/class/gpio/gpio{pin}/value", os.O_RDONLY | os.O_NONBLOCK)
         poller = select.poll()
         poller.register(value_fd, select.POLLPRI)
-        
+
         while not stop_threads:
             events = poller.poll(1)  # Esperar hasta 1 µs por un evento
             if events:
                 os.lseek(value_fd, 0, os.SEEK_SET)  # Resetear el puntero del archivo al inicio
                 value = os.read(value_fd, 1024).strip()  # Leer el valor
                 if value == "1":
+                    print(f"Evento detectado en el pin {pin}: valor {value}")
                     report_stop(stop_url, value)
                     stop_threads = True
-        
+
         os.close(value_fd)
 
     # Iniciar hilo
