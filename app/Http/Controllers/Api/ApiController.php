@@ -79,7 +79,7 @@ class ApiController extends Controller
     {
         // Buscar la entrada en la tabla EstadoSistema
         $estadoSistema = EstadoSistema::first();
-
+        $comandoEsperar = ComandoHardware::where('comando', 'esperar')->first();
         // Verificar si existe el estadoSistema y la relación s1
         if ($estadoSistema && $estadoSistema->s1) {
             // Obtener la entrada s1 relacionada
@@ -91,7 +91,7 @@ class ApiController extends Controller
                 'sensor1' => $request->input('sensor1', $s1Actual->sensor1),
                 'sensor2' => $request->input('sensor2', $s1Actual->sensor2),
                 'valvula14' => $request->input('valvula14', $s1Actual->valvula14),
-                'comando_id' => $s1Actual->comando->id
+                'comando_id' =>  $s1Actual->comando->id ?? $comandoEsperar->id,
             ]);
 
             // Actualizar el EstadoSistema con la nueva entrada s1
