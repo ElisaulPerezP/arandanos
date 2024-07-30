@@ -71,8 +71,15 @@ def load_pins_from_file(filename):
     pins = {}
     with open(filename, 'r') as f:
         for line in f:
-            name, pin = line.strip().split(':')
-            pins[name] = int(pin)
+            line = line.strip()
+            if not line:
+                continue
+            parts = line.split(':')
+            if len(parts) == 2:
+                name, pin = parts
+                pins[name] = int(pin)
+            else:
+                print(f"Formato incorrecto en la línea: {line}")
     return pins
 
 def main(input_file, output_file, output_neg_file, selector_url, estado_url, apagado_url):
@@ -160,7 +167,7 @@ def main(input_file, output_file, output_neg_file, selector_url, estado_url, apa
         report_status(apagado_url, 'Apagado con exito')
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Script para el llenado de tanques automáticamente. implementa dos hilos para la comunicacion a la api, una cada 0.3 segundos y otra cada 10 segundos')
+    parser = argparse.ArgumentParser(description='Script para el llenado de tanques automáticamente.')
     parser.add_argument('input_file', type=str, help='Archivo de configuración de sensores de nivel.')
     parser.add_argument('output_file', type=str, help='Archivo de configuración de electrovalvulas (lógica positiva).')
     parser.add_argument('output_neg_file', type=str, help='Archivo de configuración de electrovalvulas (lógica negativa).')
