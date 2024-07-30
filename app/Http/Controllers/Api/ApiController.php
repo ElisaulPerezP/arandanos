@@ -277,7 +277,7 @@ class ApiController extends Controller
                 return response()->json(['actions' => json_decode($comando->comando)], 200);
             }
         }
-
+        Log::info('el comando de hardware reportado para el sistema de inyeccion es: ', $comando->comando);
         // Retornar un mensaje de error si no se encuentra el comando
         return response()->json(['message' => 'Comando no encontrado'], 404);
     }
@@ -319,15 +319,16 @@ class ApiController extends Controller
 
         // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
         $estadoSistema = EstadoSistema::firstOrCreate();
-
         // Obtener la entrada s4 actual si existe
         $s4Actual = $estadoSistema->s4;
 
         // Crear una nueva entrada s4 con el estado inactivo y el comando del antecesor
         $s4Nueva = S4::create(array_merge(
-            ['estado' => 'apagado'],
-            $request->except('estado'),
-            ['comando_id' => $s4Actual ? $s4Actual->comando_id : null]
+            ['estado' => $request->input('status', 'Apagado con exito')],
+            ['comando_id' => $s4Actual ? $s4Actual->comando_id : null],
+            ['pump3' => 'apagado'],
+            ['pump4' => 'apagado'],
+
         ));
 
         // Actualizar el EstadoSistema con la nueva entrada s4
