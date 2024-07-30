@@ -22,10 +22,12 @@ class ApiController extends Controller
     public function reportStop(Request $request)
     {
         // Obtener el estado actual del sistema
-        $estadoActual = EstadoSistema::first();
+        $estadosDelSistema = EstadoSistema::first();
+
+        $s0Actual = $estadosDelSistema -> s0;
 
         // Determinar el nuevo estado y el evento a emitir basado en el estado actual
-        if ($estadoActual && $estadoActual->s0->estado === 'Parada activada') {
+        if ($s0Actual && $s0Actual->estado === 'Parada activada') {
             $nuevoEstado = 'Parada desactivada';
             $evento = new InicioDeAplicacion();
         } else {
@@ -34,16 +36,16 @@ class ApiController extends Controller
         }
 
         // Crear un nuevo registro S0 con el nuevo estado y el comando del antecesor
-        $s0 = S0::create([
+        $s0Final = S0::create([
             'estado' => $nuevoEstado,
-            'comando_id' => $estadoActual->s0->comando->id ?? null
+            'comando_id' => $s0Actual->comando->id ?? null
         ]);
 
         // Actualizar el estado del sistema con el nuevo s0_id
-        if ($estadoActual) {
-            $estadoActual->update(['s0_id' => $s0->id]);
+        if ($s0Final) {
+            $estadosDelSistema->update(['s0_id' => $s0Final->id]);
         } else {
-            EstadoSistema::create(['s0_id' => $s0->id]);
+            EstadoSistema::create(['s0_id' => $s0Final->id]);
         }
 
         // Emitir el evento correspondiente
@@ -56,15 +58,16 @@ class ApiController extends Controller
     {
         // Obtener el estado actual del sistema
         $estado = EstadoSistema::first();
-
-        // Verificar si existe el estado y la relación s1
-        if ($estado && $estado->s1) {
+        $s1Actual = $estado -> s1;
+        $comandoHardware = $s1Actual ->comando;
+        // Verificar si existe el comando
+        if ($comandoHardware) {
             // Obtener el comando desde la relación s1
-            $comando = $estado->s1->comando;
+            $comandoExplicito = $comandoHardware->comando;
 
             // Retornar el comando si existe
-            if ($comando) {
-                return response()->json(['command' => $comando->comando], 200);
+            if ($comandoExplicito) {
+                return response()->json(['command' => $comandoExplicito], 200);
             }
         }
 
