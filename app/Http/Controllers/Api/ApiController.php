@@ -22,7 +22,7 @@ class ApiController extends Controller
     public function reportStop(Request $request)
     {
         // Obtener el estado actual del sistema
-        $estadosDelSistema = EstadoSistema::first();
+        $estadosDelSistema = EstadoSistema::find(1);
 
         $s0Actual = $estadosDelSistema -> s0;
 
@@ -59,7 +59,7 @@ class ApiController extends Controller
     public function getTanquesCommand()
     {
         // Obtener el estado actual del sistema
-        $estado = EstadoSistema::first();
+        $estado = EstadoSistema::find(1);
         $s1Actual = $estado -> s1;
         $comandoHardware = $s1Actual ->comando;
         // Verificar si existe el comando
@@ -80,7 +80,7 @@ class ApiController extends Controller
     public function reportTanquesState(Request $request)
     {
         // Buscar la entrada en la tabla EstadoSistema
-        $estadoSistema = EstadoSistema::first();
+        $estadoSistema = EstadoSistema::find(1);
         $comandoEsperar = ComandoHardware::where('comando', 'esperar')->first();
         // Verificar si existe el estadoSistema y la relación s1
         if ($estadoSistema && $estadoSistema->s1) {
@@ -109,7 +109,7 @@ class ApiController extends Controller
     public function reportTanquesShutdown(Request $request)
     {
         // Buscar la entrada en la tabla EstadoSistema
-        $estadoSistema = EstadoSistema::first();
+        $estadoSistema = EstadoSistema::find(1);
 
         // Verificar si existe el estadoSistema y la relación s1
         if ($estadoSistema && $estadoSistema->s1) {
@@ -138,7 +138,7 @@ class ApiController extends Controller
     public function getSelectorCommand()
     {
         // Obtener el estado actual del sistema
-        $estado = EstadoSistema::first();
+        $estado = EstadoSistema::find(1);
 
         // Verificar si existe el estado y la relación s2
         if ($estado && $estado->s2) {
@@ -158,7 +158,7 @@ class ApiController extends Controller
     public function reportState(Request $request)
     {
         // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
-        $estadoSistema = EstadoSistema::firstOrCreate();
+        $estadoSistema = EstadoSistema::find(1);
 
         // Obtener la entrada s2 actual si existe
         $s2Actual = $estadoSistema->s2;
@@ -178,7 +178,7 @@ class ApiController extends Controller
     public function reportShutdown(Request $request)
     {
         // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
-        $estadoSistema = EstadoSistema::firstOrCreate();
+        $estadoSistema = EstadoSistema::find(1);
 
         // Obtener la entrada s2 actual si existe
         $s2Actual = $estadoSistema->s2;
@@ -199,7 +199,7 @@ class ApiController extends Controller
     public function getImpulsoresCommand()
     {
         // Obtener el estado actual del sistema
-        $estado = EstadoSistema::first();
+        $estado = EstadoSistema::find(1);
 
         // Verificar si existe el estado y la relación s3
         if ($estado && $estado->s3) {
@@ -219,7 +219,7 @@ class ApiController extends Controller
     public function reportImpulsoresState(Request $request)
     {
         // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
-        $estadoSistema = EstadoSistema::firstOrCreate();
+        $estadoSistema = EstadoSistema::find(1);
 
         // Obtener la entrada s3 actual si existe
         $s3Actual = $estadoSistema->s3;
@@ -249,7 +249,7 @@ class ApiController extends Controller
         Log::info('Request received for reportImpulsoresSHutdown:', $request->all());
 
         // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
-        $estadoSistema = EstadoSistema::firstOrCreate();
+        $estadoSistema = EstadoSistema::find(1);
 
         // Obtener la entrada s3 actual si existe
         $s3Actual = $estadoSistema->s3;
@@ -271,7 +271,7 @@ class ApiController extends Controller
     public function getInyectoresCommand()
     {
         // Obtener el estado actual del sistema
-        $estado = EstadoSistema::first();
+        $estado = EstadoSistema::find(1);
 
         // Verificar si existe el estado y la relación s4
         if ($estado && $estado->s4) {
@@ -292,7 +292,7 @@ class ApiController extends Controller
         
 
         // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
-        $estadoSistema = EstadoSistema::firstOrCreate();
+        $estadoSistema = EstadoSistema::find(1);
 
         // Obtener la entrada s4 actual si existe
         $s4Actual = $estadoSistema->s4;
@@ -323,7 +323,7 @@ class ApiController extends Controller
         Log::info('Request received for reportInyectoresShutdown:', $request->all());
 
         // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
-        $estadoSistema = EstadoSistema::firstOrCreate();
+        $estadoSistema = EstadoSistema::find(1);
         // Obtener la entrada s4 actual si existe
         $s4Actual = $estadoSistema->s4;
 
@@ -347,7 +347,7 @@ class ApiController extends Controller
         Log::info('Request received for reportFlujoCOnteo:', $request->all());
 
         // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
-        $estadoSistema = EstadoSistema::firstOrCreate();
+        $estadoSistema = EstadoSistema::find(1);
 
         // Obtener la entrada s5 actual si existe
         $s5Actual = $estadoSistema->s5;
@@ -370,7 +370,7 @@ class ApiController extends Controller
         Log::info('Request received for reportFLujoApagado:', $request->all());
 
         // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
-        $estadoSistema = EstadoSistema::firstOrCreate();
+        $estadoSistema = EstadoSistema::find(1);
 
         // Obtener la entrada s5 actual si existe
         $s5Actual = $estadoSistema->s5;

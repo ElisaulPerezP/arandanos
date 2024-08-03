@@ -18,6 +18,8 @@ class CreateComandoHardwareTable extends Migration
             $table->string('sistema');
             $table->text('comando');
             $table->timestamps();
+
+            $table->index('comando');
         });
     }
 

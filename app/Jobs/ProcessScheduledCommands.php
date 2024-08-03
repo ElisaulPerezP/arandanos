@@ -28,13 +28,14 @@ class ProcessScheduledCommands implements ShouldQueue
      */
     public function handle()
     {
-        $now = Carbon::now()->unix();
-        $oneMinuteAgo = Carbon::now()->subMinute()->unix();
-
+        $oneMinuteAgo = now()->subMinute()->timestamp;
+        $now = now()->timestamp;
+        
         $programaciones = Programacion::where('hora_unix', '>=', $oneMinuteAgo)
-                                      ->where('hora_unix', '<=', $now)
-                                      ->whereNotIn('estado', ['ejecutado_exitosamente', 'ejecutandose', 'cancelado'])
-                                      ->get();
+            ->where('hora_unix', '<=', $now)
+            ->whereNotIn('estado', ['ejecutado_exitosamente', 'ejecutandose', 'cancelado'])
+            ->with('comando') 
+            ->get();
 
         foreach ($programaciones as $programacion) {
             $comando = $programacion->comando;

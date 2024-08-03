@@ -16,10 +16,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->call(function () {
-            $cultivos = Cultivo::all();
-            foreach ($cultivos as $cultivo) {
+            $cultivo = Cultivo::first();
                 FetchRevistaData::dispatch($cultivo);
-            }
         })->everyMinute();
 
         $schedule->job(new ProcessScheduledCommands)->everyMinute();

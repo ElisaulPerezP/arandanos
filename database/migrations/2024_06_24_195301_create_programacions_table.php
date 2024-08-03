@@ -18,6 +18,10 @@ class CreateProgramacionsTable extends Migration
             $table->foreignId('comando_id')->constrained()->onDelete('cascade');
             $table->string('estado')->default('por enviar');
             $table->timestamps();
+
+            // Agregar índices
+            $table->index('hora_unix');
+            $table->index('estado');
         });
     }
 

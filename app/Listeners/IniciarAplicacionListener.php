@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Cultivo;
 use App\Models\Estado;
 use App\Events\SincronizarSistema;
-
-
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class IniciarAplicacionListener
 {
@@ -35,7 +35,6 @@ class IniciarAplicacionListener
             'estado_id' => $estadoActivo->id, 
         ]);
         event(new SincronizarSistema());
-        
     }
 
     protected function iniciarScripts(array $scripts)
@@ -51,10 +50,13 @@ class IniciarAplicacionListener
 
         foreach ($scripts as $script) {
             if (!empty($script)) {
-                $command = escapeshellcmd("python3 " . base_path("pythonScripts/{$script}"));
-                exec($command . " > /dev/null &", $output, $returnVar);
-                if ($returnVar !== 0) {
-                    Log::error("Error al ejecutar el script: {$script}. Output: " . implode("\n", $output));
+                $command = ["python3", base_path("pythonScripts/{$script}")];
+                $process = new Process($command);
+                $process->start();
+                $process->wait(); // Esperar a que el proceso termine
+
+                if (!$process->isSuccessful()) {
+                    Log::error("Error al ejecutar el script: {$script}. Output: " . $process->getErrorOutput());
                 } else {
                     Log::info("Script iniciado exitosamente: {$script}");
                     $report['scriptsEjecutandose'] .= empty($report['scriptsEjecutandose']) ? $script : ', ' . $script;
