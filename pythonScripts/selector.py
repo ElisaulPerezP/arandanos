@@ -70,8 +70,11 @@ def load_pins_from_file(filename):
     pins = {}
     with open(filename, 'r') as f:
         for line in f:
-            name, pin = line.strip().split(':')
-            pins[name] = int(pin)
+            if ':' in line:
+                name, pin = line.strip().split(':')
+                pins[name] = int(pin)
+            else:
+                print(f"Línea inválida en el archivo de configuración: {line.strip()}")
     return pins
 
 def main(output_file, output_neg_file, selector_url, estado_url, apagado_url):
@@ -101,7 +104,7 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url):
         while not stop_threads:
             command = get_selector_command(selector_url)
             if command:
-                for action in command:
+                for action in command.get('actions', []):
                     action_parts = action.split(':')
                     action_type = action_parts[0]  # on or off
                     pin_name = action_parts[1]    # valvula1, valvula2, etc.
@@ -116,6 +119,7 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url):
                         elif action_type == 'off':
                             set_pin_value(output_neg_pins[pin_name], "1")
             time.sleep(10)
+
 
     # Función para reportar estado a la API
     def report_state():
