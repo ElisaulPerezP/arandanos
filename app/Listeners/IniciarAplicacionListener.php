@@ -50,8 +50,11 @@ class IniciarAplicacionListener
 
         foreach ($scripts as $script) {
             if (!empty($script)) {
-                $command = ["python3", base_path("pythonScripts/{$script}")];
-                $process = new Process($command);
+                // Separar los argumentos del script en elementos de la lista
+                $arguments = explode(' ', $script);
+                array_unshift($arguments, 'python3'); // Agregar 'python3' al inicio de la lista
+
+                $process = new Process($arguments);
                 $process->start();
                 $process->wait(); // Esperar a que el proceso termine
 
