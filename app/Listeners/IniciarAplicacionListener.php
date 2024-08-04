@@ -40,7 +40,7 @@ class IniciarAplicacionListener
     protected function iniciarScripts(array $scripts)
     {
         Log::info("iniciando");
-        $reportFilePath = base_path('/var/www/arandanos/pythonScripts/scriptsReport.php');
+        $reportFilePath = '/var/www/arandanos/pythonScripts/scriptsReport.php';
         if (!file_exists($reportFilePath)) {
             Log::error("El archivo de reporte no existe: {$reportFilePath}");
             return;
@@ -72,4 +72,3 @@ class IniciarAplicacionListener
         $content = "<?php\nreturn " . var_export($report, true) . ";\n";
         file_put_contents($reportFilePath, $content);
     }
-}
