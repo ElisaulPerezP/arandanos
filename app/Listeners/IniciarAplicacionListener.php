@@ -31,8 +31,8 @@ class IniciarAplicacionListener
 
         $cultivo = Cultivo::first();
         $estadoActivo = Estado::where('nombre', 'Activo')->first();
-        $cultivo->update([ 
-            'estado_id' => $estadoActivo->id, 
+        $cultivo->update([
+            'estado_id' => $estadoActivo->id,
         ]);
         event(new SincronizarSistema());
     }
@@ -53,8 +53,8 @@ class IniciarAplicacionListener
                 // Separar el script y sus argumentos en una lista
                 $arguments = explode(' ', $script);
 
-                // Agregar python3 al inicio de la lista
-                array_unshift($arguments, 'python3');
+                // Agregar sudo python3 al inicio de la lista
+                array_unshift($arguments, 'sudo', 'python3');
 
                 $process = new Process($arguments);
                 $process->start();
