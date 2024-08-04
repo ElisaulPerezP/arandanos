@@ -56,9 +56,10 @@ class IniciarAplicacionListener
                 // Agregar sudo python3 al inicio de la lista
                 array_unshift($arguments, 'sudo', 'python3');
 
-                $process = new Process($arguments);
+                // Ejecutar el script en segundo plano
+                $command = implode(' ', $arguments) . ' > /dev/null 2>&1 &';
+                $process = new Process(['bash', '-c', $command]);
                 $process->start();
-                $process->wait(); // Esperar a que el proceso termine
 
                 if (!$process->isSuccessful()) {
                     Log::error("Error al ejecutar el script: {$script}. Output: " . $process->getErrorOutput());
