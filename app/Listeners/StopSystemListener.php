@@ -9,6 +9,8 @@ use App\Models\Estado;
 use Illuminate\Support\Facades\Log;
 use App\Models\Cultivo;
 use App\Events\SincronizarSistema;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class StopSystemListener
 {
@@ -42,7 +44,7 @@ class StopSystemListener
 
     protected function detenerProcesos(array $scripts)
     {
-        $reportFilePath = base_path('pythonScripts/scriptsReport.php');
+        $reportFilePath = '/var/www/arandanos/pythonScripts/scriptsReport.php';
 
         if (!file_exists($reportFilePath)) {
             Log::error("El archivo de reporte no existe: {$reportFilePath}");
@@ -55,7 +57,7 @@ class StopSystemListener
             if (!empty($script)) {
                 // Obtener el nombre del script sin parámetros
                 $scriptName = explode(' ', $script)[0];
-                $command = escapeshellcmd("pkill -f " . $scriptName);
+                $command = "pkill -f " . escapeshellarg($scriptName);
                 exec($command, $output, $returnVar);
                 if ($returnVar !== 0) {
                     Log::error("Error al detener el script: {$script}. Output: " . implode("\n", $output));
@@ -75,8 +77,8 @@ class StopSystemListener
     protected function ejecutarStopTotal($scriptStopTotal)
     {
         if (!empty($scriptStopTotal)) {
-            $command = escapeshellcmd("python3 " . base_path("pythonScripts/{$scriptStopTotal}"));
-            exec($command . " > /dev/null &", $output, $returnVar);
+            $command = "python3 /var/www/arandanos/pythonScripts/{$scriptStopTotal}";
+            exec($command . " > /dev/null 2>&1 &", $output, $returnVar);
             if ($returnVar !== 0) {
                 Log::error("Error al ejecutar el script stopTotal: {$scriptStopTotal}. Output: " . implode("\n", $output));
             } else {
@@ -85,4 +87,3 @@ class StopSystemListener
         }
     }
 }
-
