@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Cultivo;
 use App\Events\SincronizarSistema;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 
 class StopSystemListener
 {
@@ -57,12 +56,24 @@ class StopSystemListener
             if (!empty($script)) {
                 // Obtener el nombre del script sin parámetros
                 $scriptName = explode(' ', $script)[0];
-                $command = "pkill -f " . escapeshellarg($scriptName);
-                exec($command, $output, $returnVar);
+
+                // Obtener los PIDs del script usando pgrep
+                $command = "pgrep -f " . escapeshellarg($scriptName);
+                exec($command, $pids, $returnVar);
+
                 if ($returnVar !== 0) {
-                    Log::error("Error al detener el script: {$script}. Output: " . implode("\n", $output));
+                    Log::error("Error al encontrar el script: {$scriptName}. Output: " . implode("\n", $pids));
                 } else {
-                    Log::info("Script detenido exitosamente: {$script}");
+                    // Terminar cada PID encontrado
+                    foreach ($pids as $pid) {
+                        $killCommand = "kill -TERM " . escapeshellarg($pid);
+                        exec($killCommand, $output, $killReturnVar);
+                        if ($killReturnVar !== 0) {
+                            Log::error("Error al detener el proceso con PID: {$pid}. Output: " . implode("\n", $output));
+                        } else {
+                            Log::info("Proceso con PID {$pid} detenido exitosamente.");
+                        }
+                    }
                 }
             }
         }
