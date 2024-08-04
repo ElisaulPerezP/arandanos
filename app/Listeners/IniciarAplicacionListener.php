@@ -72,3 +72,4 @@ class IniciarAplicacionListener
         $content = "<?php\nreturn " . var_export($report, true) . ";\n";
         file_put_contents($reportFilePath, $content);
     }
+}
