@@ -52,8 +52,6 @@ class IniciarAplicacionListener
             if (!empty($script)) {
                 // Separar el script y sus argumentos en una lista
                 $arguments = explode(' ', $script);
-                // Asegurarse de que la ruta del script es absoluta
-                $arguments[0] = base_path('pythonScripts/' . $arguments[0]);
 
                 // Agregar python3 al inicio de la lista
                 array_unshift($arguments, 'python3');
