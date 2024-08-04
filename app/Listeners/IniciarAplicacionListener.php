@@ -54,7 +54,7 @@ class IniciarAplicacionListener
                 $arguments = explode(' ', $script);
 
                 // Agregar python3 al inicio de la lista
-                array_unshift($arguments, 'sudo python3');
+                array_unshift($arguments, 'python3');
 
                 $process = new Process($arguments);
                 $process->start();
