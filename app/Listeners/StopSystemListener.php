@@ -9,7 +9,6 @@ use App\Models\Estado;
 use Illuminate\Support\Facades\Log;
 use App\Models\Cultivo;
 use App\Events\SincronizarSistema;
-use Symfony\Component\Process\Process;
 
 class StopSystemListener
 {
@@ -56,24 +55,34 @@ class StopSystemListener
             if (!empty($script)) {
                 // Obtener el nombre del script sin parámetros
                 $scriptName = explode(' ', $script)[0];
-
-                // Obtener los PIDs del script usando pgrep
-                $command = "pgrep -f " . escapeshellarg($scriptName);
-                exec($command, $pids, $returnVar);
+                $pkillCommand = "sudo pkill -f " . escapeshellarg($scriptName);
+                
+                // Ejecutar pkill
+                exec($pkillCommand, $output, $returnVar);
 
                 if ($returnVar !== 0) {
-                    Log::error("Error al encontrar el script: {$scriptName}. Output: " . implode("\n", $pids));
-                } else {
-                    // Terminar cada PID encontrado
-                    foreach ($pids as $pid) {
-                        $killCommand = "kill -TERM " . escapeshellarg($pid);
-                        exec($killCommand, $output, $killReturnVar);
-                        if ($killReturnVar !== 0) {
-                            Log::error("Error al detener el proceso con PID: {$pid}. Output: " . implode("\n", $output));
-                        } else {
-                            Log::info("Proceso con PID {$pid} detenido exitosamente.");
+                    Log::error("Error al detener el script: {$scriptName} con pkill. Intentando con kill...");
+
+                    // Intentar con kill
+                    $pgrepCommand = "pgrep -f " . escapeshellarg($scriptName);
+                    exec("sudo " . $pgrepCommand, $pids, $pgrepReturnVar);
+
+                    if ($pgrepReturnVar === 0) {
+                        foreach ($pids as $pid) {
+                            $killCommand = "sudo kill " . escapeshellarg($pid);
+                            exec($killCommand, $killOutput, $killReturnVar);
+
+                            if ($killReturnVar !== 0) {
+                                Log::error("Error al detener el proceso con PID: {$pid}. Output: " . implode("\n", $killOutput));
+                            } else {
+                                Log::info("Proceso con PID {$pid} detenido exitosamente.");
+                            }
                         }
+                    } else {
+                        Log::error("Error al encontrar PIDs para el script: {$scriptName}. Output: " . implode("\n", $pids));
                     }
+                } else {
+                    Log::info("Script detenido exitosamente: {$scriptName}");
                 }
             }
         }
