@@ -28,35 +28,43 @@ class ProcessScheduledCommands implements ShouldQueue
      */
     public function handle()
     {
-        $oneMinuteAgo = now()->subMinute()->timestamp;
-        $now = now()->timestamp;
-        
-        $programaciones = Programacion::where('hora_unix', '>=', $oneMinuteAgo)
-            ->where('hora_unix', '<=', $now)
-            ->whereNotIn('estado', ['ejecutado_exitosamente', 'ejecutandose', 'cancelado'])
-            ->with('comando') 
-            ->get();
+        try {
+            $oneMinuteAgo = now()->subMinute()->timestamp;
+            $now = now()->timestamp;
 
-        foreach ($programaciones as $programacion) {
-            $comando = $programacion->comando;
+            $programaciones = Programacion::where('hora_unix', '>=', $oneMinuteAgo)
+                ->where('hora_unix', '<=', $now)
+                ->whereNotIn('estado', ['ejecutado_exitosamente', 'ejecutandose', 'cancelado'])
+                ->with('comando') 
+                ->get();
 
-            $event = match($comando->nombre) {
-                //'revista' => Revista::class,
-                'sincronizar' => SincronizarSistema::class,
-                'parar' => StopSystem::class,
-                'iniciar' => InicioDeAplicacion::class,
-                'revisar' => CheckEvent::class,
-                'reiniciar' => RestartEvent::class,
-                'riego' => RiegoEvent::class,
-                default => null,
-            };
+            foreach ($programaciones as $programacion) {
+                try {
+                    $comando = $programacion->comando;
 
-            if ($event) {
-                event(new $event($programacion));  // Pasar la instancia completa del modelo
-                $programacion->update(['estado' => 'ejecutandose']);
-                Log::info('Emitiendo evento: ' . $comando->nombre, ['programacion_id' => $programacion->id, 'event' => $event]);
+                    $event = match($comando->nombre) {
+                        //'revista' => Revista::class,
+                        'sincronizar' => SincronizarSistema::class,
+                        'parar' => StopSystem::class,
+                        'iniciar' => InicioDeAplicacion::class,
+                        'revisar' => CheckEvent::class,
+                        'reiniciar' => RestartEvent::class,
+                        'riego' => RiegoEvent::class,
+                        default => null,
+                    };
+
+                    if ($event) {
+                        event(new $event($programacion));  // Pasar la instancia completa del modelo
+                        $programacion->update(['estado' => 'ejecutandose']);
+                        Log::info('Emitiendo evento: ' . $comando->nombre, ['programacion_id' => $programacion->id, 'event' => $event]);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Error procesando la programación.', ['programacion_id' => $programacion->id, 'exception' => $e->getMessage()]);
+                    $programacion->update(['estado' => 'fallido']);
+                }
             }
+        } catch (\Exception $e) {
+            Log::error('Error en ProcessScheduledCommands job.', ['exception' => $e->getMessage()]);
         }
     }
 }
- 
