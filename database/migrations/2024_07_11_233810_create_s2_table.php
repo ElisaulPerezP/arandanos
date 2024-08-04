@@ -14,21 +14,21 @@ class CreateS2Table extends Migration
     {
         Schema::create('s2', function (Blueprint $table) {
             $table->id();
-            $table->boolean('estado');
+            $table->string('estado')->nullable();
             $table->foreignId('comando_id')->nullable()->constrained('comando_hardware');
-            $table->boolean('valvula1');
-            $table->boolean('valvula2');
-            $table->boolean('valvula3');
-            $table->boolean('valvula4');
-            $table->boolean('valvula5');
-            $table->boolean('valvula6');
-            $table->boolean('valvula7');
-            $table->boolean('valvula8');
-            $table->boolean('valvula9');
-            $table->boolean('valvula10');
-            $table->boolean('valvula11');
-            $table->boolean('valvula12');
-            $table->boolean('valvula13');
+            $table->string('valvula1')->nullable();
+            $table->string('valvula2')->nullable();
+            $table->string('valvula3')->nullable();
+            $table->string('valvula4')->nullable();
+            $table->string('valvula5')->nullable();
+            $table->string('valvula6')->nullable();
+            $table->string('valvula7')->nullable();
+            $table->string('valvula8')->nullable();
+            $table->string('valvula9')->nullable();
+            $table->string('valvula10')->nullable();
+            $table->string('valvula11')->nullable();
+            $table->string('valvula12')->nullable();
+            $table->string('valvula13')->nullable();
             $table->timestamps();
         });
     }
