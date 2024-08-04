@@ -165,8 +165,9 @@ class ApiController extends Controller
 
         // Crear una nueva entrada s2 con la información proporcionada en el request y el comando del antecesor
         $s2Nueva = S2::create(array_merge(
+            ['estado' => 'sin_estado'],
             $request->all(),
-            ['comando_id' => $s2Actual ? $s2Actual->comando_id : "SIN_ESTADO"]
+            ['comando_id' => $s2Actual ? $s2Actual->comando_id : null]
         ));
 
         // Actualizar el EstadoSistema con la nueva entrada s2
