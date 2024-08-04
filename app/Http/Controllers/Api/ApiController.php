@@ -162,6 +162,7 @@ class ApiController extends Controller
 
         // Obtener la entrada s2 actual si existe
         $s2Actual = $estadoSistema->s2;
+        Log::info('Request received for s2:', $request->all());
 
         // Crear una nueva entrada s2 con la información proporcionada en el request y el comando del antecesor
         $s2Nueva = S2::create(array_merge(
