@@ -25,7 +25,7 @@ def export_pin(pin):
             else:
                 raise e
 
-def unexport_pin(pin):
+def unexport_pin(pin, api_error_url):
     """Desexportar un pin GPIO."""
     try:
         with open("/sys/class/gpio/unexport", "w") as f:
@@ -33,7 +33,7 @@ def unexport_pin(pin):
     except IOError as e:
         report_error(api_error_url, f"Error desexportando el pin {pin}: {e}")
 
-def is_direction_set(pin, direction):
+def is_direction_set(pin, direction, api_error_url):
     """Verificar si la dirección de un pin GPIO ya está configurada."""
     try:
         with open(f"/sys/class/gpio/gpio{pin}/direction", "r") as f:
@@ -43,16 +43,16 @@ def is_direction_set(pin, direction):
         report_error(api_error_url, f"Error leyendo la dirección del pin {pin}: {e}")
         return False
 
-def set_pin_direction(pin, direction):
+def set_pin_direction(pin, direction, api_error_url):
     """Configurar la dirección de un pin GPIO solo si no está configurada previamente."""
-    if not is_direction_set(pin, direction):
+    if not is_direction_set(pin, direction, api_error_url):
         try:
             with open(f"/sys/class/gpio/gpio{pin}/direction", "w") as f:
                 f.write(direction)
         except IOError as e:
             report_error(api_error_url, f"Error configurando la dirección del pin {pin}: {e}")
 
-def set_pin_edge(pin, edge):
+def set_pin_edge(pin, edge, api_error_url):
     """Configurar el edge de un pin GPIO."""
     try:
         with open(f"/sys/class/gpio/gpio{pin}/edge", "w") as f:
@@ -60,7 +60,7 @@ def set_pin_edge(pin, edge):
     except IOError as e:
         report_error(api_error_url, f"Error configurando el edge del pin {pin}: {e}")
 
-def read_pin_value(pin):
+def read_pin_value(pin, api_error_url):
     """Leer el valor de un pin GPIO."""
     try:
         with open(f"/sys/class/gpio/gpio{pin}/value", "r") as f:
@@ -97,15 +97,14 @@ def load_first_pin_from_file(filename):
         return {name: int(pin)}
 
 def main(input_file, stop_url, api_error_url):
-    global api_error_url
     # Cargar el primer pin desde el archivo
     stop_pin = load_first_pin_from_file(input_file)
     name, pin = next(iter(stop_pin.items()))
 
     # Exportar y configurar el pin
     export_pin(pin)
-    set_pin_direction(pin, "in")
-    set_pin_edge(pin, "rising")
+    set_pin_direction(pin, "in", api_error_url)
+    set_pin_edge(pin, "rising", api_error_url)
 
     # Variables de control
     stop_threads = False
@@ -150,7 +149,7 @@ def main(input_file, stop_url, api_error_url):
         signal_handler(signal.SIGINT, None)
     finally:
         # Desexportar el pin
-        unexport_pin(pin)
+        unexport_pin(pin, api_error_url)
         time.sleep(1)  # Esperar un poco antes de terminar
         print(f"Pin {pin} desexportado y programa terminado.")
 
