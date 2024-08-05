@@ -7,6 +7,9 @@ import requests
 import argparse
 from threading import Thread
 
+# Configuración del tiempo de espera en segundos
+TIMEOUT = 2  # Tiempo de espera total de 2 segundos
+
 # Funciones para manipular GPIO
 def export_pin(pin):
     """Exportar un pin GPIO."""
@@ -41,13 +44,19 @@ def set_pin_edge(pin, edge):
 def report_count(url, counts):
     payload = counts
     try:
-        response = requests.post(url, json=payload)
+        response = requests.post(url, json=payload, timeout=TIMEOUT)
         if response.status_code == 200:
             print(f"Conteo reportado exitosamente: {counts}")
+            return True
         else:
             print(f"Error al reportar el conteo: {response.status_code}")
+            return False
+    except requests.Timeout:
+        print("Timeout al reportar el conteo.")
+        return False
     except Exception as e:
         print(f"Excepción al reportar el conteo: {e}")
+        return False
 
 def load_pins_from_file(filename):
     sensors = {}
@@ -94,9 +103,9 @@ def main(input_file, post_url, stop_url):
         while not stop_threads:
             time.sleep(10)
             current_counts = counts.copy()
-            report_count(post_url, current_counts)
-            for name in counts:
-                counts[name] = 0
+            if report_count(post_url, current_counts):
+                for name in counts:
+                    counts[name] = 0
 
     # Iniciar hilos para cada sensor
     threads = []
