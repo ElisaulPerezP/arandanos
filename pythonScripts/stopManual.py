@@ -73,10 +73,10 @@ def read_pin_value(pin, api_error_url):
         return None
 
 # Funciones para interactuar con la API
-def report_stop(api_error_url, value):
+def report_stop(url, value):
     payload = {'estado': 'Parada activada', 'sensor3': value}
     try:
-        response = requests.post(api_error_url, json=payload, timeout=TIMEOUT)
+        response = requests.post(url, json=payload, timeout=TIMEOUT)
         if response.status_code == 200:
             print(f"Parada reportada exitosamente.")
         else:
@@ -135,7 +135,7 @@ def main(input_file, stop_url, api_error_url):
                         stop_threads = True
                 except OSError as e:
                     if e.errno == 19:
-                        print("Dispositivo no disponible, probablemente desexportado.")
+                        report_error(api_error_url, "Dispositivo no disponible, probablemente desexportado.")
                         break
                     else:
                         raise
@@ -144,7 +144,6 @@ def main(input_file, stop_url, api_error_url):
 
     # Manejadores de señal
     def signal_handler(signum, frame):
-        report_stop(stop_url, "Signal received")
         nonlocal stop_threads
         stop_threads = True
 
