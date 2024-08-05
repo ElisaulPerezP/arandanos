@@ -58,6 +58,23 @@ def report_count(url, counts):
         print(f"Excepción al reportar el conteo: {e}")
         return False
 
+def report_stop(url, status_message):
+    payload = {'status': status_message}
+    try:
+        response = requests.post(url, json=payload, timeout=TIMEOUT)
+        if response.status_code == 200:
+            print(f"Apagado reportado exitosamente: {status_message}")
+            return True
+        else:
+            print(f"Error al reportar el apagado: {response.status_code}")
+            return False
+    except requests.Timeout:
+        print("Timeout al reportar el apagado.")
+        return False
+    except Exception as e:
+        print(f"Excepción al reportar el apagado: {e}")
+        return False
+
 def load_pins_from_file(filename):
     sensors = {}
     with open(filename, 'r') as f:
@@ -131,7 +148,7 @@ def main(input_file, post_url, stop_url):
         for pin in sensors.values():
             unexport_pin(pin)
         # Reportar apagado
-        report_count(stop_url, {'status': 'Apagado con exito'})
+        report_stop(stop_url, 'Apagado con exito')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Script para manejar sensores de flujo automáticamente.')
