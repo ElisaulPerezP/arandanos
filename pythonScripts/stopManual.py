@@ -73,10 +73,10 @@ def read_pin_value(pin, api_error_url):
         return None
 
 # Funciones para interactuar con la API
-def report_stop(url, value, api_error_url):
+def report_stop(api_error_url, value):
     payload = {'estado': 'Parada activada', 'sensor3': value}
     try:
-        response = requests.post(url, json=payload, timeout=TIMEOUT)
+        response = requests.post(api_error_url, json=payload, timeout=TIMEOUT)
         if response.status_code == 200:
             print(f"Parada reportada exitosamente.")
         else:
@@ -131,7 +131,7 @@ def main(input_file, stop_url, api_error_url):
                 try:
                     value = os.read(value_fd, 1024).strip()  # Leer el valor
                     if value == b'1':
-                        report_stop(stop_url, value.decode(), api_error_url)
+                        report_stop(stop_url, value.decode())
                         stop_threads = True
                 except OSError as e:
                     if e.errno == 19:
