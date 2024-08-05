@@ -5,19 +5,25 @@ import time
 import select
 import requests
 import argparse
+import signal
 from threading import Thread
 
 # Funciones para manipular GPIO
+def is_exported(pin):
+    """Verificar si un pin GPIO ya está exportado."""
+    return os.path.exists(f"/sys/class/gpio/gpio{pin}")
+
 def export_pin(pin):
-    """Exportar un pin GPIO."""
-    try:
-        with open("/sys/class/gpio/export", "w") as f:
-            f.write(str(pin))
-    except IOError as e:
-        if "Device or resource busy" in str(e):
-            pass  # El pin ya puede estar exportado
-        else:
-            raise e
+    """Exportar un pin GPIO solo si no está exportado."""
+    if not is_exported(pin):
+        try:
+            with open("/sys/class/gpio/export", "w") as f:
+                f.write(str(pin))
+        except IOError as e:
+            if "Device or resource busy" in str(e):
+                pass  # El pin ya puede estar exportado
+            else:
+                raise e
 
 def unexport_pin(pin):
     """Desexportar un pin GPIO."""
@@ -25,22 +31,42 @@ def unexport_pin(pin):
         with open("/sys/class/gpio/unexport", "w") as f:
             f.write(str(pin))
     except IOError as e:
-        print(f"Error: {e}")
+        print(f"Error desexportando el pin {pin}: {e}")
+
+def is_direction_set(pin, direction):
+    """Verificar si la dirección de un pin GPIO ya está configurada."""
+    try:
+        with open(f"/sys/class/gpio/gpio{pin}/direction", "r") as f:
+            current_direction = f.read().strip()
+            return current_direction == direction
+    except IOError as e:
+        print(f"Error leyendo la dirección del pin {pin}: {e}")
+        return False
 
 def set_pin_direction(pin, direction):
     """Configurar la dirección de un pin GPIO."""
-    with open(f"/sys/class/gpio/gpio{pin}/direction", "w") as f:
-        f.write(direction)
+    try:
+        with open(f"/sys/class/gpio/gpio{pin}/direction", "w") as f:
+            f.write(direction)
+    except IOError as e:
+        print(f"Error configurando la dirección del pin {pin}: {e}")
 
 def set_pin_edge(pin, edge):
     """Configurar el edge de un pin GPIO."""
-    with open(f"/sys/class/gpio/gpio{pin}/edge", "w") as f:
-        f.write(edge)
+    try:
+        with open(f"/sys/class/gpio/gpio{pin}/edge", "w") as f:
+            f.write(edge)
+    except IOError as e:
+        print(f"Error configurando el edge del pin {pin}: {e}")
 
 def read_pin_value(pin):
     """Leer el valor de un pin GPIO."""
-    with open(f"/sys/class/gpio/gpio{pin}/value", "r") as f:
-        return f.read().strip()
+    try:
+        with open(f"/sys/class/gpio/gpio{pin}/value", "r") as f:
+            return f.read().strip()
+    except IOError as e:
+        print(f"Error leyendo el valor del pin {pin}: {e}")
+        return None
 
 # Funciones para interactuar con la API
 def report_stop(url, value):
@@ -54,20 +80,40 @@ def report_stop(url, value):
     except Exception as e:
         print(f"Excepción al reportar la parada: {e}")
 
+def report_error(url, error_message):
+    payload = {'error': error_message}
+    try:
+        response = requests.post(url, json=payload)
+        if response.status_code == 200:
+            print(f"Error reportado exitosamente.")
+        else:
+            print(f"Error al reportar el error: {response.status_code}")
+    except Exception as e:
+        print(f"Excepción al reportar el error: {e}")
+
 def load_first_pin_from_file(filename):
     with open(filename, 'r') as f:
         line = f.readline()
         name, pin = line.strip().split(':')
         return {name: int(pin)}
 
-def main(input_file, stop_url):
+def main(input_file, stop_url, error_url):
     # Cargar el primer pin desde el archivo
     stop_pin = load_first_pin_from_file(input_file)
     name, pin = next(iter(stop_pin.items()))
 
-    # Exportar y configurar el pin
+    # Exportar el pin si no está exportado
     export_pin(pin)
-    set_pin_direction(pin, "in")
+
+    # Verificar si el pin está configurado como salida
+    if is_direction_set(pin, "out"):
+        error_message = f"El pin {pin} ya está configurado como salida."
+        print(error_message)
+        report_error(error_url, error_message)
+        set_pin_direction(pin, "in")
+    else:
+        set_pin_direction(pin, "in")
+
     set_pin_edge(pin, "rising")
 
     # Variables de control
@@ -93,6 +139,26 @@ def main(input_file, stop_url):
 
         os.close(value_fd)
 
+    # Función para manejar señales de interrupción
+    def signal_handler(sig, frame):
+        nonlocal stop_threads
+        print(f"Señal {sig} recibida, deteniendo el script...")
+        stop_threads = True
+        try:
+            report_stop(stop_url, "0")
+        except Exception as e:
+            print(f"Excepción al reportar el apagado: {e}")
+            report_error(error_url, str(e))
+        time.sleep(1)  # Esperar 1 segundo antes de finalizar
+        unexport_pin(pin)
+        print(f"Pin {pin} desexportado y programa terminado.")
+        exit(0)
+
+    # Registrar manejadores de señales
+    signal.signal(signal.SIGINT, signal_handler)  # Ctrl+C
+    signal.signal(signal.SIGTERM, signal_handler)  # kill
+    signal.signal(signal.SIGKILL, signal_handler)  # pkill
+
     # Iniciar hilo
     stop_thread = Thread(target=handle_stop)
     stop_thread.start()
@@ -113,6 +179,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Script para manejar el botón de parada.')
     parser.add_argument('input_file', type=str, help='Archivo de configuración del botón de parada.')
     parser.add_argument('stop_url', type=str, help='URL del endpoint para reportar la parada.')
+    parser.add_argument('error_url', type=str, help='URL del endpoint para reportar errores.')
 
     args = parser.parse_args()
-    main(args.input_file, args.stop_url)
+    main(args.input_file, args.stop_url, args.error_url)
