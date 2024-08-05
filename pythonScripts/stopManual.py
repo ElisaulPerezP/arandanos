@@ -132,7 +132,7 @@ def main(input_file, stop_url, api_error_url):
                     value = os.read(value_fd, 1024).strip()  # Leer el valor
                     if value == b'1':
                         report_stop(stop_url, value.decode())
-                        stop_threads = True
+                        stop_threads = False
                 except OSError as e:
                     if e.errno == 19:
                         report_error(api_error_url, "Dispositivo no disponible, probablemente desexportado.")
