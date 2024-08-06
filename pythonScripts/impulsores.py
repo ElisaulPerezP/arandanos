@@ -87,6 +87,23 @@ def get_selector_command(url, api_error_url):
         report_error(api_error_url, f"Excepción al obtener el comando: {e}")
         return None
 
+def report_shutdown(url, status_message, api_error_url):
+    payload = status_message
+    try:
+        response = requests.post(url, json=payload, timeout=TIMEOUT)
+        if response.status_code == 200:
+            print(f"Apagado reportado exitosamente: {status_message}")
+            return True
+        else:
+            report_error(api_error_url, f"Error al reportar el apagado: {response.status_code}")
+            return False
+    except requests.Timeout:
+        report_error(api_error_url, "Timeout al reportar el apagado.")
+        return False
+    except Exception as e:
+        report_error(api_error_url, f"Excepción al reportar el apagado: {e}")
+        return False
+
 def report_error(url, error_message):
     payload = {'error': error_message}
     try:
@@ -174,14 +191,17 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
         state_thread.join()
     finally:
         # Apagar todas las bombas y desexportar los pines
-        for pin in output_pins.values():
+        status_message = {}
+        for name, pin in output_pins.items():
             set_pin_value(pin, "0", api_error_url)
-        for pin in output_neg_pins.values():
+            status_message[name] = 'apagada'
+        for name, pin in output_neg_pins.items():
             set_pin_value(pin, "1", api_error_url)
+            status_message[name] = 'apagada'
         for pin in all_pins.values():
             unexport_pin(pin, api_error_url)
         # Reportar apagado
-        report_status(apagado_url, 'Apagado con exito', api_error_url)
+        report_shutdown(apagado_url, status_message, api_error_url)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Script para manejar las bombas automáticamente.')
