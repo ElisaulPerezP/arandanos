@@ -202,21 +202,23 @@ class ApiController extends Controller
     {
         // Obtener el estado actual del sistema
         $estado = EstadoSistema::find(1);
-
+    
         // Verificar si existe el estado y la relación s3
         if ($estado && $estado->s3) {
             // Obtener el comando desde la relación s3
             $comando = $estado->s3->comando;
-
+    
             // Retornar el comando si existe
             if ($comando) {
+                Log::info('Request sent by getImpulsoresCommand:', ['actions' => json_decode($comando->comando, true)]);
                 return response()->json(['actions' => json_decode($comando->comando)], 200);
             }
         }
-
+    
         // Retornar un mensaje de error si no se encuentra el comando
         return response()->json(['message' => 'Comando no encontrado'], 404);
     }
+    
 
     public function reportImpulsoresState(Request $request)
     {
@@ -245,7 +247,7 @@ class ApiController extends Controller
 
         return response()->json(['message' => 'Estado reportado exitosamente'], 200);
     }
-    
+
 public function reportImpulsoresShutdown(Request $request)
 {
     Log::info('Request received for reportImpulsoresSHutdown:', $request->all());
