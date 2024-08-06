@@ -111,6 +111,7 @@ def report_error(url, error_message):
     try:
         response = requests.post(url, json=payload, timeout=TIMEOUT)
         if response.status_code != 200:
+            print(f" error: {error_message}")
             print(f"Error al reportar el error: {response.status_code}")
     except Exception as e:
         print(f"Excepción al reportar el error: {e}")
