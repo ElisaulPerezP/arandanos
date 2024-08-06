@@ -157,9 +157,14 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
         nonlocal stop_threads
         while not stop_threads:
             command = get_selector_command(selector_url, api_error_url)
-            if command:
-                for action in command['actions']:
-                    pin_name = action.split(':')[1]
+            if command and 'actions' in command and 'actions' in command['actions']:
+                for action in command['actions']['actions']:
+                    parts = action.split(':')
+                    if len(parts) != 2:
+                        report_error(api_error_url, f"Formato de acción inválido: {action}")
+                        continue
+
+                    pin_name = parts[1]
                     if pin_name in output_pins:
                         if action.startswith('on'):
                             set_pin_value(output_pins[pin_name], "1", api_error_url)
@@ -170,6 +175,8 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
                             set_pin_value(output_neg_pins[pin_name], "0", api_error_url)
                         elif action.startswith('off'):
                             set_pin_value(output_neg_pins[pin_name], "1", api_error_url)
+            else:
+                report_error(api_error_url, "Formato de comando inválido o falta el campo 'actions'")
             time.sleep(10)
 
     # Función para reportar estado a la API
