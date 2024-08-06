@@ -7,6 +7,9 @@ import argparse
 from threading import Thread
 import signal
 
+# Configuración del tiempo de espera en segundos
+TIMEOUT = 2  # Tiempo de espera total de 2 segundos
+
 # Funciones para manipular GPIO
 def export_pin(pin, api_error_url):
     """Exportar un pin GPIO."""
@@ -56,23 +59,28 @@ def check_pin_value(pin, api_error_url):
 def report_status(url, status_message, api_error_url):
     payload = {'status': status_message}
     try:
-        response = requests.post(url, json=payload, timeout=2)
+        response = requests.post(url, json=payload, timeout=TIMEOUT)
         if response.status_code == 200:
             print(f"Estado reportado exitosamente: {status_message}")
         else:
             report_error(api_error_url, f"Error al reportar el estado: {response.status_code}")
+    except requests.Timeout:
+        report_error(api_error_url, "Timeout al reportar el estado.")
     except Exception as e:
         report_error(api_error_url, f"Excepción al reportar el estado: {e}")
 
 def get_selector_command(url, api_error_url):
     """Obtener el comando de selección desde la API."""
     try:
-        response = requests.get(url, timeout=2)
+        response = requests.get(url, timeout=TIMEOUT)
         if response.status_code == 200:
             return response.json()
         else:
             report_error(api_error_url, f"Error al obtener el comando: {response.status_code}")
             return None
+    except requests.Timeout:
+        report_error(api_error_url, "Timeout al obtener el comando.")
+        return None
     except Exception as e:
         report_error(api_error_url, f"Excepción al obtener el comando: {e}")
         return None
@@ -80,9 +88,11 @@ def get_selector_command(url, api_error_url):
 def report_error(url, error_message):
     payload = {'error': error_message}
     try:
-        response = requests.post(url, json=payload, timeout=2)
+        response = requests.post(url, json=payload, timeout=TIMEOUT)
         if response.status_code != 200:
             print(f"Error al reportar el error: {response.status_code}")
+    except requests.Timeout:
+        print("Timeout al reportar el error.")
     except Exception as e:
         print(f"Excepción al reportar el error: {e}")
 
