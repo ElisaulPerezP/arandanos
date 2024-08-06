@@ -148,9 +148,10 @@ def main(input_file, output_file, output_neg_file, selector_url, estado_url, apa
     def handle_commands():
         nonlocal stop_threads
         while not stop_threads:
-            command = get_selector_command(selector_url, api_error_url)
-            if command:
-                print(f"el comando recibido en el handle_commands es : {command}")
+            command_response = get_selector_command(selector_url, api_error_url)
+            if command_response and 'command' in command_response:
+                command = command_response['command']
+                print(f"El comando recibido en el handle_commands es : {command}")
                 if command == 'llenar':
                     # Encender todos los pines de salida
                     for pin in output_pins.values():
