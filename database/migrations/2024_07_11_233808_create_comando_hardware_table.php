@@ -1,8 +1,8 @@
 <?php
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class CreateComandoHardwareTable extends Migration
 {
@@ -18,9 +18,8 @@ class CreateComandoHardwareTable extends Migration
             $table->string('sistema');
             $table->text('comando');
             $table->timestamps();
-
-            $table->index('comando');
         });
+        DB::statement('CREATE INDEX comando_hardware_comando_index ON comando_hardware (comando(255))');
     }
 
     /**
