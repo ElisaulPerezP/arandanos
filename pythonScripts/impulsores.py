@@ -167,8 +167,8 @@ def main(output_file, output_neg_file, impulsores_url, estado_url, apagado_url, 
                         report_error(api_error_url, f"Formato de acción inválido: {action}")
                         continue
 
-                    pin_name = parts[1]
-                    action_type = parts[0]
+                    pin_name = parts[0]
+                    action_type = parts[1]
                     print(f"Pin name: {pin_name}, Action type: {action_type}")  # Añadir depuración aquí
 
                     if pin_name in output_pins:
