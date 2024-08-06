@@ -165,6 +165,7 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
             command = get_selector_command(selector_url, api_error_url)
             if command:
                 for action in command['actions']:
+                    print(f"Comando recibido: {command}")  # Añadir depuración aquí
                     pin_name, state, duty_cycle = action.split(':')
                     duty_cycle = int(duty_cycle)
                     if pin_name in output_pins:
