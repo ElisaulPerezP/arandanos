@@ -170,7 +170,7 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
                             set_pin_value(output_neg_pins[pin_name], "0", api_error_url)
                         elif action.startswith('off'):
                             set_pin_value(output_neg_pins[pin_name], "1", api_error_url)
-            time.sleep(8)
+            time.sleep(10)
 
     # Función para reportar estado a la API
     def report_state():

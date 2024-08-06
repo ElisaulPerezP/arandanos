@@ -245,7 +245,7 @@ class ApiController extends Controller
 
         return response()->json(['message' => 'Estado reportado exitosamente'], 200);
     }
-//TODO: ENCONTRAR LOS COMADOS DE APAGADO DE CADA SISTEMA PARA ESCRIBIRLOS AQUI.
+    
 public function reportImpulsoresShutdown(Request $request)
 {
     Log::info('Request received for reportImpulsoresSHutdown:', $request->all());
