@@ -56,7 +56,7 @@ def check_pin_value(pin, api_error_url):
 
 # Funciones para interactuar con la API
 def report_status(url, status_message, api_error_url):
-    payload = {'status': status_message}
+    payload = status_message
     try:
         response = requests.post(url, json=payload, timeout=TIMEOUT)
         if response.status_code == 200:
@@ -122,6 +122,15 @@ def load_pins_from_file(filename):
             pins[name] = int(pin)
     return pins
 
+def gather_status(output_pins, output_neg_pins, api_error_url):
+    """Recolectar el estado actual de las bombas."""
+    status_message = {}
+    for name, pin in output_pins.items():
+        status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "1" else 'apagada'
+    for name, pin in output_neg_pins.items():
+        status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "0" else 'apagada'
+    return status_message
+
 def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, api_error_url):
     # Cargar pines desde archivos
     output_pins = load_pins_from_file(output_file)
@@ -167,11 +176,7 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
     def report_state():
         nonlocal stop_threads
         while not stop_threads:
-            status_message = {}
-            for name, pin in output_pins.items():
-                status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "1" else 'apagada'
-            for name, pin in output_neg_pins.items():
-                status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "0" else 'apagada'
+            status_message = gather_status(output_pins, output_neg_pins, api_error_url)
             report_status(estado_url, status_message, api_error_url)
             time.sleep(15)
 
@@ -191,7 +196,7 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
         state_thread.join()
     finally:
         # Apagar todas las bombas y desexportar los pines
-        status_message = {}
+        status_message = gather_status(output_pins, output_neg_pins, api_error_url)
         for name, pin in output_pins.items():
             set_pin_value(pin, "0", api_error_url)
             status_message[name] = 'apagada'
