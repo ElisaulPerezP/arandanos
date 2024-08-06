@@ -8,7 +8,7 @@ from threading import Thread
 import signal
 
 # Funciones para manipular GPIO
-def export_pin(pin):
+def export_pin(pin, api_error_url):
     """Exportar un pin GPIO."""
     try:
         with open("/sys/class/gpio/export", "w") as f:
@@ -17,84 +17,107 @@ def export_pin(pin):
         if "Device or resource busy" in str(e):
             pass  # El pin ya puede estar exportado
         else:
-            raise e
+            report_error(api_error_url, f"Error exportando el pin {pin}: {e}")
 
-def unexport_pin(pin):
+def unexport_pin(pin, api_error_url):
     """Desexportar un pin GPIO."""
     try:
         with open("/sys/class/gpio/unexport", "w") as f:
             f.write(str(pin))
     except IOError as e:
-        print(f"Error: {e}")
+        report_error(api_error_url, f"Error desexportando el pin {pin}: {e}")
 
-def set_pin_direction(pin, direction):
+def set_pin_direction(pin, direction, api_error_url):
     """Configurar la dirección de un pin GPIO."""
-    with open(f"/sys/class/gpio/gpio{pin}/direction", "w") as f:
-        f.write(direction)
+    try:
+        with open(f"/sys/class/gpio/gpio{pin}/direction", "w") as f:
+            f.write(direction)
+    except IOError as e:
+        report_error(api_error_url, f"Error configurando la dirección del pin {pin}: {e}")
 
-def set_pin_value(pin, value):
+def set_pin_value(pin, value, api_error_url):
     """Configurar el valor de un pin GPIO."""
-    with open(f"/sys/class/gpio/gpio{pin}/value", "w") as f:
-        f.write(value)
+    try:
+        with open(f"/sys/class/gpio/gpio{pin}/value", "w") as f:
+            f.write(value)
+    except IOError as e:
+        report_error(api_error_url, f"Error configurando el valor del pin {pin}: {e}")
 
-def check_pin_value(pin):
+def check_pin_value(pin, api_error_url):
     """Leer el valor de un pin GPIO."""
-    with open(f"/sys/class/gpio/gpio{pin}/value", "r") as f:
-        return f.read().strip()
+    try:
+        with open(f"/sys/class/gpio/gpio{pin}/value", "r") as f:
+            return f.read().strip()
+    except IOError as e:
+        report_error(api_error_url, f"Error leyendo el valor del pin {pin}: {e}")
+        return None
 
 # Funciones para interactuar con la API
-def report_status(url, status_message):
+def report_status(url, status_message, api_error_url):
     payload = {'status': status_message}
     try:
-        response = requests.post(url, json=payload)
+        response = requests.post(url, json=payload, timeout=2)
         if response.status_code == 200:
             print(f"Estado reportado exitosamente: {status_message}")
         else:
-            print(f"Error al reportar el estado: {response.status_code}")
+            report_error(api_error_url, f"Error al reportar el estado: {response.status_code}")
     except Exception as e:
-        print(f"Excepción al reportar el estado: {e}")
+        report_error(api_error_url, f"Excepción al reportar el estado: {e}")
 
-def get_selector_command(url):
+def get_selector_command(url, api_error_url):
+    """Obtener el comando de selección desde la API."""
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=2)
         if response.status_code == 200:
             return response.json()
         else:
-            print(f"Error al obtener el comando: {response.status_code}")
+            report_error(api_error_url, f"Error al obtener el comando: {response.status_code}")
             return None
     except Exception as e:
-        print(f"Excepción al obtener el comando: {e}")
+        report_error(api_error_url, f"Excepción al obtener el comando: {e}")
         return None
 
-# Funciones auxiliares
-def load_pins_from_file(filename):
+def report_error(url, error_message):
+    payload = {'error': error_message}
+    try:
+        response = requests.post(url, json=payload, timeout=2)
+        if response.status_code != 200:
+            print(f"Error al reportar el error: {response.status_code}")
+    except Exception as e:
+        print(f"Excepción al reportar el error: {e}")
+
+def load_pins_from_file(filename, api_error_url):
+    """Cargar los pines desde un archivo de configuración."""
     pins = {}
-    with open(filename, 'r') as f:
-        for line in f:
-            if ':' in line:
-                name, pin = line.strip().split(':')
-                pins[name] = int(pin)
-            else:
-                print(f"Línea inválida en el archivo de configuración: {line.strip()}")
+    try:
+        with open(filename, 'r') as f:
+            for line in f:
+                if ':' in line:
+                    name, pin = line.strip().split(':')
+                    pins[name] = int(pin)
+                else:
+                    report_error(api_error_url, f"Línea inválida en el archivo de configuración: {line.strip()}")
+    except Exception as e:
+        report_error(api_error_url, f"Error al cargar pines desde el archivo {filename}: {e}")
     return pins
 
-def main(output_file, output_neg_file, selector_url, estado_url, apagado_url):
+def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, api_error_url):
     # Cargar pines desde archivos
-    output_pins = load_pins_from_file(output_file)
-    output_neg_pins = load_pins_from_file(output_neg_file)
+    output_pins = load_pins_from_file(output_file, api_error_url)
+    output_neg_pins = load_pins_from_file(output_neg_file, api_error_url)
 
     all_pins = {**output_pins, **output_neg_pins}
 
     # Exportar y configurar los pines
     for pin in all_pins.values():
-        export_pin(pin)
-        set_pin_direction(pin, "out")
+        export_pin(pin, api_error_url)
+        set_pin_direction(pin, "out", api_error_url)
 
     # Apagar todas las electrovalvulas al inicio
     for pin in output_pins.values():
-        set_pin_value(pin, "0")
+        set_pin_value(pin, "0", api_error_url)
     for pin in output_neg_pins.values():
-        set_pin_value(pin, "1")
+        set_pin_value(pin, "1", api_error_url)
 
     # Variables de control
     stop_threads = False
@@ -103,7 +126,7 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url):
     def handle_commands():
         nonlocal stop_threads
         while not stop_threads:
-            command = get_selector_command(selector_url)
+            command = get_selector_command(selector_url, api_error_url)
             if command:
                 for action in command.get('actions', []):
                     action_parts = action.split(':')
@@ -111,14 +134,14 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url):
                     pin_name = action_parts[1]    # valvula1, valvula2, etc.
                     if pin_name in output_pins:
                         if action_type == 'on':
-                            set_pin_value(output_pins[pin_name], "1")
+                            set_pin_value(output_pins[pin_name], "1", api_error_url)
                         elif action_type == 'off':
-                            set_pin_value(output_pins[pin_name], "0")
+                            set_pin_value(output_pins[pin_name], "0", api_error_url)
                     elif pin_name in output_neg_pins:
                         if action_type == 'on':
-                            set_pin_value(output_neg_pins[pin_name], "0")
+                            set_pin_value(output_neg_pins[pin_name], "0", api_error_url)
                         elif action_type == 'off':
-                            set_pin_value(output_neg_pins[pin_name], "1")
+                            set_pin_value(output_neg_pins[pin_name], "1", api_error_url)
             time.sleep(10)
 
     # Función para reportar estado a la API
@@ -127,10 +150,10 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url):
         while not stop_threads:
             status_message = {}
             for name, pin in output_pins.items():
-                status_message[name] = 'encendida' if check_pin_value(pin) == "1" else 'apagada'
+                status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "1" else 'apagada'
             for name, pin in output_neg_pins.items():
-                status_message[name] = 'encendida' if check_pin_value(pin) == "0" else 'apagada'
-            report_status(estado_url, status_message)
+                status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "0" else 'apagada'
+            report_status(estado_url, status_message, api_error_url)
             time.sleep(10)
 
     # Iniciar hilos
@@ -145,12 +168,12 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url):
         command_thread.join()
         state_thread.join()
         for pin in output_pins.values():
-            set_pin_value(pin, "0")
+            set_pin_value(pin, "0", api_error_url)
         for pin in output_neg_pins.values():
-            set_pin_value(pin, "1")
+            set_pin_value(pin, "1", api_error_url)
         for pin in all_pins.values():
-            unexport_pin(pin)
-        report_status(apagado_url, 'Apagado con exito')
+            unexport_pin(pin, api_error_url)
+        report_status(apagado_url, 'Apagado con exito', api_error_url)
         print(f"Proceso terminado con la señal {signum}")
         exit(0)
 
@@ -172,6 +195,7 @@ if __name__ == "__main__":
     parser.add_argument('selector_url', type=str, help='URL del endpoint para obtener comandos de selección.')
     parser.add_argument('estado_url', type=str, help='URL del endpoint para reportar estado.')
     parser.add_argument('apagado_url', type=str, help='URL del endpoint para reportar apagado.')
+    parser.add_argument('api_error_url', type=str, help='URL del endpoint para reportar errores.')
 
     args = parser.parse_args()
-    main(args.output_file, args.output_neg_file, args.selector_url, args.estado_url, args.apagado_url)
+    main(args.output_file, args.output_neg_file, args.selector_url, args.estado_url, args.apagado_url, args.api_error_url)
