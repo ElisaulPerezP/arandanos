@@ -174,11 +174,15 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
                     except ValueError:
                         report_error(api_error_url, f"Formato de acción inválido: {action}")
                         continue
+                    
+                    print(f"pines de salida: {output_pins}")  # Añadir depuración aquí
 
                     if pin_name in output_pins:
                         pin = output_pins[pin_name]
+                        print(f"Numero del pin para {pin_name}: {pin}")  # Añadir depuración aquíç
                     elif pin_name in output_neg_pins:
                         pin = output_neg_pins[pin_name]
+                        print(f"Numero del pin negativo para {pin_name}: {pin}")  # Añadir depuración aquíç
                     else:
                         report_error(api_error_url, f"Pin no encontrado: {pin_name}")
                         continue
