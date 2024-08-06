@@ -203,6 +203,7 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
         for name, pin in output_neg_pins.items():
             set_pin_value(pin, "1", api_error_url)
             status_message[name] = 'apagada'
+        status_message['estado'] = 'Apagado'  # Agregar el estado "Apagado"
         for pin in all_pins.values():
             unexport_pin(pin, api_error_url)
         # Reportar apagado
