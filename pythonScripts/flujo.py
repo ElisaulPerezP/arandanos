@@ -5,6 +5,7 @@ import time
 import select
 import requests
 import argparse
+import signal
 from threading import Thread
 
 # Configuración del tiempo de espera en segundos
@@ -139,6 +140,14 @@ def main(input_file, post_url, stop_url, api_error_url):
                 for name in counts:
                     counts[name] = 0
 
+    # Manejar señales de interrupción
+    def handle_signal(signum, frame):
+        nonlocal stop_threads
+        stop_threads = True
+
+    signal.signal(signal.SIGINT, handle_signal)
+    signal.signal(signal.SIGTERM, handle_signal)
+
     # Iniciar hilos para cada sensor
     threads = []
     for name, pin in sensors.items():
@@ -151,13 +160,8 @@ def main(input_file, post_url, stop_url, api_error_url):
 
     try:
         # Esperar a que se interrumpa el script
-        while True:
+        while not stop_threads:
             time.sleep(1)
-    except KeyboardInterrupt:
-        stop_threads = True
-        for thread in threads:
-            thread.join()
-        state_thread.join()
     finally:
         # Desexportar los pines
         for pin in sensors.values():
