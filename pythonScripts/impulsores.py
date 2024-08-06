@@ -4,6 +4,7 @@ import os
 import time
 import requests
 import argparse
+import signal
 from threading import Thread
 
 # Configuración del tiempo de espera en segundos
@@ -197,6 +198,14 @@ def main(output_file, output_neg_file, impulsores_url, estado_url, apagado_url, 
             report_status(estado_url, status_message, api_error_url)
             time.sleep(15)
 
+    # Manejar señales de interrupción
+    def handle_signal(signum, frame):
+        nonlocal stop_threads
+        stop_threads = True
+
+    signal.signal(signal.SIGINT, handle_signal)
+    signal.signal(signal.SIGTERM, handle_signal)
+
     # Iniciar hilos
     command_thread = Thread(target=handle_commands)
     state_thread = Thread(target=report_state)
@@ -205,12 +214,8 @@ def main(output_file, output_neg_file, impulsores_url, estado_url, apagado_url, 
 
     try:
         # Esperar a que se interrumpa el script
-        while True:
+        while not stop_threads:
             time.sleep(1)
-    except KeyboardInterrupt:
-        stop_threads = True
-        command_thread.join()
-        state_thread.join()
     finally:
         # Apagar todas las bombas y desexportar los pines
         status_message = gather_status(output_pins, output_neg_pins, api_error_url)
