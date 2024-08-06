@@ -59,10 +59,13 @@ def report_status(url, status_message, api_error_url):
         response = requests.post(url, json=payload, timeout=2)
         if response.status_code == 200:
             print(f"Estado reportado exitosamente: {status_message}")
+            return True
         else:
             report_error(api_error_url, f"Error al reportar el estado: {response.status_code}")
+            return False
     except Exception as e:
         report_error(api_error_url, f"Excepción al reportar el estado: {e}")
+        return False
 
 def get_selector_command(url, api_error_url):
     """Obtener el comando de selección desde la API."""
@@ -86,7 +89,7 @@ def report_error(url, error_message):
     except Exception as e:
         print(f"Excepción al reportar el error: {e}")
 
-def load_pins_from_file(filename,  api_error_url):
+def load_pins_from_file(filename, api_error_url):
     """Cargar los pines desde un archivo de configuración."""
     pins = {}
     try:
@@ -102,18 +105,17 @@ def load_pins_from_file(filename,  api_error_url):
                         print(f"Advertencia: Nombre duplicado encontrado en el archivo {filename}: {name}")
                     pins[name] = int(pin)
                 else:
-                    report_error(api_error_url, f"Formato incorrecto en la línea: {line}: {e}")
+                    report_error(api_error_url, f"Formato incorrecto en la línea: {line}")
                     print(f"Formato incorrecto en la línea: {line}")
-                    
     except Exception as e:
         report_error(api_error_url, f"Error al cargar pines desde el archivo {filename}: {e}")
     return pins
 
 def main(input_file, output_file, output_neg_file, selector_url, estado_url, apagado_url, api_error_url):
     # Cargar pines desde archivos
-    sensor_pins = load_pins_from_file(input_file)
-    output_pins = load_pins_from_file(output_file)
-    output_neg_pins = load_pins_from_file(output_neg_file)
+    sensor_pins = load_pins_from_file(input_file, api_error_url)
+    output_pins = load_pins_from_file(output_file, api_error_url)
+    output_neg_pins = load_pins_from_file(output_neg_file, api_error_url)
 
     # Verificar duplicados
     all_names = list(sensor_pins.keys()) + list(output_pins.keys()) + list(output_neg_pins.keys())
