@@ -140,22 +140,24 @@ class ApiController extends Controller
     {
         // Obtener el estado actual del sistema
         $estado = EstadoSistema::find(1);
-
+    
         // Verificar si existe el estado y la relación s2
         if ($estado && $estado->s2) {
             // Obtener el comando desde la relación s2
             $comando = $estado->s2->comando;
-
+    
             // Retornar el comando si existe
             if ($comando) {
-                Log::info('Comando de selector entregado por el controlador es:', ['comando' => $comando->comando]);
-                return response()->json(['actions' => json_decode($comando->comando)], 200);
+                $actions = json_decode($comando->comando);
+                Log::info('Comando de selector entregado por el controlador es: ', ['actions' => $actions]);
+                return response()->json(['actions' => $actions], 200);
             }
         }
-
+    
         // Retornar un mensaje de error si no se encuentra el comando
         return response()->json(['message' => 'Comando no encontrado'], 404);
     }
+    
 
     public function reportState(Request $request)
     {
