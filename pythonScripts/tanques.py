@@ -5,6 +5,7 @@ import time
 import requests
 import argparse
 from threading import Thread
+import signal
 
 # Funciones para manipular GPIO
 def export_pin(pin):
@@ -155,24 +156,31 @@ def main(input_file, output_file, output_neg_file, selector_url, estado_url, apa
     command_thread.start()
     state_thread.start()
 
-    try:
-        # Esperar a que se interrumpa el script
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
+    def handle_signal(signum, frame):
+        nonlocal stop_threads
         stop_threads = True
         command_thread.join()
         state_thread.join()
-    finally:
-        # Apagar todas las electrovalvulas y desexportar los pines
         for pin in output_pins.values():
             set_pin_value(pin, "0")
         for pin in output_neg_pins.values():
             set_pin_value(pin, "1")
         for pin in all_pins.values():
             unexport_pin(pin)
-        # Reportar apagado
         report_status(apagado_url, 'Apagado con exito')
+        print(f"Proceso terminado con la señal {signum}")
+        exit(0)
+
+    # Registrar los manejadores de señales
+    signal.signal(signal.SIGINT, handle_signal)
+    signal.signal(signal.SIGTERM, handle_signal)
+
+    try:
+        # Esperar a que se interrumpa el script
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        handle_signal(signal.SIGINT, None)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Script para el llenado de tanques automáticamente.')
