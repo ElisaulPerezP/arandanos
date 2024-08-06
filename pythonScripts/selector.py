@@ -138,20 +138,25 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
         while not stop_threads:
             command = get_selector_command(selector_url, api_error_url)
             if command:
-                for action in command.get('actions', []):
-                    action_parts = action.split(':')
-                    action_type = action_parts[0]  # on or off
-                    pin_name = action_parts[1]    # valvula1, valvula2, etc.
-                    if pin_name in output_pins:
-                        if action_type == 'on':
-                            set_pin_value(output_pins[pin_name], "1", api_error_url)
-                        elif action_type == 'off':
-                            set_pin_value(output_pins[pin_name], "0", api_error_url)
-                    elif pin_name in output_neg_pins:
-                        if action_type == 'on':
-                            set_pin_value(output_neg_pins[pin_name], "0", api_error_url)
-                        elif action_type == 'off':
-                            set_pin_value(output_neg_pins[pin_name], "1", api_error_url)
+                print(f"Comando recibido en handle_commands: {command}")  # Depuración
+                actions = command.get('actions')
+                if actions is not None:
+                    for action in actions:
+                        action_parts = action.split(':')
+                        action_type = action_parts[0]  # on or off
+                        pin_name = action_parts[1]    # valvula1, valvula2, etc.
+                        if pin_name in output_pins:
+                            if action_type == 'on':
+                                set_pin_value(output_pins[pin_name], "1", api_error_url)
+                            elif action_type == 'off':
+                                set_pin_value(output_pins[pin_name], "0", api_error_url)
+                        elif pin_name in output_neg_pins:
+                            if action_type == 'on':
+                                set_pin_value(output_neg_pins[pin_name], "0", api_error_url)
+                            elif action_type == 'off':
+                                set_pin_value(output_neg_pins[pin_name], "1", api_error_url)
+                else:
+                    report_error(api_error_url, "El comando no contiene acciones válidas.")
             time.sleep(10)
 
     # Función para reportar estado a la API
