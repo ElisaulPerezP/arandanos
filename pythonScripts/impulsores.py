@@ -42,6 +42,7 @@ def set_pin_value(pin, value, api_error_url):
     try:
         with open(f"/sys/class/gpio/gpio{pin}/value", "w") as f:
             f.write(str(value))
+            print(f"Pin {pin} escrito con valor {value}.")
     except IOError as e:
         report_error(api_error_url, f"Error configurando el valor del pin {pin}: {e}")
 
