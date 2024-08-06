@@ -287,6 +287,7 @@ public function reportImpulsoresShutdown(Request $request)
 
             // Retornar el comando si existe
             if ($comando) {
+                Log::info('Request sent by getImpulsoresCommand:', ['actions' => json_decode($comando->comando, true)]);
                 return response()->json(['actions' => json_decode($comando->comando)], 200);
             }
         }
