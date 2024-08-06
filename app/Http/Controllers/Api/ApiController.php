@@ -148,6 +148,7 @@ class ApiController extends Controller
 
             // Retornar el comando si existe
             if ($comando) {
+                Log::info('Comando de selector entregado por el controlador es:', ['comando' => $comando->comando]);
                 return response()->json(['actions' => json_decode($comando->comando)], 200);
             }
         }
