@@ -150,6 +150,7 @@ def main(input_file, output_file, output_neg_file, selector_url, estado_url, apa
         while not stop_threads:
             command = get_selector_command(selector_url, api_error_url)
             if command:
+                print(f"el comando recibido en el handle_commands es : {command}")
                 if command == 'llenar':
                     # Encender todos los pines de salida
                     for pin in output_pins.values():
