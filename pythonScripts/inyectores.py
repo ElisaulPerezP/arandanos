@@ -164,10 +164,13 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
             command = get_selector_command(selector_url, api_error_url)
             if command:
                 for action in command['actions']:
-                    print(f"Comando recibido: {command}")  # Añadir depuración aquí
+                    print(f"Accion recibida en el for: {action}")  # Añadir depuración aquí
                     try:
                         pin_name, state, duty_cycle = action.split(':')
                         duty_cycle = int(duty_cycle)
+                        print(f"Identificacion de nombre: {pin_name}")  # Añadir depuración aquí
+                        print(f"Identificacion de estado: {state}")  # Añadir depuración aquí
+                        print(f"Identificacion de dureza de ciclo: {duty_cycle}")  # Añadir depuración aquí
                     except ValueError:
                         report_error(api_error_url, f"Formato de acción inválido: {action}")
                         continue
