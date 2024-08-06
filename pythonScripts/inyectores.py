@@ -229,7 +229,7 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
     command_thread.start()
     state_thread.start()
 
-    def handle_signal(signum):
+    def handle_signal(signum, frame):
         nonlocal stop_threads
         stop_threads = True
         for stop_event in pwm_stop_events.values():
