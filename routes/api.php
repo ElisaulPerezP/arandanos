@@ -5,6 +5,7 @@ use App\Http\Controllers\EstadoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Controllers\ErrorReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -66,3 +67,5 @@ Route::post('/flujo/conteo', [ApiController::class, 'reportFlujoConteo'])->name(
 
 // Ruta para reportar apagado del sistema de medida de flujo del sistema
 Route::post('/flujo/apagado', [ApiController::class, 'reportFlujoApagado'])->name('api.flujo.apagado');
+
+Route::post('/report-error', [ErrorReportController::class, 'reportError']);

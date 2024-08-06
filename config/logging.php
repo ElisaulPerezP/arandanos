@@ -52,6 +52,12 @@ return [
     */
 
     'channels' => [
+        'scripts_errors' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/scriptsErrors.log'),
+            'level' => 'error',
+        ],
+
         'stack' => [
             'driver' => 'stack',
             'channels' => ['single'],
