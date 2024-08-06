@@ -158,7 +158,9 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
         while not stop_threads:
             command = get_selector_command(selector_url, api_error_url)
             if command and 'actions' in command and 'actions' in command['actions']:
+                print(f"Comando recibido: {command}")  # Añadir depuración aquí
                 for action in command['actions']['actions']:
+                    print(f"Acción recibida: {action}")  # Añadir depuración aquí
                     parts = action.split(':')
                     if len(parts) != 2:
                         report_error(api_error_url, f"Formato de acción inválido: {action}")
@@ -167,13 +169,17 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
                     pin_name = parts[1]
                     if pin_name in output_pins:
                         if action.startswith('on'):
+                            print(f"Encendiendo {pin_name}")  # Añadir depuración aquí
                             set_pin_value(output_pins[pin_name], "1", api_error_url)
                         elif action.startswith('off'):
+                            print(f"Apagando {pin_name}")  # Añadir depuración aquí
                             set_pin_value(output_pins[pin_name], "0", api_error_url)
                     elif pin_name in output_neg_pins:
                         if action.startswith('on'):
+                            print(f"Encendiendo {pin_name} (negativo)")  # Añadir depuración aquí
                             set_pin_value(output_neg_pins[pin_name], "0", api_error_url)
                         elif action.startswith('off'):
+                            print(f"Apagando {pin_name} (negativo)")  # Añadir depuración aquí
                             set_pin_value(output_neg_pins[pin_name], "1", api_error_url)
             else:
                 report_error(api_error_url, "Formato de comando inválido o falta el campo 'actions'")
