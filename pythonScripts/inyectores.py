@@ -176,6 +176,7 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
                         continue
                     
                     print(f"pines de salida: {output_pins}")  # Añadir depuración aquí
+                    print(f"pines de salida logica negada: {output_neg_pins}")  # Añadir depuración aquí
 
                     if pin_name in output_pins:
                         pin = output_pins[pin_name]
