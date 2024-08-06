@@ -5,6 +5,7 @@ import time
 import requests
 import argparse
 from threading import Thread, Event
+import signal
 
 # Configuración del tiempo de espera en segundos
 TIMEOUT = 2  # Tiempo de espera total de 2 segundos
@@ -228,26 +229,33 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
     command_thread.start()
     state_thread.start()
 
-    try:
-        # Esperar a que se interrumpa el script
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
+    def handle_signal(signum):
+        nonlocal stop_threads
         stop_threads = True
         for stop_event in pwm_stop_events.values():
             stop_event.set()
         command_thread.join()
         state_thread.join()
-    finally:
-        # Apagar todos los inyectores y desexportar los pines
         for pin in output_pins.values():
             set_pin_value(pin, "0", api_error_url)
         for pin in output_neg_pins.values():
             set_pin_value(pin, "1", api_error_url)
         for pin in all_pins.values():
             unexport_pin(pin, api_error_url)
-        # Reportar apagado
         report_shutdown(apagado_url, 'Apagado con exito', api_error_url)
+        print(f"Proceso terminado con la señal {signum}")
+        exit(0)
+
+    # Registrar los manejadores de señales
+    signal.signal(signal.SIGINT, handle_signal)
+    signal.signal(signal.SIGTERM, handle_signal)
+
+    try:
+        # Esperar a que se interrumpa el script
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        handle_signal(signal.SIGINT, None)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Script para manejar los inyectores automáticamente.')
