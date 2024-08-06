@@ -19,7 +19,17 @@ class CreateComandoHardwareTable extends Migration
             $table->text('comando');
             $table->timestamps();
         });
-        DB::statement('CREATE INDEX comando_hardware_comando_index ON comando_hardware (comando(255))');
+
+        // Crear el índice dependiendo del tipo de base de datos
+        if (DB::getDriverName() === 'mysql') {
+            // Crear el índice en la columna comando con longitud específica en MySQL
+            DB::statement('CREATE INDEX comando_hardware_comando_index ON comando_hardware (comando(255))');
+        } elseif (DB::getDriverName() === 'sqlite') {
+            // Crear el índice en la columna comando sin longitud específica en SQLite
+            Schema::table('comando_hardware', function (Blueprint $table) {
+                $table->index('comando');
+            });
+        }
     }
 
     /**
