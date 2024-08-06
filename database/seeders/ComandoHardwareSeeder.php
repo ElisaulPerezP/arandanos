@@ -45,14 +45,14 @@ class ComandoHardwareSeeder extends Seeder
         foreach ($pump_states as $state1) {
             foreach ($pump_states as $state2) {
                 if ($state1 === 'off') {
-                    $actions[] = ["pump1:$state1:1", "pump2:$state2:1"];
+                    $actions[] = ["pump3:$state1:1", "pump4:$state2:1"];
                 } else {
                     for ($i = 1; $i <= 100; $i++) {
                         if ($state2 === 'off') {
-                            $actions[] = ["pump1:$state1:$i", "pump2:$state2:1"];
+                            $actions[] = ["pump3:$state1:$i", "pump4:$state2:1"];
                         } else {
                             for ($j = 1; $j <= 100; $j++) {
-                                $actions[] = ["pump1:$state1:$i", "pump2:$state2:$j"];
+                                $actions[] = ["pump3:$state1:$i", "pump4:$state2:$j"];
                             }
                         }
                     }
