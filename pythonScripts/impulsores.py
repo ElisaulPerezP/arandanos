@@ -41,7 +41,7 @@ def set_pin_value(pin, value, api_error_url):
     """Configurar el valor de un pin GPIO."""
     try:
         with open(f"/sys/class/gpio/gpio{pin}/value", "w") as f:
-            f.write(value)
+            f.write(str(value))
     except IOError as e:
         report_error(api_error_url, f"Error configurando el valor del pin {pin}: {e}")
 
@@ -72,7 +72,7 @@ def report_status(url, status_message, api_error_url):
         report_error(api_error_url, f"Excepción al reportar el estado: {e}")
         return False
 
-def get_selector_command(url, api_error_url):
+def get_impulsores_command(url, api_error_url):
     try:
         response = requests.get(url, timeout=TIMEOUT)
         if response.status_code == 200:
@@ -131,7 +131,7 @@ def gather_status(output_pins, output_neg_pins, api_error_url):
         status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "0" else 'apagada'
     return status_message
 
-def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, api_error_url):
+def main(output_file, output_neg_file, impulsores_url, estado_url, apagado_url, api_error_url):
     # Cargar pines desde archivos
     output_pins = load_pins_from_file(output_file)
     output_neg_pins = load_pins_from_file(output_neg_file)
@@ -156,7 +156,7 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
     def handle_commands():
         nonlocal stop_threads
         while not stop_threads:
-            command = get_selector_command(selector_url, api_error_url)
+            command = get_impulsores_command(impulsores_url, api_error_url)
             if command and 'actions' in command and 'actions' in command['actions']:
                 print(f"Comando recibido: {command}")  # Añadir depuración aquí
                 for action in command['actions']['actions']:
@@ -226,10 +226,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Script para manejar las bombas automáticamente.')
     parser.add_argument('output_file', type=str, help='Archivo de configuración de bombas (lógica positiva).')
     parser.add_argument('output_neg_file', type=str, help='Archivo de configuración de bombas (lógica negativa).')
-    parser.add_argument('selector_url', type=str, help='URL del endpoint para obtener comandos de selección.')
+    parser.add_argument('impulsores_url', type=str, help='URL del endpoint para obtener comandos de selección.')
     parser.add_argument('estado_url', type=str, help='URL del endpoint para reportar estado.')
     parser.add_argument('apagado_url', type=str, help='URL del endpoint para reportar apagado.')
     parser.add_argument('api_error_url', type=str, help='URL del endpoint para reportar errores.')
 
     args = parser.parse_args()
-    main(args.output_file, args.output_neg_file, args.selector_url, args.estado_url, args.apagado_url, args.api_error_url)
+    main(args.output_file, args.output_neg_file, args.impulsores_url, args.estado_url, args.apagado_url, args.api_error_url)
