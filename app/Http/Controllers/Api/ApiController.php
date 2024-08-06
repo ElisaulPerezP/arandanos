@@ -204,7 +204,7 @@ class ApiController extends Controller
         $s2Nueva = S2::create(array_merge(
             ['estado' => 'apagado'],
             $request->except('estado'),
-            ['comando_id' => $s2Actual ? $s2Actual->comando_id : null]
+            ['comando_id' => null]
         ));
 
         // Actualizar el EstadoSistema con la nueva entrada s2
