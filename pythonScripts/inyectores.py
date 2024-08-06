@@ -4,8 +4,7 @@ import os
 import time
 import requests
 import argparse
-import signal
-from threading import Thread
+from threading import Thread, Event
 
 # Configuración del tiempo de espera en segundos
 TIMEOUT = 2  # Tiempo de espera total de 2 segundos
@@ -42,7 +41,7 @@ def set_pin_value(pin, value, api_error_url):
     """Configurar el valor de un pin GPIO."""
     try:
         with open(f"/sys/class/gpio/gpio{pin}/value", "w") as f:
-            f.write(value)
+            f.write(str(value))
             print(f"Pin {pin} escrito con valor {value}.")
     except IOError as e:
         report_error(api_error_url, f"Error configurando el valor del pin {pin}: {e}")
@@ -58,7 +57,7 @@ def check_pin_value(pin, api_error_url):
 
 # Funciones para interactuar con la API
 def report_status(url, status_message, api_error_url):
-    payload = {'status': status_message}
+    payload = status_message
     try:
         response = requests.post(url, json=payload, timeout=TIMEOUT)
         if response.status_code == 200:
@@ -90,7 +89,7 @@ def get_selector_command(url, api_error_url):
         return None
 
 def report_shutdown(url, status_message, api_error_url):
-    payload = {'status': status_message}
+    payload = status_message
     try:
         response = requests.post(url, json=payload, timeout=TIMEOUT)
         if response.status_code == 200:
@@ -111,7 +110,6 @@ def report_error(url, error_message):
     try:
         response = requests.post(url, json=payload, timeout=TIMEOUT)
         if response.status_code != 200:
-            print(f" error: {error_message}")
             print(f"Error al reportar el error: {response.status_code}")
     except Exception as e:
         print(f"Excepción al reportar el error: {e}")
@@ -125,15 +123,15 @@ def load_pins_from_file(filename):
             pins[name] = int(pin)
     return pins
 
-def pwm_control(pin, duty_cycle):
+def pwm_control(pin, duty_cycle, stop_event, api_error_url):
     """Controlar el pin con un ciclo de trabajo PWM"""
     period = 2  # Periodo de 2 segundos
     on_time = period * duty_cycle / 100
     off_time = period - on_time
-    while True:
-        set_pin_value(pin, "1", None)
+    while not stop_event.is_set():
+        set_pin_value(pin, "1", api_error_url)
         time.sleep(on_time)
-        set_pin_value(pin, "0", None)
+        set_pin_value(pin, "0", api_error_url)
         time.sleep(off_time)
 
 def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, api_error_url):
@@ -157,6 +155,7 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
     # Variables de control
     stop_threads = False
     pwm_threads = {}
+    pwm_stop_events = {}
 
     # Función para manejar comandos desde la API
     def handle_commands():
@@ -166,38 +165,41 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
             if command:
                 for action in command['actions']:
                     print(f"Comando recibido: {command}")  # Añadir depuración aquí
-                    pin_name, state, duty_cycle = action.split(':')
-                    duty_cycle = int(duty_cycle)
+                    try:
+                        pin_name, state, duty_cycle = action.split(':')
+                        duty_cycle = int(duty_cycle)
+                    except ValueError:
+                        report_error(api_error_url, f"Formato de acción inválido: {action}")
+                        continue
+
                     if pin_name in output_pins:
-                        if state == "on":
-                            if pin_name in pwm_threads:
-                                # Detener el hilo PWM anterior si existe
-                                pwm_threads[pin_name].join()
-                            # Iniciar un nuevo hilo PWM
-                            pwm_thread = Thread(target=pwm_control, args=(output_pins[pin_name], duty_cycle))
-                            pwm_threads[pin_name] = pwm_thread
-                            pwm_thread.start()
-                        elif state == "off":
-                            if pin_name in pwm_threads:
-                                # Detener el hilo PWM si existe
-                                pwm_threads[pin_name].join()
-                                del pwm_threads[pin_name]
-                            set_pin_value(output_pins[pin_name], "0", api_error_url)
+                        pin = output_pins[pin_name]
                     elif pin_name in output_neg_pins:
-                        if state == "on":
-                            if pin_name in pwm_threads:
-                                # Detener el hilo PWM anterior si existe
-                                pwm_threads[pin_name].join()
-                            # Iniciar un nuevo hilo PWM
-                            pwm_thread = Thread(target=pwm_control, args=(output_neg_pins[pin_name], duty_cycle))
-                            pwm_threads[pin_name] = pwm_thread
-                            pwm_thread.start()
-                        elif state == "off":
-                            if pin_name in pwm_threads:
-                                # Detener el hilo PWM si existe
-                                pwm_threads[pin_name].join()
-                                del pwm_threads[pin_name]
-                            set_pin_value(output_neg_pins[pin_name], "1", api_error_url)
+                        pin = output_neg_pins[pin_name]
+                    else:
+                        report_error(api_error_url, f"Pin no encontrado: {pin_name}")
+                        continue
+
+                    if state == "on":
+                        if pin_name in pwm_threads:
+                            # Detener el hilo PWM anterior si existe
+                            pwm_stop_events[pin_name].set()
+                            pwm_threads[pin_name].join()
+
+                        # Iniciar un nuevo hilo PWM
+                        stop_event = Event()
+                        pwm_thread = Thread(target=pwm_control, args=(pin, duty_cycle, stop_event, api_error_url))
+                        pwm_threads[pin_name] = pwm_thread
+                        pwm_stop_events[pin_name] = stop_event
+                        pwm_thread.start()
+                    elif state == "off":
+                        if pin_name in pwm_threads:
+                            # Detener el hilo PWM si existe
+                            pwm_stop_events[pin_name].set()
+                            pwm_threads[pin_name].join()
+                            del pwm_threads[pin_name]
+                            del pwm_stop_events[pin_name]
+                        set_pin_value(pin, "0" if pin_name in output_pins else "1", api_error_url)
             time.sleep(10)
 
     # Función para reportar estado a la API
@@ -212,14 +214,6 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
             report_status(estado_url, status_message, api_error_url)
             time.sleep(10)
 
-    # Manejar señales de interrupción
-    def handle_signal(signum, frame):
-        nonlocal stop_threads
-        stop_threads = True
-
-    signal.signal(signal.SIGINT, handle_signal)
-    signal.signal(signal.SIGTERM, handle_signal)
-
     # Iniciar hilos
     command_thread = Thread(target=handle_commands)
     state_thread = Thread(target=report_state)
@@ -228,8 +222,14 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
 
     try:
         # Esperar a que se interrumpa el script
-        while not stop_threads:
+        while True:
             time.sleep(1)
+    except KeyboardInterrupt:
+        stop_threads = True
+        for stop_event in pwm_stop_events.values():
+            stop_event.set()
+        command_thread.join()
+        state_thread.join()
     finally:
         # Apagar todos los inyectores y desexportar los pines
         for pin in output_pins.values():
