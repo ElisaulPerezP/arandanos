@@ -44,6 +44,7 @@ def set_pin_value(pin, value, api_error_url):
             f.write(str(value))
             print(f"Pin {pin} escrito con valor {value}.")
     except IOError as e:
+        print(f"el error ocurrido fue: {e}.")
         report_error(api_error_url, f"Error configurando el valor del pin {pin}: {e}")
 
 def check_pin_value(pin, api_error_url):
