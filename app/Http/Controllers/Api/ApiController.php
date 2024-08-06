@@ -69,6 +69,7 @@ class ApiController extends Controller
 
             // Retornar el comando si existe
             if ($comandoExplicito) {
+                Log::info('Comando de tanques entregado pro el controlador', [$comandoExplicito]);
                 return response()->json(['command' => $comandoExplicito], 200);
             }
         }
