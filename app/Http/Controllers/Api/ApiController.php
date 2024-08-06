@@ -246,29 +246,32 @@ class ApiController extends Controller
         return response()->json(['message' => 'Estado reportado exitosamente'], 200);
     }
 //TODO: ENCONTRAR LOS COMADOS DE APAGADO DE CADA SISTEMA PARA ESCRIBIRLOS AQUI.
-    public function reportImpulsoresShutdown(Request $request)
-    {
-        Log::info('Request received for reportImpulsoresSHutdown:', $request->all());
+public function reportImpulsoresShutdown(Request $request)
+{
+    Log::info('Request received for reportImpulsoresSHutdown:', $request->all());
 
-        // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
-        $estadoSistema = EstadoSistema::find(1);
+    // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
+    $estadoSistema = EstadoSistema::find(1);
 
-        // Obtener la entrada s3 actual si existe
-        $s3Actual = $estadoSistema->s3;
+    // Obtener la entrada s3 actual si existe
+    $s3Actual = $estadoSistema->s3;
 
-        // Crear una nueva entrada s3 con el estado inactivo y el comando del antecesor
-        $s3Nueva = S3::create(array_merge(
-            ['estado' => $request->input('status', 'Apagado con exito')],
-            ['comando_id' => $s3Actual ? $s3Actual->comando_id : null],
-            ['pump1' => '0'],
-            ['pump2' => '0'],
-        ));
+    // Buscar el comando en la tabla comando_hardware
+    $comandoAccion = '{"actions":["pump1:off","pump2:off"]}';
+    $comando = ComandoHardware::where('comando', $comandoAccion)->first();
 
-        // Actualizar el EstadoSistema con la nueva entrada s3
-        $estadoSistema->update(['s3_id' => $s3Nueva->id]);
+    // Crear una nueva entrada s3 con el estado inactivo y el comando del antecesor
+    $s3Nueva = S3::create(array_merge(
+        $request->all(),
+        ['comando_id' => $comando ? $comando->id : ($s3Actual ? $s3Actual->comando_id : null)],
+    ));
 
-        return response()->json(['message' => 'Apagado con exito'], 200);
-    }
+    // Actualizar el EstadoSistema con la nueva entrada s3
+    $estadoSistema->update(['s3_id' => $s3Nueva->id]);
+
+    return response()->json(['message' => 'Apagado con exito'], 200);
+}
+
 
     public function getInyectoresCommand()
     {
