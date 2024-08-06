@@ -44,7 +44,6 @@ def set_pin_value(pin, value, api_error_url):
             f.write(str(value))
             print(f"Pin {pin} escrito con valor {value}.")
     except IOError as e:
-        print(f"el error ocurrido fue: {e}.")
         report_error(api_error_url, f"Error configurando el valor del pin {pin}: {e}")
 
 def check_pin_value(pin, api_error_url):
@@ -169,18 +168,21 @@ def main(output_file, output_neg_file, impulsores_url, estado_url, apagado_url, 
                         continue
 
                     pin_name = parts[1]
+                    action_type = parts[0]
+                    print(f"Pin name: {pin_name}, Action type: {action_type}")  # Añadir depuración aquí
+
                     if pin_name in output_pins:
-                        if action.startswith('on'):
+                        if action_type == 'on':
                             print(f"Encendiendo {pin_name}")  # Añadir depuración aquí
                             set_pin_value(output_pins[pin_name], "1", api_error_url)
-                        elif action.startswith('off'):
+                        elif action_type == 'off':
                             print(f"Apagando {pin_name}")  # Añadir depuración aquí
                             set_pin_value(output_pins[pin_name], "0", api_error_url)
                     elif pin_name in output_neg_pins:
-                        if action.startswith('on'):
+                        if action_type == 'on':
                             print(f"Encendiendo {pin_name} (negativo)")  # Añadir depuración aquí
                             set_pin_value(output_neg_pins[pin_name], "0", api_error_url)
-                        elif action.startswith('off'):
+                        elif action_type == 'off':
                             print(f"Apagando {pin_name} (negativo)")  # Añadir depuración aquí
                             set_pin_value(output_neg_pins[pin_name], "1", api_error_url)
             else:
@@ -227,11 +229,11 @@ def main(output_file, output_neg_file, impulsores_url, estado_url, apagado_url, 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Script para manejar las bombas automáticamente.')
     parser.add_argument('output_file', type=str, help='Archivo de configuración de bombas (lógica positiva).')
-    parser.add_argument('output_neg_file', type=str, help='Archivo de configuración de bombas (lógica negativa).')
+    parser.add.argument('output_neg_file', type=str, help='Archivo de configuración de bombas (lógica negativa).')
     parser.add_argument('impulsores_url', type=str, help='URL del endpoint para obtener comandos de selección.')
-    parser.add_argument('estado_url', type=str, help='URL del endpoint para reportar estado.')
-    parser.add_argument('apagado_url', type=str, help='URL del endpoint para reportar apagado.')
-    parser.add_argument('api_error_url', type=str, help='URL del endpoint para reportar errores.')
+    parser.add.argument('estado_url', type=str, help='URL del endpoint para reportar estado.')
+    parser.add.argument('apagado_url', type=str, help='URL del endpoint para reportar apagado.')
+    parser.add.argument('api_error_url', type=str, help='URL del endpoint para reportar errores.')
 
     args = parser.parse_args()
     main(args.output_file, args.output_neg_file, args.impulsores_url, args.estado_url, args.apagado_url, args.api_error_url)
