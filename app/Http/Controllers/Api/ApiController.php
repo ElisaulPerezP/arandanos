@@ -288,7 +288,6 @@ public function reportImpulsoresShutdown(Request $request)
             // Retornar el comando si existe
             if ($comando) {
                 $actions = json_decode($comando->comando, true)['actions'];
-                Log::info('Request sent by getInyectoresCommand:', ['actions' => $actions]);
                 return response()->json(['actions' => $actions], 200);
             }
         }
