@@ -164,14 +164,25 @@ class ApiController extends Controller
         // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
         $estadoSistema = EstadoSistema::find(1);
 
+        if (!$estadoSistema) {
+            $estadoSistema = EstadoSistema::create(['s2_id' => null]);
+        }
+
         // Obtener la entrada s2 actual si existe
         $s2Actual = $estadoSistema->s2;
         Log::info('Request received for s2:', $request->all());
 
+        // Desglosar el campo 'status' del request
+        $status = $request->input('status', []);
+        $valvulas = [];
+        foreach ($status as $key => $value) {
+            $valvulas[$key] = ($value == 'encendida') ? 1 : 0;
+        }
+
         // Crear una nueva entrada s2 con la información proporcionada en el request y el comando del antecesor
         $s2Nueva = S2::create(array_merge(
-            ['estado' => 'sin_estado'],
-            $request->all(),
+            ['estado' => 'funcionando'],
+            $valvulas,
             ['comando_id' => $s2Actual ? $s2Actual->comando_id : null]
         ));
 
