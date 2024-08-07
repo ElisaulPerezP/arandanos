@@ -51,7 +51,7 @@ class IniciarAplicacionListener
         foreach ($scripts as $script) {
             if (!empty($script)) {
                 // Separar el script y sus argumentos en una lista
-                $arguments = explode(' ', $script);
+                $arguments = array_filter(explode(' ', $script), fn($arg) => !empty($arg));
 
                 // Agregar sudo python3 al inicio de la lista
                 array_unshift($arguments, 'sudo', 'python3');
@@ -74,4 +74,3 @@ class IniciarAplicacionListener
         file_put_contents($reportFilePath, $content);
     }
 }
-
