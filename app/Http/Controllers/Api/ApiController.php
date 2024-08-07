@@ -33,8 +33,6 @@ class ApiController extends Controller
             return $estadosDelSistema->s0;
         });
 
-
-
         // Determinar el nuevo estado y el evento a emitir basado en el estado actual
         if ($s0Actual && $s0Actual->estado === 'Parada activada') {
             $nuevoEstado = 'Parada desactivada';
@@ -66,10 +64,26 @@ class ApiController extends Controller
 
     public function getTanquesCommand()
     {
-        // Obtener el estado actual del sistema
-        $estado = EstadoSistema::find(1);
-        $s1Actual = $estado -> s1;
-        $comandoHardware = $s1Actual ->comando;
+        $cacheTime = 60;
+
+        $estado = Cache::remember('estado_sistema_1', $cacheTime, function () {
+            $estadoSistema = EstadoSistema::find(1);
+            return $estadoSistema;
+        });
+
+        $s1Actual = Cache::remember('estado_s1_actual', $cacheTime, function () use ($estado) {
+            return $estado->s1;
+        });
+
+        $comandosHardware = Cache::get('comandos_hardware');
+
+        $comandoHardwareDefault = $comandosHardware->firstWhere('comando', 'esperar');
+
+        $comandoHardware = Cache::remember('comando_hardware_s1', $cacheTime, function () use ($s1Actual, $comandoHardwareDefault) {
+            return $s1Actual ? $s1Actual->comando : $comandoHardwareDefault;
+        });
+
+
         // Verificar si existe el comando
         if ($comandoHardware) {
             // Obtener el comando desde la relación s1
