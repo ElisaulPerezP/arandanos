@@ -56,9 +56,10 @@ class FetchRevistaData implements ShouldQueue
                     'Accept' => 'application/json',
                     'User-Agent' => 'PostmanRuntime/7.32.3',
                 ])
+                ->timeout(3)
                 ->get($url);
 
-            Log::info('response', ['response' => $response]);
+            Log::info('Response status', ['status' => $response->status()]);
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -98,10 +99,10 @@ class FetchRevistaData implements ShouldQueue
                     }
                 }
             } else {
-                Log::error('Failed to fetch data.', ['status' => $response->status()]);
+                Log::error('Failed to fetch data.', ['status' => $response->status(), 'body' => $response->body()]);
             }
         } catch (\Exception $e) {
-            Log::error('An error occurred while fetching data.', ['exception' => $e->getMessage()]);
+            Log::error('An error occurred while fetching data.', ['exception' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
         }
     }
 }
