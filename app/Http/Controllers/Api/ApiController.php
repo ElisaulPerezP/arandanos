@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use Illuminate\Support\Facades\Cache;
 use App\Events\CultivoInactivo;
 use App\Events\InicioDeAplicacion;
 use App\Models\Cultivo;
@@ -21,10 +22,18 @@ class ApiController extends Controller
 {
     public function reportStop(Request $request)
     {
-        // Obtener el estado actual del sistema
-        $estadosDelSistema = EstadoSistema::find(1);
+        // Definir el tiempo de cache en segundos (por ejemplo, 60 segundos)
+        $cacheTime = 60;
 
-        $s0Actual = $estadosDelSistema -> s0;
+        $estadosDelSistema = Cache::remember('estado_sistema_1', $cacheTime, function () {
+            return EstadoSistema::find(1);
+        });
+
+        $s0Actual = Cache::remember('estado_s0_actual', $cacheTime, function () use ($estadosDelSistema) {
+            return $estadosDelSistema->s0;
+        });
+
+
 
         // Determinar el nuevo estado y el evento a emitir basado en el estado actual
         if ($s0Actual && $s0Actual->estado === 'Parada activada') {
@@ -42,12 +51,11 @@ class ApiController extends Controller
             'sensor3' => 0
         ]);
 
-        // Actualizar el estado del sistema con el nuevo s0_id
-        if ($s0Final) {
-            $estadosDelSistema->update(['s0_id' => $s0Final->id]);
-        } else {
-            EstadoSistema::create(['s0_id' => $s0Final->id]);
-        }
+        $estadosDelSistema->update(['s0_id' => $s0Final->id]);
+
+        // Almacenar el nuevo estado en cache
+        Cache::put('estado_sistema_1', $estadosDelSistema, $cacheTime);
+        Cache::put('estado_s0_actual', $s0Final, $cacheTime);
 
         // Emitir el evento correspondiente
         event($evento);
