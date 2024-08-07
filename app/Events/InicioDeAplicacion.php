@@ -10,7 +10,7 @@ class InicioDeAplicacion
 
     public function __construct()
     {
-        $configFilePath = '/home/elisaul/ws/arandanos/pythonScripts/scriptsConfig.php';
+        $configFilePath = '/var/www/arandanos/pythonScripts/scriptsReport.php';
         if (!file_exists($configFilePath)) {
             Log::error("El archivo de configuración no existe: {$configFilePath}");
             return;
