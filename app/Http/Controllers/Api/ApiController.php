@@ -16,16 +16,22 @@ use App\Models\ComandoHardware;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
+use App\Jobs\Archivador;
+use Illuminate\Support\Facades\Cache;
 
 class ApiController extends Controller
 {
     public function reportStop(Request $request)
     {
         
-        // Obtener el estado actual del sistema
-        $estadosDelSistema = EstadoSistema::find(1);
+            // Obtener el estado actual del sistema desde la caché
+        $estadosDelSistema = Cache::rememberForever('estado_sistema', function () {
+            return EstadoSistema::find(1);
+        });
 
-        $s0Actual = $estadosDelSistema -> s0;
+        $s0Actual = Cache::rememberForever('estado_s0_actual', function () use ($estadosDelSistema) {
+            return $estadosDelSistema->s0;
+        });
 
         // Determinar el nuevo estado y el evento a emitir basado en el estado actual
         if ($s0Actual && $s0Actual->estado === 'Parada activada') {
@@ -36,23 +42,32 @@ class ApiController extends Controller
             $evento = new CultivoInactivo();
         }
 
+
         // Crear un nuevo registro S0 con el nuevo estado y el comando del antecesor
-        $s0Final = S0::create([
+        $s0Final = [
             'estado' => $nuevoEstado,
             'comando_id' => $s0Actual->comando->id ?? null,
-            'sensor3' => 0
-        ]);
+            'sensor3' => 0,
+            'created_at' => now(),
+            'updated_at' => now()
+        ];
+
 
         // Actualizar el estado del sistema con el nuevo s0_id
-        if ($s0Final) {
-            $estadosDelSistema->update(['s0_id' => $s0Final->id]);
-        } else {
-            EstadoSistema::create(['s0_id' => $s0Final->id]);
-        }
+        $estadoSistemaActualizado = $estadosDelSistema->toArray();
+        $estadoSistemaActualizado['s0_id'] = $s0Final['id'];
+
+        // Actualizar la caché con los nuevos valores
+        Cache::forever('estado_sistema', $estadoSistemaActualizado);
+        Cache::forever('estado_s0_actual', $s0Final);
+
+        // Despachar los trabajos para escribir en la base de datos
+        Archivador::dispatch('s0', $s0Final);
+        Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado);
 
         // Emitir el evento correspondiente
         event($evento);
-        Log::info('evento emitido con estaqdo', [$nuevoEstado]);
+        Log::info('Evento emitido ', [$nuevoEstado]);
 
         return response()->json(['message' => "Estado cambiado a '$nuevoEstado', evento emitido"], 200);
     }
