@@ -813,3 +813,25 @@ SUBSYSTEM=="gpio", KERNEL=="gpio*", ACTION=="add", RUN+="/bin/sh -c 'chmod 770 /
 
 sudo udevadm control --reload-rules
 sudo udevadm trigger
+
+intalar redis
+
+sudo apt install redis-server
+
+verifica el estado
+
+sudo systemctl status redis-server
+
+configurar laravel para redis
+
+sudo apt install php-redis
+
+
+en el .env
+
+CACHE_DRIVER=redis
+QUEUE_CONNECTION=redis
+SESSION_DRIVER=redis
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
