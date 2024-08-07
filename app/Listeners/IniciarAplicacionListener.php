@@ -39,7 +39,7 @@ class IniciarAplicacionListener
 
     protected function iniciarScripts(array $scripts)
     {
-        Log::info("iniciando");
+        Log::info("Iniciando scripts");
         $reportFilePath = '/var/www/arandanos/pythonScripts/scriptsReport.php';
         if (!file_exists($reportFilePath)) {
             Log::error("El archivo de reporte no existe: {$reportFilePath}");
@@ -56,16 +56,16 @@ class IniciarAplicacionListener
                 // Agregar sudo python3 al inicio de la lista
                 array_unshift($arguments, 'sudo', 'python3');
 
-                // Ejecutar el script en segundo plano
-                $command = implode(' ', $arguments) . ' > /dev/null 2>&1 &';
-                $process = new Process(['bash', '-c', $command]);
-                $process->start();
+                // Crear el proceso
+                $process = new Process($arguments);
 
-                if (!$process->isSuccessful()) {
-                    Log::error("Error al ejecutar el script: {$script}. Output: " . $process->getErrorOutput());
-                } else {
+                // Iniciar el proceso y esperar su finalización
+                try {
+                    $process->mustRun();
                     Log::info("Script iniciado exitosamente: {$script}");
                     $report['scriptsEjecutandose'] .= empty($report['scriptsEjecutandose']) ? $script : ', ' . $script;
+                } catch (ProcessFailedException $exception) {
+                    Log::error("Error al ejecutar el script: {$script}. Error: " . $exception->getMessage());
                 }
             }
         }
@@ -74,3 +74,4 @@ class IniciarAplicacionListener
         file_put_contents($reportFilePath, $content);
     }
 }
+
