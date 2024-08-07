@@ -21,13 +21,13 @@ class IniciarAplicacionListener
 
     public function handle(InicioDeAplicacion $event)
     {
-        // Obtener los scripts de base desde el evento
-        $scriptsDeBase = $event->scriptsDeBase;
+        // Obtener los scripts de base desde el archivo PHP
+        $scriptsConfig = $this->cargarConfig();
 
         // Ejecutar la lógica de los scripts de base
-        $this->iniciarScripts($scriptsDeBase);
+        $this->iniciarScripts($scriptsConfig['scriptsDeBase']);
 
-        Log::info("Los scripts de base han sido iniciados: " . implode(', ', $scriptsDeBase));
+        Log::info("Los scripts de base han sido iniciados: " . implode(', ', $scriptsConfig['scriptsDeBase']));
 
         $cultivo = Cultivo::first();
         $estadoActivo = Estado::where('nombre', 'Activo')->first();
@@ -35,6 +35,17 @@ class IniciarAplicacionListener
             'estado_id' => $estadoActivo->id,
         ]);
         event(new SincronizarSistema());
+    }
+
+    protected function cargarConfig()
+    {
+        $configFilePath = '/var/www/arandanos/pythonScripts/scriptsConfig.php';
+        if (!file_exists($configFilePath)) {
+            Log::error("El archivo de configuración no existe: {$configFilePath}");
+            return [];
+        }
+
+        return include($configFilePath);
     }
 
     protected function iniciarScripts(array $scripts)
@@ -50,8 +61,8 @@ class IniciarAplicacionListener
 
         foreach ($scripts as $script) {
             if (!empty($script)) {
-                // Separar el script y sus argumentos en una lista
-                $arguments = array_filter(explode(' ', $script), fn($arg) => !empty($arg));
+                // Separar el script y sus argumentos en una lista, eliminando espacios adicionales y nuevas líneas
+                $arguments = array_filter(preg_split('/\s+/', $script));
 
                 // Agregar sudo python3 al inicio de la lista
                 array_unshift($arguments, 'sudo', 'python3');
