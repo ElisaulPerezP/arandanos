@@ -68,4 +68,4 @@ Route::post('/flujo/conteo', [ApiController::class, 'reportFlujoConteo'])->name(
 // Ruta para reportar apagado del sistema de medida de flujo del sistema
 Route::post('/flujo/apagado', [ApiController::class, 'reportFlujoApagado'])->name('api.flujo.apagado');
 
-Route::post('/error', [ErrorReportController::class, 'reportError']);
+Route::post('/error', [ErrorReportController::class, 'reportError'])->name('api.error');
