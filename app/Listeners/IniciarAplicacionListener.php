@@ -21,19 +21,10 @@ class IniciarAplicacionListener
 
     public function handle(InicioDeAplicacion $event)
     {
-        // Obtener los scripts de base desde el archivo PHP
-        $scriptsConfig = $this->cargarConfig();
-
-        // Verificar si 'scriptsDeBase' está definido en la configuración
-        if (!isset($scriptsConfig['scriptsDeBase'])) {
-            Log::error("La clave 'scriptsDeBase' no está definida en la configuración");
-            return;
-        }
-
         // Ejecutar la lógica de los scripts de base
-        $this->iniciarScripts($scriptsConfig['scriptsDeBase']);
+        $this->iniciarScripts($event->scriptsDeBase);
 
-        Log::info("Los scripts de base han sido iniciados: " . implode(', ', $scriptsConfig['scriptsDeBase']));
+        Log::info("Los scripts de base han sido iniciados: " . implode(', ', $event->scriptsDeBase));
 
         $cultivo = Cultivo::first();
         $estadoActivo = Estado::where('nombre', 'Activo')->first();
@@ -41,17 +32,6 @@ class IniciarAplicacionListener
             'estado_id' => $estadoActivo->id,
         ]);
         event(new SincronizarSistema());
-    }
-
-    protected function cargarConfig()
-    {
-        $configFilePath = '/var/www/arandanos/pythonScripts/scriptsConfig.php';
-        if (!file_exists($configFilePath)) {
-            Log::error("El archivo de configuración no existe: {$configFilePath}");
-            return [];
-        }
-
-        return include($configFilePath);
     }
 
     protected function iniciarScripts(array $scripts)
