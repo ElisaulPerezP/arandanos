@@ -24,6 +24,12 @@ class IniciarAplicacionListener
         // Obtener los scripts de base desde el archivo PHP
         $scriptsConfig = $this->cargarConfig();
 
+        // Verificar si 'scriptsDeBase' está definido en la configuración
+        if (!isset($scriptsConfig['scriptsDeBase'])) {
+            Log::error("La clave 'scriptsDeBase' no está definida en la configuración");
+            return;
+        }
+
         // Ejecutar la lógica de los scripts de base
         $this->iniciarScripts($scriptsConfig['scriptsDeBase']);
 
