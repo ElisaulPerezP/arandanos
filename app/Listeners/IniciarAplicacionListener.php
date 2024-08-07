@@ -3,8 +3,6 @@
 namespace App\Listeners;
 
 use App\Events\InicioDeAplicacion;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 use App\Models\Cultivo;
 use App\Models\Estado;
@@ -53,13 +51,16 @@ class IniciarAplicacionListener
                 // Separar el script y sus argumentos en una lista, eliminando espacios adicionales y nuevas líneas
                 $arguments = array_filter(preg_split('/\s+/', $script));
 
-                // Agregar sudo python3 al inicio de la lista
-                array_unshift($arguments, 'sudo', 'python3');
+                // Agregar python3 al inicio de la lista
+                array_unshift($arguments, 'python3');
 
-                // Crear el proceso
-                $process = new Process($arguments);
+                // Crear el comando completo como una cadena
+                $command = implode(' ', $arguments) . ' > /dev/null 2>&1 &';
+                
+                // Ejecutar el script en segundo plano
+                $process = new Process(['bash', '-c', $command]);
 
-                // Iniciar el proceso y esperar su finalización
+                // Iniciar el proceso
                 try {
                     $process->mustRun();
                     Log::info("Script iniciado exitosamente: {$script}");
