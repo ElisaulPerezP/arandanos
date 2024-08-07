@@ -87,7 +87,11 @@ def get_selector_command(url, api_error_url):
         return None
 
 def report_error(url, error_message):
-    payload = {'error': error_message}
+    payload = {
+        'script_name': 'selector.py',
+        'error_message': error_message,
+        'timestamp': time.strftime("%Y-%m-%dT%H:%M:%S")
+    }
     try:
         response = requests.post(url, json=payload, timeout=TIMEOUT)
         if response.status_code != 200:
