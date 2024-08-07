@@ -83,7 +83,11 @@ def report_stop(url, status_message, api_error_url):
         return False
 
 def report_error(url, error_message):
-    payload = {'error': error_message}
+    payload = {
+        'script_name': 'flujo.py',
+        'error_message': error_message,
+        'timestamp': time.strftime("%Y-%m-%dT%H:%M:%S")
+    }
     try:
         response = requests.post(url, json=payload, timeout=TIMEOUT)
         if response.status_code != 200:
