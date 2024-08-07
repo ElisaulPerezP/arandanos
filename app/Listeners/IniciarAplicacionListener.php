@@ -22,9 +22,12 @@ class IniciarAplicacionListener
     public function handle(InicioDeAplicacion $event)
     {
         // Ejecutar la lógica de los scripts de base
-        $this->iniciarScripts($event->scriptsDeBase);
-
-        Log::info("Los scripts de base han sido iniciados: " . implode(', ', $event->scriptsDeBase));
+        if (is_array($event->scriptsDeBase)) {
+            $this->iniciarScripts($event->scriptsDeBase);
+            Log::info("Los scripts de base han sido iniciados: " . implode(', ', $event->scriptsDeBase));
+        } else {
+            Log::error("scriptsDeBase no está definido o no es un array.");
+        }
 
         $cultivo = Cultivo::first();
         $estadoActivo = Estado::where('nombre', 'Activo')->first();
@@ -37,7 +40,7 @@ class IniciarAplicacionListener
     protected function iniciarScripts(array $scripts)
     {
         Log::info("Iniciando scripts");
-        $reportFilePath = '/var/www/arandanos/pythonScripts/scriptsReport.php';
+        $reportFilePath = '/home/elisaul/ws/arandanos/pythonScripts/scriptsReport.php';
         if (!file_exists($reportFilePath)) {
             Log::error("El archivo de reporte no existe: {$reportFilePath}");
             return;

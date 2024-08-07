@@ -4,14 +4,13 @@ namespace App\Events;
 
 use Illuminate\Support\Facades\Log;
 
-
 class InicioDeAplicacion
 {
     public $scriptsDeBase;
 
     public function __construct()
     {
-        $configFilePath = '/var/www/arandanos/pythonScripts/scriptsConfig.php';
+        $configFilePath = '/home/elisaul/ws/arandanos/pythonScripts/scriptsConfig.php';
         if (!file_exists($configFilePath)) {
             Log::error("El archivo de configuración no existe: {$configFilePath}");
             return;
