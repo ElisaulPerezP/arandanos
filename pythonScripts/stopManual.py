@@ -87,7 +87,11 @@ def report_stop(api_error_url, value):
         report_error(api_error_url, f"Excepción al reportar la parada: {e}")
 
 def report_error(url, error_message):
-    payload = {'error': error_message}
+    payload = {
+        'script_name': 'stop.py',
+        'error_message': error_message,
+        'timestamp': time.strftime("%Y-%m-%dT%H:%M:%S")
+    }
     try:
         response = requests.post(url, json=payload, timeout=TIMEOUT)
         if response.status_code != 200:
