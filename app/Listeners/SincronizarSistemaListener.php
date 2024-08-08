@@ -7,8 +7,10 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use App\Models\Comando;
-
+use App\Jobs\Archivador;
+use Illuminate\Support\Str;
 
 class SincronizarSistemaListener implements ShouldQueue
 {
@@ -34,54 +36,60 @@ class SincronizarSistemaListener implements ShouldQueue
                 Log::error('Failed to report mensaje', ['response' => $mensajeResponse->body()]);
             }
         }
-//TODO ESTA MIERDA HAY QUE CAMBIARLA, COMO QUE 1 EN LA URL? 
-        // Enviar programaciones (modificar según el ID del cultivo, aquí es 2 como ejemplo)
+
         Log::info('Programaciones data:', ['programaciones' => $event->programaciones]);
 
         // Realizar la solicitud HTTP
         $programacionesResponse = Http::withToken($token)->post("$baseUrl/api/cultivos/programaciones/sincronizar", $event->programaciones);
-    
-        // Verificar si la solicitud falló
+
         if ($programacionesResponse->failed()) {
             Log::error('Failed to report programaciones', ['response' => $programacionesResponse->body()]);
             return;
         }
-    
-        // Procesar la respuesta si la solicitud es exitosa
+
         $responseData = $programacionesResponse->json();
         if (isset($responseData['programaciones'])) {
-            // Borrar todos los eventos programados existentes para el cultivo
-            $cultivo->programaciones()->delete();
-    
-            // Escribir los nuevos eventos recibidos
+            // Borrar todas las programaciones existentes del cultivo en la caché
+            $cultivoProgramaciones = Cache::rememberForever("cultivo_{$cultivo->id}_programaciones", function () use ($cultivo) {
+                return $cultivo->programaciones()->get()->toArray();
+            });
+            Cache::forget("cultivo_{$cultivo->id}_programaciones");
+
+            // Preparar las nuevas programaciones
+            $nuevasProgramaciones = [];
             foreach ($responseData['programaciones'] as $programacionData) {
                 $comandoId = $programacionData['comando_id'];
-    
-                // Verificar si el comando_id existe en la tabla comandos
-                $comando = Comando::find($comandoId);
+
+                $comando = Cache::rememberForever("comando_{$comandoId}", function () use ($comandoId) {
+                    return Comando::find($comandoId);
+                });
+
                 if (!$comando) {
                     Log::error("Comando with ID {$comandoId} does not exist.");
                     continue;
                 }
-    
-                // Crear nueva programación
-                try {
-                    $cultivo->programaciones()->create([
-                        'comando_id' => $comandoId,
-                        'hora_unix' => $programacionData['hora_unix'],
-                        'estado' => $programacionData['estado']
-                    ]);
-                } catch (\Exception $e) {
-                    Log::error('Failed to create programacion', [
-                        'comando_id' => $comandoId,
-                        'hora_unix' => $programacionData['hora_unix'],
-                        'estado' => $programacionData['estado'],
-                        'error' => $e->getMessage()
-                    ]);
-                }
+
+                $nuevaProgramacion = [
+                    'id' => (string) Str::uuid(),
+                    'cultivo_id' => $cultivo->id,
+                    'comando_id' => $comandoId,
+                    'hora_unix' => $programacionData['hora_unix'],
+                    'estado' => $programacionData['estado'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+
+                $nuevasProgramaciones[] = $nuevaProgramacion;
+                Cache::forever("programacion_{$nuevaProgramacion['id']}", $nuevaProgramacion);
             }
+
+            // Actualizar la caché con las nuevas programaciones
+            Cache::forever("cultivo_{$cultivo->id}_programaciones", $nuevasProgramaciones);
+
+            // Despachar los trabajos para escribir en la base de datos
+            Archivador::dispatch('cultivo_programaciones', $nuevasProgramaciones);
         }
-    
+
         Log::info('Successfully synchronized the system for cultivo ID: ' . $cultivo->id);
 
         // Enviar estados
