@@ -12,10 +12,14 @@ use App\Models\S4;
 use App\Models\S5;
 use App\Models\S1;
 use App\Models\ComandoHardware;
+use App\Models\Comando;
 use App\Models\EstadoSistema;
 use App\Models\Programacion;
 use Carbon\Carbon;
 use Database\Factories\S2Factory;
+use Illuminate\Support\Facades\Cache;
+use App\Jobs\Archivador;
+
 
 class RiegoEventListener implements ShouldQueue
 {
@@ -28,43 +32,45 @@ class RiegoEventListener implements ShouldQueue
     {
         Log::info('Riego event handled', ['descripcion' => $event->programacion]);
 
+        $programacion = Cache::get("programacion_{$event->programacion['id']}");
+
         $startTime = Carbon::now();
         $timeoutTime = $startTime->addSeconds($this->timeout);
 
         try {
             Log::info('si esta entrando al try');
             // Encender electrovalvulas
-            $this->encenderElectrovalvulas($event->programacion);
+            $this->encenderElectrovalvulas($programacion);
 
             // Encender motor principal
             $this->encenderMotorPrincipal();
 
             // Inyectar fertilizante
-            $this->inyectarFertilizante($event->programacion);
+            $this->inyectarFertilizante($programacion);
 
             // Monitorear flujo
-            $resultado = $this->monitorearFlujo($timeoutTime, $event->programacion);
+            $resultado = $this->monitorearFlujo($timeoutTime, $programacion);
 
             // Llenar tanques si el riego fue exitoso
             if ($resultado) {
                 $this->llenarTanques();
-                $this->marcarEventoExitoso($event->programacion);
+                $this->marcarEventoExitoso($programacion);
             } else {
-                $this->marcarEventoFallido($event->programacion);
+                $this->marcarEventoFallido($programacion);
                 
             }
 
             // Apagar todos los sistemas después del riego
-            $this->apagarElectrovalvulas($event->programacion);
+            $this->apagarElectrovalvulas($programacion);
             $this->apagarMotorPrincipal();
             $this->apagarInyectores();
 
         } catch (\Exception $e) {
-            Log::error('Error en el manejo del evento de riego', ['descripcion' => $event->programacion, 'error' => $e->getMessage()]);
-            $this->marcarEventoFallido($event->programacion);
+            Log::error('Error en el manejo del evento de riego', ['descripcion' => $programacion, 'error' => $e->getMessage()]);
+            $this->marcarEventoFallido($programacion);
 
             // Asegurarse de apagar todos los sistemas en caso de error
-            $this->apagarElectrovalvulas($event->programacion);
+            $this->apagarElectrovalvulas($programacion);
             $this->apagarMotorPrincipal();
             $this->apagarInyectores();
         }
@@ -72,34 +78,59 @@ class RiegoEventListener implements ShouldQueue
 
     protected function encenderElectrovalvulas($programacion)
     {
-        // Parsear la descripcion para obtener el camellon
-        parse_str(str_replace(',', '&', $programacion->comando->descripcion), $params);
+
+        // Obtener el comando desde la caché
+        $comando = Cache::rememberForever("comando_{$programacion['comando_id']}", function () use ($programacion) {
+            return Comando::find($programacion['comando_id']);
+        });
+
+        // Parsear la descripción del comando para obtener el camellon
+        parse_str(str_replace(',', '&', $comando['descripcion']), $params);
         $camellon = $params['camellon'];
 
-        // Obtener la configuración actual de s2 y encender la electrovalvula correspondiente
-        $estadoSistema = EstadoSistema::first();
-        $s2Actual = $estadoSistema->s2;
-        $s2Final = new S2;
-        $s2Final->fill($s2Actual->toArray());
+        // Obtener el estado del sistema desde la caché
+        $estadoSistema = Cache::rememberForever('estado_sistema', function () {
+            return EstadoSistema::first();
+        });
 
+
+         // Obtener el estado del sistema desde la caché como objeto
+        $estadoSistema = Cache::rememberForever('estado_sistema', function () {
+            return EstadoSistema::first();
+        });
+
+         // Obtener la configuración actual de s2 desde la caché como objeto
+        $s2Actual = Cache::rememberForever("estado_s2_actual", function () use ($estadoSistema) {
+            return S2::find($estadoSistema["s2_id"]);
+        });
+        
+
+        // Clonar la configuración actual para crear un nuevo estado de S2
+        $s2Final = $s2Actual->replicate();
+
+        // Buscar el comando de hardware correcto en la caché como objeto
         $comandoBuscado = 'on:valvula' . $camellon;
-        $comandoHardware = ComandoHardware::where('sistema', 's2')
-                                           ->where('comando', $comandoBuscado)
-                                           ->first();
-    
-        // Si se encuentra el comando de hardware, asignar el comando_id
+        $comandoHardware = Cache::rememberForever("comando_hardware_{$comandoBuscado}", function () use ($comandoBuscado) {
+            return ComandoHardware::where('sistema', 's2')
+                                ->where('comando', $comandoBuscado)
+                                ->first();
+        });
+
+
         if ($comandoHardware) {
             $s2Final->comando_id = $comandoHardware->id;
         } else {
             // Registrar un mensaje en el log si no se encuentra el comando
             Log::info("El comando para encender la electrovalvula del camellon $camellon no pudo ser encontrado");
-
         }
     
-        $s2Final->save();
-
-        $estadoSistema->update(['s2' => $s2Final->id]);
-
+        // Guardar el nuevo estado en la caché
+        Cache::forever('estado_s2_actual', $s2Final);
+    
+        // Despachar los trabajos para actualizar la base de datos
+        Archivador::dispatch('s2', $s2Final->toArray());
+        Archivador::dispatch('estado_sistema', ['s2_id' => $s2Final->id] + $estadoSistema);
+    
         Log::info('Electrovalvula del camellon ' . $camellon . ' encendida');
     }
 
