@@ -473,31 +473,59 @@ class ApiController extends Controller
         return response()->json(['message' => 'Estado reportado exitosamente'], 200);
     }
 
-public function reportImpulsoresShutdown(Request $request)
-{
-    Log::info('Request received for reportImpulsoresSHutdown:', $request->all());
+    public function reportImpulsoresShutdown(Request $request)
+    {
+        // Obtener el estado actual del sistema desde la caché
+        $estadoSistema = Cache::rememberForever('estado_sistema', function () {
+            return EstadoSistema::firstOrCreate(['id' => 1]);
+        });
 
-    // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
-    $estadoSistema = EstadoSistema::find(1);
+        if ($estadoSistema) {
+            // Obtener la entrada s3 actual desde la caché
+            $s3Actual = Cache::rememberForever('estado_s3_actual', function () use ($estadoSistema) {
+                return S3::find($estadoSistema->s3_id);
+            });
 
-    // Obtener la entrada s3 actual si existe
-    $s3Actual = $estadoSistema->s3;
+            // Obtener los comandos hardware desde la caché
+            $comandosHardware = Cache::get('comandos_hardware');
 
-    // Buscar el comando en la tabla comando_hardware
-    $comandoAccion = '{"actions":["pump1:off","pump2:off"]}';
-    $comando = ComandoHardware::where('comando', $comandoAccion)->first();
+            // Buscar el comando en la caché
+            $comandoAccion = '{"actions":["pump1:off","pump2:off"]}';
+            $comando = $comandosHardware->firstWhere('comando', $comandoAccion);
 
-    // Crear una nueva entrada s3 con el estado inactivo y el comando del antecesor
-    $s3Nueva = S3::create(array_merge(
-        $request->all(),
-        ['comando_id' => $comando ? $comando->id : ($s3Actual ? $s3Actual->comando_id : null)],
-    ));
+            // Generar un nuevo UUID para la nueva entrada s3
+            $s3NuevaId = (string) Str::uuid();
 
-    // Actualizar el EstadoSistema con la nueva entrada s3
-    $estadoSistema->update(['s3_id' => $s3Nueva->id]);
+            // Crear una nueva entrada s3 con el estado inactivo y el comando del antecesor
+            $s3Nueva = array_merge(
+                $request->all(),
+                [
+                    'id' => $s3NuevaId,
+                    'comando_id' => $comando ? $comando->id : ($s3Actual ? $s3Actual->comando_id : null),
+                    'estado' => 'apagado',
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]
+            );
 
-    return response()->json(['message' => 'Apagado con exito'], 200);
-}
+            // Actualizar el estado del sistema con la nueva entrada s3
+            $estadoSistemaActualizado = $estadoSistema->toArray();
+            $estadoSistemaActualizado['s3_id'] = $s3NuevaId;
+
+            // Actualizar la caché con los nuevos valores
+            Cache::forever('estado_sistema', $estadoSistemaActualizado);
+            Cache::forever('estado_s3_actual', $s3Nueva);
+
+            // Despachar los trabajos para escribir en la base de datos
+            Archivador::dispatch('s3', $s3Nueva);
+            Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado);
+
+            return response()->json(['message' => 'Apagado con éxito'], 200);
+        }
+
+        // Retornar un mensaje de error si no se encuentra el estadoSistema
+        return response()->json(['message' => 'Estado del sistema no encontrado'], 404);
+    }
 
 
     public function getInyectoresCommand()
