@@ -30,7 +30,8 @@ class ApiController extends Controller
         });
 
         $s0Actual = Cache::rememberForever('estado_s0_actual', function () use ($estadosDelSistema) {
-            return $estadosDelSistema->s0;
+            return S0::find($estadoSistema->s0_id);
+
         });
 
         // Determinar el nuevo estado y el evento a emitir basado en el estado actual
@@ -46,7 +47,7 @@ class ApiController extends Controller
         // Crear un nuevo registro S0 con el nuevo estado y el comando del antecesor
         $s0Final = [
             'estado' => $nuevoEstado,
-            'comando_id' => $s0Actual->comando->id ?? null,
+            'comando_id' => $s0Actual->comando_id ?? null,
             'sensor3' => 0,
             'created_at' => now(),
             'updated_at' => now()
@@ -81,7 +82,7 @@ class ApiController extends Controller
 
         // Obtener el s1 actual desde la caché
         $s1Actual = Cache::rememberForever('estado_s1_actual', function () use ($estado) {
-            return $estado->s1;
+            return S1::find($estado->s1_id);
         });
 
         // Obtener el comando hardware desde la caché cargada en el AppServiceProvider
@@ -117,24 +118,45 @@ class ApiController extends Controller
     public function reportTanquesState(Request $request)
     {
         // Buscar la entrada en la tabla EstadoSistema
-        $estadoSistema = EstadoSistema::find(1);
-        $comandoEsperar = ComandoHardware::where('comando', 'esperar')->first();
-        // Verificar si existe el estadoSistema y la relación s1
-        if ($estadoSistema && $estadoSistema->s1) {
-            // Obtener la entrada s1 relacionada
-            $s1Actual = $estadoSistema->s1;
+        $estadoSistema = Cache::rememberForever('estado_sistema', function () {
+            return EstadoSistema::find(1);
+        });
 
+        // Obtener los comandos hardware desde la caché
+        $comandosHardware = Cache::get('comandos_hardware');
+
+        // Buscar el comando "esperar" en la caché
+        $comandoEsperar = $comandosHardware->firstWhere('comando', 'esperar');
+
+         // Verificar si existe el estadoSistema y la relación s1 en la caché
+        if ($estadoSistema) {
+            $s1Actual = Cache::rememberForever('estado_s1_actual', function () use ($estadoSistema) {
+                return S1::find($estadoSistema->s1_id);
+            });
+        
+        
             // Crear una nueva entrada s1 con la información nueva y la faltante
-            $s1Nueva = S1::create([
+            $s1Nueva = [
                 'estado' => $request->input('estado', $s1Actual->estado),
                 'sensor1' => $request->input('sensor1', $s1Actual->sensor1),
                 'sensor2' => $request->input('sensor2', $s1Actual->sensor2),
                 'valvula14' => $request->input('valvula14', $s1Actual->valvula14),
-                'comando_id' =>  $s1Actual->comando->id ?? $comandoEsperar->id,
-            ]);
+                'comando_id' => $s1Actual->comando_id ?? $comandoEsperar->id,
+                'created_at' => now(),
+                'updated_at' => now()
+            ];
+            
+            // Actualizar el estado del sistema con la nueva entrada s1
+            $estadoSistemaActualizado = $estadoSistema->toArray();
+            $estadoSistemaActualizado['s1_id'] = $s1Nueva['id'];
 
-            // Actualizar el EstadoSistema con la nueva entrada s1
-            $estadoSistema->update(['s1_id' => $s1Nueva->id]);
+            // Actualizar la caché con los nuevos valores
+            Cache::forever('estado_sistema', $estadoSistemaActualizado);
+            Cache::forever('estado_s1_actual', $s1Nueva);
+
+            // Despachar los trabajos para escribir en la base de datos
+            Archivador::dispatch('s1', $s1Nueva);
+            Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado);
 
             return response()->json(['message' => 'Estado reportado exitosamente'], 200);
         }
