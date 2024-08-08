@@ -530,20 +530,33 @@ class ApiController extends Controller
 
     public function getInyectoresCommand()
     {
-        // Obtener el estado actual del sistema
-        $estado = EstadoSistema::find(1);
+        // Obtener el estado actual del sistema desde la caché
+        $estado = Cache::rememberForever('estado_sistema', function () {
+            return EstadoSistema::firstOrCreate(['id' => 1]);
+        });
 
-        // Verificar si existe el estado y la relación s4
-        if ($estado && $estado->s4) {
-            // Obtener el comando desde la relación s4
-            $comando = $estado->s4->comando;
+        if ($estado) {
+            // Obtener la entrada s4 actual desde la caché
+            $s4Actual = Cache::rememberForever('estado_s4_actual', function () use ($estado) {
+                return S4::find($estado->s4_id);
+            });
 
-            // Retornar el comando si existe
+            // Obtener los comandos hardware desde la caché
+            $comandosHardware = Cache::get('comandos_hardware');
+
+            // Obtener el comando desde la caché utilizando el comando_id de s4
+            $comando = null;
+            if ($s4Actual && isset($s4Actual->comando_id)) {
+                $comando = $comandosHardware->firstWhere('id', $s4Actual->comando_id);
+            }
+
+            // Verificar si existe el comando
             if ($comando) {
                 $actions = json_decode($comando->comando, true)['actions'];
                 return response()->json(['actions' => $actions], 200);
             }
         }
+
         // Retornar un mensaje de error si no se encuentra el comando
         return response()->json(['message' => 'Comando no encontrado'], 404);
     }
