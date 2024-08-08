@@ -123,22 +123,25 @@ class ApiController extends Controller
         $estadoSistema = Cache::rememberForever('estado_sistema', function () {
             return EstadoSistema::find(1);
         });
-
+    
         // Obtener los comandos hardware desde la caché
         $comandosHardware = Cache::get('comandos_hardware');
-
+    
         // Buscar el comando "esperar" en la caché
         $comandoEsperar = $comandosHardware->firstWhere('comando', 'esperar');
-
-         // Verificar si existe el estadoSistema y la relación s1 en la caché
+    
+        // Verificar si existe el estadoSistema y la relación s1 en la caché
         if ($estadoSistema) {
             $s1Actual = Cache::rememberForever('estado_s1_actual', function () use ($estadoSistema) {
                 return S1::find($estadoSistema->s1_id);
             });
-        
-        
+
+            // Generar un nuevo UUID para la nueva entrada s1
+            $s1NuevaId = (string) Str::uuid();
+
             // Crear una nueva entrada s1 con la información nueva y la faltante
             $s1Nueva = [
+                'id' => $s1NuevaId,
                 'estado' => $request->input('estado', $s1Actual->estado),
                 'sensor1' => $request->input('sensor1', $s1Actual->sensor1),
                 'sensor2' => $request->input('sensor2', $s1Actual->sensor2),
@@ -147,10 +150,10 @@ class ApiController extends Controller
                 'created_at' => now(),
                 'updated_at' => now()
             ];
-            
+
             // Actualizar el estado del sistema con la nueva entrada s1
             $estadoSistemaActualizado = $estadoSistema->toArray();
-            $estadoSistemaActualizado['s1_id'] = $s1Nueva['id'];
+            $estadoSistemaActualizado['s1_id'] = $s1NuevaId;
 
             // Actualizar la caché con los nuevos valores
             Cache::forever('estado_sistema', $estadoSistemaActualizado);
