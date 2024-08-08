@@ -12,6 +12,16 @@ class S3Seeder extends Seeder
      */
     public function run(): void
     {
-        S3::factory()->count(1)->create();
+        // Elimina cualquier registro existente con ID 1 para evitar conflictos
+        S3::where('id', 1)->delete();
+
+        // Usar la factory para crear un registro con ID 1 y valores específicos
+        S3::factory()->create([
+            'id' => 1,
+            'estado' => 'inicial', // Asigna el estado inicial
+            'comando_id' => null, // Asigna el comando_id inicial
+            'pump1' => 'off', // Asigna el valor inicial de pump1
+            'pump2' => 'off', // Asigna el valor inicial de pump2
+        ]);
     }
 }

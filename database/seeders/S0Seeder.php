@@ -12,7 +12,15 @@ class S0Seeder extends Seeder
      */
     public function run(): void
     {
-        S0::factory()->count(1)->create();
+        // Elimina cualquier registro existente con ID 1 para evitar conflictos
+        S0::where('id', 1)->delete();
+
+        // Usar la factory para crear un registro con ID 1
+        S0::factory()->create([
+            'id' => 1,
+            'estado' => false,
+            'comando_id' => null,
+            'sensor3' => 1,
+        ]);
     }
 }
-

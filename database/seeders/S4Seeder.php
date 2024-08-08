@@ -12,6 +12,16 @@ class S4Seeder extends Seeder
      */
     public function run(): void
     {
-        S4::factory()->count(1)->create();
+        // Elimina cualquier registro existente con ID 1 para evitar conflictos
+        S4::where('id', 1)->delete();
+
+        // Usar la factory para crear un registro con ID 1 y valores específicos
+        S4::factory()->create([
+            'id' => 1,
+            'estado' => 'inicial', // Asigna el estado inicial
+            'comando_id' => null, // Asigna el comando_id inicial
+            'pump3' => 'off', // Asigna el valor inicial de pump3
+            'pump4' => 'off', // Asigna el valor inicial de pump4
+        ]);
     }
 }
