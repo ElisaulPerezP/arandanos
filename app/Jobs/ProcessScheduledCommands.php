@@ -60,7 +60,7 @@ class ProcessScheduledCommands implements ShouldQueue
 
 
                     if ($event) {
-                        event(new $event((object) $programacion));  // Pasar la instancia completa del modelo
+                        event(new $event((object) $programacion));
                         $programacion['estado'] = 'ejecutandose';
                         $programacion['updated_at'] = now();
 
