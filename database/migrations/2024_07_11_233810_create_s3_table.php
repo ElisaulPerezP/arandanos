@@ -13,12 +13,14 @@ class CreateS3Table extends Migration
     public function up()
     {
         Schema::create('s3', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->boolean('estado');
-            $table->foreignId('comando_id')->nullable()->constrained('comando_hardware');
+            $table->uuid('comando_id')->nullable();
             $table->boolean('pump1');
             $table->boolean('pump2');
             $table->timestamps();
+
+            $table->foreign('comando_id')->references('id')->on('comando_hardware')->onDelete('set null');
         });
     }
 
@@ -29,6 +31,8 @@ class CreateS3Table extends Migration
      */
     public function down()
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('s3');
+        Schema::enableForeignKeyConstraints();
     }
 }
