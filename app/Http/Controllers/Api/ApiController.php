@@ -225,19 +225,39 @@ class ApiController extends Controller
 
     public function getSelectorCommand()
     {
-        // Obtener el estado actual del sistema
-        $estado = EstadoSistema::find(1);
+        // Obtener el estado actual del sistema desde la caché
+        $estado = Cache::rememberForever('estado_sistema', function () {
+            return EstadoSistema::find(1);
+        });
 
-        // Verificar si existe el estado y la relación s2
-        if ($estado && $estado->s2) {
-            // Obtener el comando desde la relación s2
-            $comando = $estado->s2->comando;
+        if ($estado) {
+            $s2Actual = Cache::rememberForever('estado_s2_actual', function () use ($estado) {
+                return S2::find($estado->s2_id);
+            });
 
-            // Retornar el comando si existe
-            if ($comando) {
-                $action = $comando->comando;  // Aquí el comando es una cadena, no un JSON
-                Log::info('Comando de selector entregado por el controlador es: ', ['action' => $action]);
-                return response()->json(['actions' => [$action]], 200);  // Empaquetar en un array
+            // Obtener el comando hardware desde la caché cargada en el AppServiceProvider
+            $comandosHardware = Cache::get('comandos_hardware');
+
+            $comandoHardware = null;
+            if ($s2Actual && isset($s2Actual->comando_id)) {
+                $comandoHardware = $comandosHardware->firstWhere('id', $s2Actual->comando_id);
+            }
+
+            // Si no se encuentra el comando hardware, usar el comando por defecto 'off:valvula1'
+            if (!$comandoHardware) {
+                $comandoHardware = $comandosHardware->firstWhere('comando', 'off:valvula1');
+            }
+
+            // Verificar si existe el comando
+            if ($comandoHardware) {
+                // Obtener el comando desde la relación s2
+                $comandoExplicito = $comandoHardware->comando;
+
+                // Retornar el comando si existe
+                if ($comandoExplicito) {
+                    Log::info('Comando de selector entregado por el controlador', ['action' => $comandoExplicito]);
+                    return response()->json(['actions' => [$comandoExplicito]], 200); // Empaquetar en un array
+                }
             }
         }
 
