@@ -9,6 +9,9 @@ use App\Models\Estado;
 use Illuminate\Support\Facades\Log;
 use App\Models\Cultivo;
 use App\Events\SincronizarSistema;
+use Illuminate\Support\Facades\Cache;
+use App\Jobs\Archivador;
+use Illuminate\Support\Str;
 
 class StopSystemListener
 {
@@ -22,16 +25,35 @@ class StopSystemListener
         $scriptsEjecutandose = $event->scriptsEjecutandose;
         $scriptStopTotal = $event->scriptStopTotal;
 
-        $cultivo = Cultivo::first();
-        $estadoInactivo = Estado::where('nombre', 'Inactivo')->first();
+        // Obtener el cultivo desde la caché
+        $cultivo = Cache::rememberForever('cultivo_primero', function () {
+            return Cultivo::first();
+        });
+
+        // Obtener el estado inactivo desde la caché
+        $estadoInactivo = Cache::rememberForever('estado_inactivo', function () {
+            return Estado::where('nombre', 'Inactivo')->first();
+        });
 
         if ($estadoInactivo) {
             $this->detenerProcesos($scriptsEjecutandose);
-            $cultivo->update([
+
+            // Actualizar la caché con el cultivo actualizado
+            Cache::forever('cultivo_primero', $cultivo);
+
+            // Preparar los datos para archivarlos
+            $cultivoData = [
+                'id' => $cultivo->id,
                 'estado_id' => $estadoInactivo->id,
-            ]);
+                'updated_at' => now(),
+                'created_at' => $cultivo->created_at,
+            ];
+
+            // Despachar el trabajo para escribir en la base de datos
+            Archivador::dispatch('cultivo', $cultivoData);
+
             $this->ejecutarStopTotal($scriptStopTotal);
-            
+
             event(new SincronizarSistema());
 
             Log::info("El cultivo {$cultivo->id} ha sido marcado como inactivo y los procesos han sido detenidos.");
