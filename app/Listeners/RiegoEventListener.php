@@ -390,10 +390,25 @@ protected function inyectarFertilizante($programacion)
 
     protected function marcarEventoExitoso($programacion)
     {
-        // Marcar el evento como exitoso en la base de datos
-        //$programacion = Programacion::find($programacion);
-        $programacion->update(['estado' => 'ejecutado_exitosamente']);
-        Log::info('Evento de riego completado exitosamente', ['descripcion' => $programacion->comando->descripcion]);
+        // Cargar la programación desde la caché utilizando su ID
+        $programacionCacheKey = "programacion_{$programacion['id']}";
+        $programacionActual = Cache::get($programacionCacheKey);
+
+        if ($programacionActual) {
+            // Actualizar el estado de la programación
+            $programacionActual['estado'] = 'ejecutado_exitosamente';
+            $programacionActual['updated_at'] = now();
+
+            // Guardar la programación actualizada en la caché
+            Cache::forever($programacionCacheKey, $programacionActual);
+
+            // Despachar la actualización para que se refleje en la base de datos
+            Archivador::dispatch('programaciones', $programacionActual);
+
+            Log::info('Evento de riego completado exitosamente', ['descripcion' => $programacionActual['comando']['descripcion']]);
+        } else {
+            Log::error('No se pudo encontrar la programación en la caché', ['programacion_id' => $programacion['id']]);
+        }
     }
 
     protected function marcarEventoFallido($programacion)
