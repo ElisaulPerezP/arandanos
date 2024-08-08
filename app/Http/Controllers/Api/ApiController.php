@@ -563,31 +563,62 @@ class ApiController extends Controller
 
     public function reportInyectoresState(Request $request)
     {
-        
+        // Obtener el estado actual del sistema desde la caché
+        $estadoSistema = Cache::rememberForever('estado_sistema', function () {
+            return EstadoSistema::firstOrCreate(['id' => 1]);
+        });
 
-        // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
-        $estadoSistema = EstadoSistema::find(1);
+        // Obtener la entrada s4 actual desde la caché
+        $s4Actual = Cache::rememberForever('estado_s4_actual', function () use ($estadoSistema) {
+            return S4::find($estadoSistema->s4_id);
+        });
 
-        // Obtener la entrada s4 actual si existe
-        $s4Actual = $estadoSistema->s4;
-
+        // Validar los datos del request
         $validatedData = $request->validate([
-                'pump3' => 'required|string',
-                'pump4' => 'required|string',
-                // Agrega aquí otros campos que sean necesarios
-            ]);
-
-        $data = array_merge($validatedData, [
-            'comando_id' => $s4Actual ? $s4Actual->comando_id : null,
-            'estado' => 'funcionando'
+            'pump3' => 'required|string',
+            'pump4' => 'required|string',
+            // Agrega aquí otros campos que sean necesarios
         ]);
 
-        $s4Nueva = S4::create($data);
+        // Obtener los comandos hardware desde la caché
+        $comandosHardware = Cache::get('comandos_hardware');
 
-        // Actualizar el EstadoSistema con la nueva entrada s4
-        $estadoSistema->update(['s4_id' => $s4Nueva->id]);
+        // Obtener el comando desde la caché utilizando el comando_id de s4
+        $comandoHardware = null;
+        if ($s4Actual && isset($s4Actual->comando_id)) {
+            $comandoHardware = $comandosHardware->firstWhere('id', $s4Actual->comando_id);
+        }
 
-        Log::info('Request received for ReportInyectoresSstate:', $request->all());
+        // Si no se encuentra el comando hardware, usar el comando por defecto 'off:pump3' y 'off:pump4'
+        if (!$comandoHardware) {
+            $comandoHardware = $comandosHardware->firstWhere('comando', '{"actions":["pump3:off","pump4:off"]}');
+        }
+
+        // Generar un nuevo UUID para la nueva entrada s4
+        $s4NuevaId = (string) Str::uuid();
+
+        // Crear una nueva entrada s4 con la información proporcionada en el request y el comando del antecesor
+        $s4Nueva = array_merge($validatedData, [
+            'id' => $s4NuevaId,
+            'comando_id' => $s4Actual ? $s4Actual->comando_id : $comandoHardware,
+            'estado' => 'funcionando',
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        // Actualizar el estado del sistema con la nueva entrada s4
+        $estadoSistemaActualizado = $estadoSistema->toArray();
+        $estadoSistemaActualizado['s4_id'] = $s4NuevaId;
+
+        // Actualizar la caché con los nuevos valores
+        Cache::forever('estado_sistema', $estadoSistemaActualizado);
+        Cache::forever('estado_s4_actual', $s4Nueva);
+
+        // Despachar los trabajos para escribir en la base de datos
+        Archivador::dispatch('s4', $s4Nueva);
+        Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado);
+
+        Log::info('Request received for ReportInyectoresState:', $s4Nueva);
 
         return response()->json(['message' => 'Estado reportado exitosamente'], 200);
     }
