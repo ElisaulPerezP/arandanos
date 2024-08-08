@@ -14,14 +14,21 @@ class CreateEstadoSistemasTable extends Migration
     public function up()
     {
         Schema::create('estado_sistemas', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('s0_id')->constrained('s0');
-            $table->foreignId('s1_id')->constrained('s1');
-            $table->foreignId('s2_id')->constrained('s2');
-            $table->foreignId('s3_id')->constrained('s3');
-            $table->foreignId('s4_id')->constrained('s4');
-            $table->foreignId('s5_id')->constrained('s5');
+            $table->uuid('id')->primary();
+            $table->uuid('s0_id');
+            $table->uuid('s1_id');
+            $table->uuid('s2_id');
+            $table->uuid('s3_id');
+            $table->uuid('s4_id');
+            $table->uuid('s5_id');
             $table->timestamps();
+
+            $table->foreign('s0_id')->references('id')->on('s0')->onDelete('cascade');
+            $table->foreign('s1_id')->references('id')->on('s1')->onDelete('cascade');
+            $table->foreign('s2_id')->references('id')->on('s2')->onDelete('cascade');
+            $table->foreign('s3_id')->references('id')->on('s3')->onDelete('cascade');
+            $table->foreign('s4_id')->references('id')->on('s4')->onDelete('cascade');
+            $table->foreign('s5_id')->references('id')->on('s5')->onDelete('cascade');
         });
     }
 
