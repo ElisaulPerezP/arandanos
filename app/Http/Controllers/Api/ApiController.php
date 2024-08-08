@@ -330,23 +330,54 @@ class ApiController extends Controller
 
     public function reportShutdown(Request $request)
     {
-        // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
-        $estadoSistema = EstadoSistema::find(1);
+        // Obtener el estado actual del sistema desde la caché
+        $estadoSistema = Cache::rememberForever('estado_sistema', function () {
+            return EstadoSistema::firstOrCreate(['id' => 1]);
+        });
+            
+        // Obtener los comandos hardware desde la caché
+        $comandosHardware = Cache::get('comandos_hardware');
 
-        // Obtener la entrada s2 actual si existe
-        $s2Actual = $estadoSistema->s2;
+        // Verificar si existe el estadoSistema en la caché
+        if ($estadoSistema) {
+            // Obtener la entrada s2 actual si existe en la caché
+            $s2Actual = Cache::rememberForever('estado_s2_actual', function () use ($estadoSistema) {
+                return S2::find($estadoSistema->s2_id);
+            });
+
+            $comandoHardware = null;
+            if ($s2Actual && isset($s2Actual->comando_id)) {
+                $comandoHardware = $comandosHardware->firstWhere('id', $s2Actual->comando_id);
+            }
+
+            // Si no se encuentra el comando hardware, usar el comando por defecto 'off:valvula1'
+            if (!$comandoHardware) {
+                $comandoHardware = $comandosHardware->firstWhere('comando', 'off:valvula1');
+            }
 
         // Crear una nueva entrada s2 con el estado inactivo y el comando del antecesor
-        $s2Nueva = S2::create(array_merge(
-            ['estado' => 'apagado'],
-            $request->except('estado'),
-            ['comando_id' => null]
-        ));
+        $s2Nueva = [
+            'id' => (string) Str::uuid(), // Asignar un UUID
+            'estado' => 'apagado',
+            'comando_id' => $comandoHardware,
+            'created_at' => now(),
+            'updated_at' => now()
+        ] + $request->except('estado');
 
-        // Actualizar el EstadoSistema con la nueva entrada s2
-        $estadoSistema->update(['s2_id' => $s2Nueva->id]);
+        // Actualizar el estado del sistema con la nueva entrada s2
+        $estadoSistemaActualizado = $estadoSistema->toArray();
+        $estadoSistemaActualizado['s2_id'] = $s2Nueva['id'];
+
+        // Actualizar la caché con los nuevos valores
+        Cache::forever('estado_sistema', $estadoSistemaActualizado);
+        Cache::forever('estado_s2_actual', $s2Nueva);
+
+        // Despachar los trabajos para escribir en la base de datos
+        Archivador::dispatch('s2', $s2Nueva);
+        Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado);
 
         return response()->json(['message' => 'Apagado con exito'], 200);
+        }
     }
 
     public function getImpulsoresCommand()
