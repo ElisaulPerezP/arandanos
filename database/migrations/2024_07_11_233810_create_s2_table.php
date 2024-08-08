@@ -13,9 +13,9 @@ class CreateS2Table extends Migration
     public function up()
     {
         Schema::create('s2', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('estado')->nullable();
-            $table->foreignId('comando_id')->nullable()->constrained('comando_hardware');
+            $table->uuid('comando_id')->nullable();
             $table->string('valvula1')->nullable();
             $table->string('valvula2')->nullable();
             $table->string('valvula3')->nullable();
@@ -30,6 +30,8 @@ class CreateS2Table extends Migration
             $table->string('valvula12')->nullable();
             $table->string('valvula13')->nullable();
             $table->timestamps();
+
+            $table->foreign('comando_id')->references('id')->on('comando_hardware')->onDelete('set null');
         });
     }
 
@@ -40,6 +42,8 @@ class CreateS2Table extends Migration
      */
     public function down()
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('s2');
+        Schema::enableForeignKeyConstraints();
     }
 }
