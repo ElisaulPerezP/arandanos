@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class S2 extends Model
 {
@@ -12,6 +13,7 @@ class S2 extends Model
     protected $table = 's2';
 
     protected $fillable = [
+        'id',
         'estado',
         'comando_id',
         'valvula1',
@@ -28,6 +30,17 @@ class S2 extends Model
         'valvula12',
         'valvula13',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (!$model->getKey()) {
+                $model->{$model->getKeyName()} = (string) Str::uuid();
+            }
+        });
+    }
 
     public function comando()
     {
