@@ -254,50 +254,87 @@ protected function inyectarFertilizante($programacion)
         }
     }
 
+    //TODO: revisar el sleep que hay en el siguiente metodo
     protected function monitorearFlujo($timeoutTime, $programacion)
     {
-        // Parsear la descripción del evento para obtener el volumen
-        parse_str(str_replace(',', '&', $programacion->comando->descripcion), $params);
+
+        // Obtener el comando desde la caché
+        $comando = Cache::rememberForever("comando_{$programacion['comando_id']}", function () use ($programacion) {
+            return Comando::find($programacion['comando_id']);
+        });
+
+        // Parsear la descripción del comando para obtener el volumen
+        parse_str(str_replace(',', '&', $comando['descripcion']), $params);
         $volumen = $params['volumen'];
-    
+
         // Calcular el volumen esperado en términos de cuentas
         $cuentasEsperadas = $volumen * 30;
-    
+
         // Inicializar el contador de flujo
         $flujoAcumulado = 0;
-    
+        
         while (Carbon::now()->lessThan($timeoutTime)) {
-            $estadoSistema = EstadoSistema::first();
-            $s5Actual = $estadoSistema->s5;
+            // Obtener el estado del sistema desde la caché
+            $estadoSistema = Cache::rememberForever('estado_sistema', function () {
+                return EstadoSistema::first()->toArray();
+            });
     
-        // Obtener el estado actual del flujo
-        $flujoActual1 = $s5Actual->flux1;
-        $flujoActual2 = $s5Actual->flux2;
-        $flujoActual = $flujoActual1 + $flujoActual2;
+            // Obtener la configuración actual de s5 desde la caché como objeto
+            $s5Actual = Cache::rememberForever("estado_s5_actual", function () use ($estadoSistema) {
+                return S5::find($estadoSistema["s5_id"]);
+            });
+    
+            // Obtener el estado actual del flujo
+            $flujoActual1 = $s5Actual->flux1;
+            $flujoActual2 = $s5Actual->flux2;
+            $flujoActual = $flujoActual1 + $flujoActual2;
+    
+            // Acumular el flujo
+            $flujoAcumulado += $flujoActual;
+    
+        // Verificar si el flujo acumulado cumple con los requisitos
+        if ($flujoAcumulado >= $cuentasEsperadas) {
+                // Crear una nueva instancia de S5 para el nuevo estado
+                $s5Final = $s5Actual->replicate();
+                $s5Final->flux1 = 0;
+                $s5Final->flux2 = 0;
+                $s5Final->id = (string) Str::uuid();
 
-        // Acumular el flujo
-        $flujoAcumulado += $flujoActual;
-    //TODO: AQUI HAY QUE CORREGIR UN DETALL PARA QUE SIRVA DE CONTADOR DE AGUA
-            // Verificar si el flujo acumulado cumple con los requisitos
-            if ($flujoAcumulado >= $cuentasEsperadas) {
-                $s5Actual->update(['flux1' => 0, 'flux2' => 0]);
-                $s5Final=new S5;
-                $s5Final->fill($s5Actual->toArray());
-                $estadoSistema->update(['s5'=>$s5Final->id]);
+                // Guardar el nuevo estado en la caché
+                Cache::forever('estado_s5_actual', $s5Final);
+
+                // Actualizar el estado del sistema en la caché
+                $estadoSistema['s5_id'] = $s5Final->id;
+                Cache::forever('estado_sistema', $estadoSistema);
+
+                // Despachar los trabajos para actualizar la base de datos
+                Archivador::dispatch('s5', $s5Final->toArray());
+                Archivador::dispatch('estado_sistema', $estadoSistema);
+
                 Log::info('El flujo cumple con los requisitos', ['flujo_acumulado' => $flujoAcumulado, 'cuentas_esperadas' => $cuentasEsperadas]);
-               
                 return true;
             }
-    
             // Esperar 2 segundos antes de la siguiente verificación
             sleep(2);
         }
-    
+
         // Si el flujo no cumple con los requisitos en el tiempo límite, retornar false
-        $s5Actual->update(['flux1' => 0, 'flux2' => 0]);
-        $s5Final=new S5;
-        $s5Final->fill($s5Actual->toArray());
-        $estadoSistema->update(['s5'=>$s5Final->id]);
+        $s5Final = $s5Actual->replicate();
+        $s5Final->flux1 = 0;
+        $s5Final->flux2 = 0;
+        $s5Final->id = (string) Str::uuid();
+
+        // Guardar el nuevo estado en la caché
+        Cache::forever('estado_s5_actual', $s5Final);
+
+        // Actualizar el estado del sistema en la caché
+        $estadoSistema['s5_id'] = $s5Final->id;
+        Cache::forever('estado_sistema', $estadoSistema);
+
+        // Despachar los trabajos para actualizar la base de datos
+        Archivador::dispatch('s5', $s5Final->toArray());
+        Archivador::dispatch('estado_sistema', $estadoSistema);
+
         Log::info('El flujo no cumple con los requisitos', ['flujo_acumulado' => $flujoAcumulado, 'cuentas_esperadas' => $cuentasEsperadas]);
         return false;
     }
