@@ -13,12 +13,14 @@ class CreateS4Table extends Migration
     public function up()
     {
         Schema::create('s4', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->boolean('estado');
-            $table->foreignId('comando_id')->nullable()->constrained('comando_hardware');
+            $table->uuid('comando_id')->nullable();
             $table->boolean('pump3');
             $table->boolean('pump4');
             $table->timestamps();
+
+            $table->foreign('comando_id')->references('id')->on('comando_hardware')->onDelete('set null');
         });
     }
 
@@ -29,6 +31,8 @@ class CreateS4Table extends Migration
      */
     public function down()
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('s4');
+        Schema::enableForeignKeyConstraints();
     }
 }
