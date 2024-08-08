@@ -186,33 +186,51 @@ class RiegoEventListener implements ShouldQueue
 
 protected function inyectarFertilizante($programacion)
 {
-    // Parsear la descripcion para obtener la concentracion
-    parse_str(str_replace(',', '&', $programacion->comando->descripcion), $params);
+
+    // Obtener el comando desde la caché
+    $comando = Cache::rememberForever("comando_{$programacion['comando_id']}", function () use ($programacion) {
+        return Comando::find($programacion['comando_id']);
+    });
+
+    // Parsear la descripción del comando para obtener la concentración
+    parse_str(str_replace(',', '&', $comando['descripcion']), $params);
     $concentracion = $params['concentracion'];
 
-    // Obtener la configuración actual de s4 y activar los inyectores de fertilizante
-    $estadoSistema = EstadoSistema::first();
-    $s4Actual = S4::find($estadoSistema->s4);
+    // Obtener el estado del sistema desde la caché
+    $estadoSistema = Cache::rememberForever('estado_sistema', function () {
+        return EstadoSistema::first()->toArray();
+    });
 
-    // Crear una nueva instancia de S4 para el nuevo estado
-    $s4Final = new S4;
-    $s4Final->fill($s4Actual->toArray());
+    // Obtener la configuración actual de s4 desde la caché
+    $s4Actual = Cache::rememberForever("estado_s4_actual", function () use ($estadoSistema) {
+        return S4::find($estadoSistema["s4_id"]);
+    });
 
-    // Calcular el comando para los inyectores basado en la concentracion
-    $comando = $this->calcularComandoInyectores($concentracion);
-    $s4Final->comando_id = $comando->id;
+    // Clonar la configuración actual para crear un nuevo estado de S4
+    $s4Final = $s4Actual->replicate();
+    $nuevoS4Id = (string) Str::uuid();  // Generar un nuevo UUID
+    $s4Final->id = $nuevoS4Id;
+
+    // Calcular el comando para los inyectores basado en la concentración
+    $comandoHardware = $this->calcularComandoInyectores($concentracion);
+    $s4Final->comando_id = $comandoHardware->id;
     $s4Final->estado = 'inyectando';
     $s4Final->pump3 = true;
     $s4Final->pump4 = false;
 
+    // Actualizar la caché con el nuevo estado
+    Cache::forever('estado_s4_actual', $s4Final->toArray());
 
-    // Guardar el nuevo estado
-    $s4Final->save();
+    // Actualizar el estado del sistema en la caché
+    $estadoSistema['s4_id'] = $nuevoS4Id;
+    Cache::forever('estado_sistema', $estadoSistema);
 
-    // Actualizar el estado del sistema
-    $estadoSistema->update(['s4' => $s4Final->id]);
+    // Despachar los trabajos para actualizar la base de datos
+    Archivador::dispatch('s4', $s4Final->toArray());
+    Archivador::dispatch('estado_sistemas', $estadoSistema);
 
-    Log::info('Fertilizante inyectado con concentracion ' . $concentracion);
+    Log::info('Fertilizante inyectado con concentración ' . $concentracion);
+
 }
 
     protected function calcularComandoInyectores($concentracion)
