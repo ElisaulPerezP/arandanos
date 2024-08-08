@@ -382,21 +382,32 @@ class ApiController extends Controller
 
     public function getImpulsoresCommand()
     {
-        // Obtener el estado actual del sistema
-        $estado = EstadoSistema::find(1);
-    
-        // Verificar si existe el estado y la relación s3
-        if ($estado && $estado->s3) {
-            // Obtener el comando desde la relación s3
-            $comando = $estado->s3->comando;
-    
-            // Retornar el comando si existe
-            if ($comando) {
-                Log::info('Request sent by getImpulsoresCommand:', ['actions' => json_decode($comando->comando, true)]);
-                return response()->json(['actions' => json_decode($comando->comando)], 200);
+        // Obtener el estado actual del sistema desde la caché
+        $estado = Cache::rememberForever('estado_sistema', function () {
+            return EstadoSistema::firstOrCreate(['id' => 1]);
+        });
+        // Verificar si existe el estado y la relación s3 en la caché
+        if ($estado) {
+            $s3Actual = Cache::rememberForever('estado_s3_actual', function () use ($estado) {
+                return S3::find($estado->s3_id);
+            });
+
+            // Obtener los comandos hardware desde la caché
+            $comandosHardware = Cache::get('comandos_hardware');
+
+            // Obtener el comando desde la caché utilizando el comando_id de s3
+            $comando = null;
+            if ($s3Actual && isset($s3Actual->comando_id)) {
+                $comando = $comandosHardware->firstWhere('id', $s3Actual->comando_id);
             }
-        }
-    
+
+            // Verificar si existe el comando
+            if ($comando) {
+                $action = json_decode($comando->comando, true);
+                Log::info('Request sent by getImpulsoresCommand:', ['actions' => $action]);
+                return response()->json(['actions' => $action], 200);
+            }
+        } 
         // Retornar un mensaje de error si no se encuentra el comando
         return response()->json(['message' => 'Comando no encontrado'], 404);
     }
