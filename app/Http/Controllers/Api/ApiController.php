@@ -74,10 +74,30 @@ class ApiController extends Controller
 
     public function getTanquesCommand()
     {
-        // Obtener el estado actual del sistema
-        $estado = EstadoSistema::find(1);
-        $s1Actual = $estado -> s1;
-        $comandoHardware = $s1Actual ->comando;
+        // Obtener el estado actual del sistema desde la caché
+        $estado = Cache::rememberForever('estado_sistema', function () {
+            return EstadoSistema::find(1);
+        });
+
+        // Obtener el s1 actual desde la caché
+        $s1Actual = Cache::rememberForever('estado_s1_actual', function () use ($estado) {
+            return $estado->s1;
+        });
+
+        // Obtener el comando hardware desde la caché cargada en el AppServiceProvider
+        $comandosHardware = Cache::get('comandos_hardware');
+
+        // Obtener el comando hardware con el comando_id desde la caché
+        $comandoHardware = null;
+        if ($s1Actual && isset($s1Actual->comando_id)) {
+            $comandoHardware = $comandosHardware->firstWhere('id', $s1Actual->comando_id);
+        }
+
+        // Si no se encuentra el comando hardware, usar el comando por defecto 'esperar'
+        if (!$comandoHardware) {
+            $comandoHardware = $comandosHardware->firstWhere('comando', 'esperar');
+        }
+
         // Verificar si existe el comando
         if ($comandoHardware) {
             // Obtener el comando desde la relación s1
@@ -85,7 +105,7 @@ class ApiController extends Controller
 
             // Retornar el comando si existe
             if ($comandoExplicito) {
-                Log::info('Comando de tanques entregado pro el controlador', [$comandoExplicito]);
+                Log::info('Comando de tanques entregado por el controlador', [$comandoExplicito]);
                 return response()->json(['command' => $comandoExplicito], 200);
             }
         }
