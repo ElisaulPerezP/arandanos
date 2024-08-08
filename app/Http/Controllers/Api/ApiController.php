@@ -730,24 +730,44 @@ class ApiController extends Controller
 
     public function reportFlujoApagado(Request $request)
     {
+
         Log::info('Request received for reportFLujoApagado:', $request->all());
 
-        // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
-        $estadoSistema = EstadoSistema::find(1);
+        // Obtener el estado actual del sistema desde la caché
+        $estadoSistema = Cache::rememberForever('estado_sistema', function () {
+            return EstadoSistema::firstOrCreate(['id' => 1]);
+        });
 
-        // Obtener la entrada s5 actual si existe
-        $s5Actual = $estadoSistema->s5;
+        // Obtener la entrada s5 actual desde la caché
+        $s5Actual = Cache::rememberForever('estado_s5_actual', function () use ($estadoSistema) {
+            return S5::find($estadoSistema->s5_id);
+        });
+
+        // Generar un nuevo UUID para la nueva entrada s5
+        $s5NuevaId = (string) Str::uuid();
 
         // Crear una nueva entrada s5 con el estado inactivo y el comando del antecesor
-        $s5Nueva = S5::create(array_merge(
-            ['estado' => $request->input('status', 'Apagado con exito')],
-            ['comando_id' => $s5Actual ? $s5Actual->comando_id : null],
-            ['flux1' => '0'],
-            ['flux2' => '0'],
-        ));
+        $s5Nueva = [
+            'id' => $s5NuevaId,
+            'estado' => $request->input('status', 'Apagado con exito'),
+            'comando_id' => $s5Actual ? $s5Actual->comando_id : null,
+            'flux1' => '0',
+            'flux2' => '0',
+            'created_at' => now(),
+            'updated_at' => now()
+        ];
 
-        // Actualizar el EstadoSistema con la nueva entrada s5
-        $estadoSistema->update(['s5_id' => $s5Nueva->id]);
+        // Actualizar el estado del sistema con la nueva entrada s5
+        $estadoSistemaActualizado = $estadoSistema->toArray();
+        $estadoSistemaActualizado['s5_id'] = $s5NuevaId;
+
+        // Actualizar la caché con los nuevos valores
+        Cache::forever('estado_sistema', $estadoSistemaActualizado);
+        Cache::forever('estado_s5_actual', $s5Nueva);
+
+        // Despachar los trabajos para escribir en la base de datos
+        Archivador::dispatch('s5', $s5Nueva);
+        Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado);
 
         return response()->json(['message' => 'Apagado con exito'], 200);
     }
