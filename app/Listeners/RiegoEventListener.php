@@ -235,13 +235,17 @@ protected function inyectarFertilizante($programacion)
 
     protected function calcularComandoInyectores($concentracion)
     {
+
+
         $comandoBuscado = '{"actions":["pump1:on:' . ($concentracion * 10) . '","pump2:off:1"]}';
-        
-        // Buscar el comando de hardware correspondiente en la base de datos
-        $comandoHardware = ComandoHardware::where('sistema', 's4')
-                                        ->where('comando', $comandoBuscado)
-                                        ->first();
-        
+
+        // Buscar el comando de hardware correspondiente en la caché
+        $comandoHardware = Cache::rememberForever("comando_hardware_s4_{$comandoBuscado}", function () use ($comandoBuscado) {
+            return ComandoHardware::where('sistema', 's4')
+                                  ->where('comando', $comandoBuscado)
+                                  ->first();
+        });
+    
         if ($comandoHardware) {
             return $comandoHardware;
         } else {
