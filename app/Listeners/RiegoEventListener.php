@@ -19,6 +19,7 @@ use Carbon\Carbon;
 use Database\Factories\S2Factory;
 use Illuminate\Support\Facades\Cache;
 use App\Jobs\Archivador;
+use Illuminate\Support\Str;
 
 
 class RiegoEventListener implements ShouldQueue
@@ -107,6 +108,8 @@ class RiegoEventListener implements ShouldQueue
 
         // Clonar la configuración actual para crear un nuevo estado de S2
         $s2Final = $s2Actual->replicate();
+        $nuevoS2Id = (string) Str::uuid();  // Generar un nuevo UUID
+        $s2Final->id = $nuevoS2Id;
 
         // Buscar el comando de hardware correcto en la caché como objeto
         $comandoBuscado = 'on:valvula' . $camellon;
@@ -136,17 +139,28 @@ class RiegoEventListener implements ShouldQueue
 
     protected function encenderMotorPrincipal()
 {
-    // Obtener la configuración actual de s3 y encender las bombas principales
-    $estadoSistema = EstadoSistema::first();
-    $s3Actual = $estadoSistema->s3;
-    $s3Final = new S3;
-    $s3Final->fill($s3Actual->toArray());
+
+    $estadoSistema = Cache::rememberForever('estado_sistema', function () {
+        return EstadoSistema::first()->toArray();
+    });
+
+    // Obtener la configuración actual de s3 desde la caché
+    $s3Actual = Cache::rememberForever('estado_s3_actual', function () use ($estadoSistema) {
+        return S3::find($estadoSistema['s3_id'])->toArray();
+    });
+
+    // Replicar el estado actual de s3 para modificarlo
+    $s3Final = $s3Actual->replicate();
+    $nuevoS3Id = (string) Str::uuid();  // Generar un nuevo UUID
+    $s3Final['id'] = $nuevoS3Id;
 
     // Buscar el comando de hardware correcto
     $comandoBuscado = '{"actions":["pump1:on","pump2:on"]}';
-    $comandoHardware = ComandoHardware::where('sistema', 's3')
-                                       ->where('comando', $comandoBuscado)
-                                       ->first();
+    $comandoHardware = Cache::rememberForever("comando_hardware_s3_{$comandoBuscado}", function () use ($comandoBuscado) {
+        return ComandoHardware::where('sistema', 's3')
+                              ->where('comando', $comandoBuscado)
+                              ->first();
+    });
 
     // Si se encuentra el comando de hardware, asignar el comando_id
     if ($comandoHardware) {
@@ -156,11 +170,16 @@ class RiegoEventListener implements ShouldQueue
         Log::info("El comando para encender las bombas principales no pudo ser encontrado");
     }
 
-    // Guardar el nuevo estado
-    $s3Final->save();
+    // Actualizar la caché con los nuevos valores
+    Cache::forever('estado_s3_actual', $s3Final->toArray());
 
-    // Actualizar el estado del sistema
-    $estadoSistema->update(['s3' => $s3Final->id]);
+    // Actualizar el estado del sistema en caché
+    $estadoSistema['s3_id'] = $nuevoS3Id;
+    Cache::forever('estado_sistema', $estadoSistema);
+
+    // Despachar los trabajos para escribir en la base de datos
+    Archivador::dispatch('s3', $s3Final->toArray());
+    Archivador::dispatch('estado_sistemas', $estadoSistema);
 
     Log::info('Motor principal encendido');
 }
