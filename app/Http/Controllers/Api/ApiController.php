@@ -183,15 +183,18 @@ class ApiController extends Controller
                 return S1::find($estadoSistema->s1_id);
             });
             
-
             // Obtener los comandos hardware desde la caché
             $comandosHardware = Cache::get('comandos_hardware');
 
             // Buscar el comando "esperar" en la caché
             $comandoEsperar = $comandosHardware->firstWhere('comando', 'esperar');
 
+            // Generar un nuevo UUID para la nueva entrada s1
+            $s1NuevaId = (string) Str::uuid();
+
             // Crear una nueva entrada s1 con el estado inactivo y copiar la información faltante
             $s1Nueva = [
+                'id' => $s1NuevaId,
                 'estado' => false,
                 'sensor1' => $s1Actual->sensor1,
                 'sensor2' => $s1Actual->sensor2,
@@ -203,7 +206,7 @@ class ApiController extends Controller
             
             // Actualizar el estado del sistema con la nueva entrada s1
             $estadoSistemaActualizado = $estadoSistema->toArray();
-            $estadoSistemaActualizado['s1_id'] = $s1Nueva['id'];
+            $estadoSistemaActualizado['s1_id'] = $s1NuevaId;
 
             // Actualizar la caché con los nuevos valores
             Cache::forever('estado_sistema', $estadoSistemaActualizado);
@@ -213,8 +216,9 @@ class ApiController extends Controller
             Archivador::dispatch('s1', $s1Nueva);
             Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado);
 
-            return response()->json(['message' => 'Apagado con exito'], 200);
-            }
+            return response()->json(['message' => 'Apagado con éxito'], 200);
+        }
+
         // Retornar un mensaje de error si no se encuentra el estadoSistema o la relación s1
         return response()->json(['message' => 'Estado del sistema no encontrado'], 404);
     }
