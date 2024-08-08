@@ -340,19 +340,27 @@ protected function inyectarFertilizante($programacion)
     }
     protected function llenarTanques()
     {
-        // Obtener la configuración actual de s1 y activar el llenado de tanques
-        $estadoSistema = EstadoSistema::first();
-        $s1Actual = $estadoSistema->s1;
-    
-        // Crear una nueva instancia de S1 para el nuevo estado
-        $s1Final = new S1;
-        $s1Final->fill($s1Actual->toArray());
-    
-        $comandoBuscado = 'llenar';
+        // Obtener la configuración actual de s1 desde la caché
+        $estadoSistema = Cache::rememberForever('estado_sistema', function () {
+            return EstadoSistema::first()->toArray();
+        });
 
-        $comandoHardware = ComandoHardware::where('sistema', 's1')
-                                        ->where('comando', $comandoBuscado)
-                                        ->first();
+        // Obtener la configuración actual de s1 desde la caché
+        $s1Actual = Cache::rememberForever("estado_s1_actual", function () use ($estadoSistema) {
+            return S1::find($estadoSistema["s1_id"]);
+        });
+
+        // Clonar la configuración actual para crear un nuevo estado de S1
+        $s1Final = $s1Actual->replicate();
+        $s1Final->id = (string) Str::uuid();  // Asignar un nuevo UUID
+
+        // Buscar el comando de hardware correcto en la caché
+        $comandoBuscado = 'llenar';
+        $comandoHardware = Cache::rememberForever("comando_hardware_{$comandoBuscado}", function () use ($comandoBuscado) {
+            return ComandoHardware::where('sistema', 's1')
+                                ->where('comando', $comandoBuscado)
+                                ->first();
+        });
 
         // Si se encuentra el comando de hardware, asignar el comando_id
         if ($comandoHardware) {
@@ -361,12 +369,22 @@ protected function inyectarFertilizante($programacion)
             // Registrar un mensaje en el log si no se encuentra el comando
             Log::info("El comando de llenado de tanques no pudo ser encontrado");
         }
-        // Guardar el nuevo estado
-        $s1Final->save();
-    
-        // Actualizar el estado del sistema
-        $estadoSistema->update(['s1' => $s1Final->id]);
-    
+
+        // Guardar el nuevo estado en la caché
+        Cache::forever('estado_s1_actual', $s1Final->toArray());
+
+
+        // Actualizar el estado del sistema con la nueva entrada s1
+        $estadoSistemaActualizado = $estadoSistema;
+        $estadoSistemaActualizado['s1_id'] = $s1Final->id;
+
+        // Guardar la nueva configuración del sistema en la caché
+        Cache::forever('estado_sistema', $estadoSistemaActualizado);
+
+        // Despachar los trabajos para actualizar la base de datos
+        Archivador::dispatch('s1', $s1Final->toArray());
+        Archivador::dispatch('estado_sistema', $estadoSistemaActualizado);
+
         Log::info('Tanques llenando');
     }
 
