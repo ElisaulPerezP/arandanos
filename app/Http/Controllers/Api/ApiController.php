@@ -18,20 +18,20 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
 use App\Jobs\Archivador;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class ApiController extends Controller
 {
     public function reportStop(Request $request)
     {
-        
-            // Obtener el estado actual del sistema desde la caché
+
+        // Obtener el estado actual del sistema desde la caché
         $estadosDelSistema = Cache::rememberForever('estado_sistema', function () {
             return EstadoSistema::find(1);
         });
 
         $s0Actual = Cache::rememberForever('estado_s0_actual', function () use ($estadosDelSistema) {
-            return S0::find($estadoSistema->s0_id);
-
+            return S0::find($estadosDelSistema->s0_id);
         });
 
         // Determinar el nuevo estado y el evento a emitir basado en el estado actual
@@ -43,9 +43,12 @@ class ApiController extends Controller
             $evento = new CultivoInactivo();
         }
 
+        // Generar un nuevo UUID para el nuevo registro S0
+        $nuevoS0Id = Str::uuid();
 
         // Crear un nuevo registro S0 con el nuevo estado y el comando del antecesor
         $s0Final = [
+            'id' => $nuevoS0Id,
             'estado' => $nuevoEstado,
             'comando_id' => $s0Actual->comando_id ?? null,
             'sensor3' => 0,
@@ -53,10 +56,9 @@ class ApiController extends Controller
             'updated_at' => now()
         ];
 
-
         // Actualizar el estado del sistema con el nuevo s0_id
         $estadoSistemaActualizado = $estadosDelSistema->toArray();
-        $estadoSistemaActualizado['s0_id'] = $s0Final['id'];
+        $estadoSistemaActualizado['s0_id'] = $nuevoS0Id;
 
         // Actualizar la caché con los nuevos valores
         Cache::forever('estado_sistema', $estadoSistemaActualizado);
