@@ -19,7 +19,7 @@ use Database\Factories\S2Factory;
 
 class RiegoEventListener implements ShouldQueue
 {
-    protected $timeout = 300; // Tiempo límite en segundos para completar el riego
+    protected $timeout = 180; // Tiempo límite en segundos para completar el riego
 
     /**
      * Handle the event.

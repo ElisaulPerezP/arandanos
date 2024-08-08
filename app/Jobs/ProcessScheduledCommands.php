@@ -18,6 +18,8 @@ use App\Events\RestartEvent;
 use App\Events\RiegoEvent;
 //use App\Events\Revista;
 use App\Events\StopSystem;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class ProcessScheduledCommands implements ShouldQueue
 {
@@ -32,18 +34,20 @@ class ProcessScheduledCommands implements ShouldQueue
             $oneMinuteAgo = now()->subMinute()->timestamp;
             $now = now()->timestamp;
 
-            $programaciones = Programacion::where('hora_unix', '>=', $oneMinuteAgo)
-                ->where('hora_unix', '<=', $now)
-                ->whereNotIn('estado', ['ejecutado_exitosamente', 'ejecutandose', 'cancelado'])
-                ->with('comando') 
-                ->get();
+            $programaciones = Cache::remember('programaciones_pendientes', 600, function () use ($oneMinuteAgo, $now) {
+                return Programacion::where('hora_unix', '>=', $oneMinuteAgo)
+                    ->where('hora_unix', '<=', $now)
+                    ->whereNotIn('estado', ['ejecutado_exitosamente', 'ejecutandose', 'cancelado'])
+                    ->with('comando')
+                    ->get()
+                    ->toArray();
+            });
 
             foreach ($programaciones as $programacion) {
                 try {
-                    $comando = $programacion->comando;
+                    $comando = $programacion['comando'];
 
-                    $event = match($comando->nombre) {
-                        //'revista' => Revista::class,
+                    $event = match($comando['nombre']) {
                         'sincronizar' => SincronizarSistema::class,
                         'parar' => StopSystem::class,
                         'iniciar' => InicioDeAplicacion::class,
@@ -53,14 +57,32 @@ class ProcessScheduledCommands implements ShouldQueue
                         default => null,
                     };
 
+
+
                     if ($event) {
-                        event(new $event($programacion));  // Pasar la instancia completa del modelo
-                        $programacion->update(['estado' => 'ejecutandose']);
-                        Log::info('Emitiendo evento: ' . $comando->nombre, ['programacion_id' => $programacion->id, 'event' => $event]);
+                        event(new $event((object) $programacion));  // Pasar la instancia completa del modelo
+                        $programacion['estado'] = 'ejecutandose';
+                        $programacion['updated_at'] = now();
+
+                        // Actualizar la caché
+                        Cache::put("programacion_{$programacion['id']}", $programacion, 60);
+
+                        // Despachar la actualización a la base de datos
+                        Archivador::dispatch('programaciones', $programacion);
+
+                        Log::info('Emitiendo evento: ' . $comando['nombre'], ['programacion_id' => $programacion['id'], 'event' => $event]);
                     }
                 } catch (\Exception $e) {
-                    Log::error('Error procesando la programación.', ['programacion_id' => $programacion->id, 'exception' => $e->getMessage()]);
-                    $programacion->update(['estado' => 'fallido']);
+                    Log::error('Error procesando la programación.', ['programacion_id' => $programacion['id'], 'exception' => $e->getMessage()]);
+
+                    $programacion['estado'] = 'fallido';
+                    $programacion['updated_at'] = now();
+
+                    // Actualizar la caché
+                    Cache::put("programacion_{$programacion['id']}", $programacion, 60);
+
+                    // Despachar la actualización a la base de datos
+                    Archivador::dispatch('programaciones', $programacion);
                 }
             }
         } catch (\Exception $e) {
