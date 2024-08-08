@@ -415,28 +415,60 @@ class ApiController extends Controller
 
     public function reportImpulsoresState(Request $request)
     {
-        // Buscar la entrada en la tabla EstadoSistema o crear una nueva si no existe
-        $estadoSistema = EstadoSistema::find(1);
+        // Obtener el estado actual del sistema desde la caché
+        $estadoSistema = Cache::rememberForever('estado_sistema', function () {
+            return EstadoSistema::firstOrCreate(['id' => 1]);
+        });
 
-        // Obtener la entrada s3 actual si existe
-        $s3Actual = $estadoSistema->s3;
+        // Obtener la entrada s3 actual desde la caché
+        $s3Actual = Cache::rememberForever('estado_s3_actual', function () use ($estadoSistema) {
+            return S3::find($estadoSistema->s3_id);
+        });
 
+        // Validar los datos del request
         $validatedData = $request->validate([
             'pump1' => 'required|string',
             'pump2' => 'required|string',
             // Agrega aquí otros campos que sean necesarios
         ]);
 
-        $data = array_merge($validatedData, [
-            'comando_id' => $s3Actual ? $s3Actual->comando_id : null,
-            'estado' => 'funcionando'
+        // Obtener los comandos hardware desde la caché
+        $comandosHardware = Cache::get('comandos_hardware');
+
+        $comandoHardware = null;
+        if ($s3Actual && isset($s2Actual->comando_id)) {
+            $comandoHardware = $comandosHardware->firstWhere('id', $s3Actual->comando_id);
+        }
+
+        // Si no se encuentra el comando hardware, usar el comando por defecto 'off:valvula1'
+        if (!$comandoHardware) {
+            $comandoHardware = $comandosHardware->firstWhere('comando', '{"actions":["pump1:off","pump2:off"]}');
+        }
+
+        // Crear una nueva entrada s3 con la información proporcionada en el request y el comando del antecesor
+        $s3Nueva = array_merge($validatedData, [
+            'comando_id' => $s3Actual ? $s3Actual->comando_id : $comandoHardware,
+            'estado' => 'funcionando',
+            'created_at' => now(),
+            'updated_at' => now()
         ]);
 
-       $s3Nueva = S3::create($data);
+        // Asignar un UUID a la nueva entrada s3
+        $s3Nueva['id'] = (string) Str::uuid();
 
-        // Actualizar el EstadoSistema con la nueva entrada s3
-        $estadoSistema->update(['s3_id' => $s3Nueva->id]);
-        Log::info('Request received for reportImpulsoresState:', $data);
+        // Actualizar el estado del sistema con la nueva entrada s3
+        $estadoSistemaActualizado = $estadoSistema->toArray();
+        $estadoSistemaActualizado['s3_id'] = $s3Nueva['id'];
+
+        // Actualizar la caché con los nuevos valores
+        Cache::forever('estado_sistema', $estadoSistemaActualizado);
+        Cache::forever('estado_s3_actual', $s3Nueva);
+
+        // Despachar los trabajos para escribir en la base de datos
+        Archivador::dispatch('s3', $s3Nueva);
+        Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado);
+
+        Log::info('Request received for reportImpulsoresState:', $s3Nueva);
 
         return response()->json(['message' => 'Estado reportado exitosamente'], 200);
     }
