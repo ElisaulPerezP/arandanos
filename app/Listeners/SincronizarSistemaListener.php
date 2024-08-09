@@ -82,7 +82,8 @@ class SincronizarSistemaListener implements ShouldQueue
                 $nuevasProgramaciones[] = $nuevaProgramacion;
                 Cache::forever("programacion_{$nuevaProgramacion['id']}", $nuevaProgramacion);
             }
-
+            
+            Cache::forget('programaciones_pendientes');
             // Actualizar la caché con las nuevas programaciones
             Cache::forever("cultivo_{$cultivo->id}_programaciones", $nuevasProgramaciones);
 
