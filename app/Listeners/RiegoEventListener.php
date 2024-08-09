@@ -504,34 +504,50 @@ protected function inyectarFertilizante($programacion)
 
     protected function apagarMotorPrincipal()
     {
-        // Obtener la configuración actual de s3 y apagar las bombas principales
-        $estadoSistema = EstadoSistema::first();
-        $s3Actual = $estadoSistema->s3;
 
-        // Crear una nueva instancia de S3 para el nuevo estado
-        $s3Final = new S3;
-        $s3Final->fill($s3Actual->toArray());
+        // Obtener el estado del sistema desde la caché
+        $estadoSistema = Cache::rememberForever('estado_sistema', function () {
+            return EstadoSistema::first()->toArray();
+        });
 
-        // Buscar el comando de hardware correcto
+        // Obtener la configuración actual de s3 desde la caché
+        $s3Actual = Cache::rememberForever("estado_s3_actual", function () use ($estadoSistema) {
+            return S3::find($estadoSistema['s3_id']);
+        });
+
+        // Clonar la configuración actual para crear un nuevo estado de S3
+        $s3Final = $s3Actual->replicate();
+        $nuevoS3Id = (string) Str::uuid();  // Generar un nuevo UUID
+        $s3Final->id = $nuevoS3Id;
+
+        // Buscar el comando de hardware correcto en la caché
         $comandoBuscado = '{"actions":["pump1:off","pump2:off"]}';
-        $comandoHardware = ComandoHardware::where('sistema', 's3')
-                                            ->where('comando', $comandoBuscado)
-                                            ->first();
+        $comandoHardware = Cache::rememberForever("comando_hardware_s3_{$comandoBuscado}", function () use ($comandoBuscado) {
+            return ComandoHardware::where('sistema', 's3')
+                                ->where('comando', $comandoBuscado)
+                                ->first();
+        });
+
 
         // Si se encuentra el comando de hardware, asignar el comando_id
         if ($comandoHardware) {
             $s3Final->comando_id = $comandoHardware->id;
         } else {
             Log::info('El comando de apagado de las bombas no fue encontrado');
-
         }
 
-        // Guardar el nuevo estado
-        $s3Final->save();
-    
-        // Actualizar el estado del sistema
-        $estadoSistema->update(['s3' => $s3Final->id]);
-    
+        // Guardar el nuevo estado en la caché
+        Cache::forever('estado_s3_actual', $s3Final->toArray());
+
+        // Actualizar el estado del sistema con la nueva entrada s3
+        $estadoSistema['s3_id'] = $nuevoS3Id;
+        Cache::forever('estado_sistema', $estadoSistema);
+
+
+        // Despachar los trabajos para actualizar la base de datos
+        Archivador::dispatch('s3', $s3Final->toArray());
+        Archivador::dispatch('estado_sistema', $estadoSistema);
+
         Log::info('Motor principal apagado');
     }
     
