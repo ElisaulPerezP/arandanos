@@ -87,7 +87,7 @@ class SincronizarSistemaListener implements ShouldQueue
             Cache::forever("cultivo_{$cultivo->id}_programaciones", $nuevasProgramaciones);
 
             // Despachar los trabajos para escribir en la base de datos
-            Archivador::dispatch('cultivo_programaciones', $nuevasProgramaciones);
+            Archivador::dispatch('programacions', $nuevasProgramaciones);
         }
 
         Log::info('Successfully synchronized the system for cultivo ID: ' . $cultivo->id);
