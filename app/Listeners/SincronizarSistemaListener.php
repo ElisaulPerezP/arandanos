@@ -99,7 +99,7 @@ class SincronizarSistemaListener implements ShouldQueue
         }
 
         // Enviar estado actual
-        $estadoActualResponse = Http::withToken($token)->post("$baseUrl/api/estado/reportar", $event->estadoActual["estado_id"]);
+        $estadoActualResponse = Http::withToken($token)->post("$baseUrl/api/estado/reportar", $event->estadoActual);
 
         if ($estadoActualResponse->failed()) {
             Log::error('Failed to report estado actual', [
