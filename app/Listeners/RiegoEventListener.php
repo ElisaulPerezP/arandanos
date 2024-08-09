@@ -444,42 +444,60 @@ protected function inyectarFertilizante($programacion)
     }
     protected function apagarElectrovalvulas($programacion)
     {
-        //$programacion = Programacion::find($descripcion);
-        // Parsear la descripcion para obtener el camellon
-        parse_str(str_replace(',', '&', $programacion->comando->descripcion), $params);
+
+         // Obtener el comando desde la caché
+        $comando = Cache::rememberForever("comando_{$programacion['comando_id']}", function () use ($programacion) {
+            return Comando::find($programacion['comando_id']);
+        });
+
+        // Parsear la descripción del comando para obtener el camellon
+        parse_str(str_replace(',', '&', $comando['descripcion']), $params);
         $camellon = $params['camellon'];
-        
-        // Obtener la configuración actual de s2 y apagar la electrovalvula correspondiente
-        $estadoSistema = EstadoSistema::first();
-        $s2Actual = $estadoSistema->s2;
-        
-        // Crear una nueva instancia de S2 para el nuevo estado
-        $s2Final = new S2;
-        $s2Final->fill($s2Actual->toArray());
 
-        // Buscar el comando de hardware correcto
+        // Obtener el estado del sistema desde la caché
+        $estadoSistema = Cache::rememberForever('estado_sistema', function () {
+            return EstadoSistema::first()->toArray();
+        });
+
+        // Obtener la configuración actual de s2 desde la caché
+        $s2Actual = Cache::rememberForever("estado_s2_actual", function () use ($estadoSistema) {
+            return S2::find($estadoSistema['s2_id']);
+        });
+       
+
+        // Clonar la configuración actual para crear un nuevo estado de S2
+        $s2Final = $s2Actual->replicate();
+        $nuevoS2Id = (string) Str::uuid();  // Generar un nuevo UUID
+        $s2Final->id = $nuevoS2Id;
+
+        // Buscar el comando de hardware correcto en la caché
         $comandoBuscado = 'off:valvula' . $camellon;
-        $comandoHardware = ComandoHardware::where('sistema', 's2')
-                                           ->where('comando', $comandoBuscado)
-                                           ->first();
+        $comandoHardware = Cache::rememberForever("comando_hardware_{$comandoBuscado}", function () use ($comandoBuscado) {
+            return ComandoHardware::where('sistema', 's2')
+                                ->where('comando', $comandoBuscado)
+                                ->first();
+        });
 
-                                
-     // Si se encuentra el comando de hardware, asignar el comando_id
+        // Si se encuentra el comando de hardware, asignar el comando_id
         if ($comandoHardware) {
             $s2Final->comando_id = $comandoHardware->id;
         } else {
-            Log::info('El comando de apagado de valvulas para el camellon $camellon  no pudo ser encontrado');
+            Log::info("El comando de apagado de válvulas para el camellon $camellon no pudo ser encontrado");
         }
+       
 
-        // Actualizar el comando para apagar la electrovalvula del camellon
-        $s2Final->comando->descripcion = 'off:valvula' . $camellon;
-    
-        // Guardar el nuevo estado
-        $s2Final->save();
-    
-        // Actualizar el estado del sistema
-        $estadoSistema->update(['s2' => $s2Final->id]);
-    
+                
+        // Guardar el nuevo estado en la caché
+        Cache::forever('estado_s2_actual', $s2Final->toArray());
+
+        // Actualizar el estado del sistema con la nueva entrada s2
+        $estadoSistema['s2_id'] = $nuevoS2Id;
+        Cache::forever('estado_sistema', $estadoSistema);
+
+        // Despachar los trabajos para actualizar la base de datos
+        Archivador::dispatch('s2', $s2Final->toArray());
+        Archivador::dispatch('estado_sistema', $estadoSistema);
+
         Log::info('Electrovalvula del camellon ' . $camellon . ' apagada');
     }
     
