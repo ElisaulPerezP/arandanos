@@ -53,6 +53,7 @@ class CultivoLoginController extends Controller
                 $cultivo->update([
                     'nombre' => $request->cultivo,
                     'api_token' => $token,
+                    'estado_id' => 2,
                 ]);
                 $user->update([
                     'cultivo_registrado_at' => $currentDateTime,  // Almacena la fecha de registro del cultivo
@@ -64,6 +65,8 @@ class CultivoLoginController extends Controller
                 Cultivo::create([
                     'nombre' => $request->cultivo,
                     'api_token'  => $token,
+                    'estado_id' => 2,
+
                 ]);
                 return redirect()->route('dashboard')->with('success', 'Autenticación exitosa!');
             }
