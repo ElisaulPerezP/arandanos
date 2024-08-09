@@ -554,34 +554,47 @@ protected function inyectarFertilizante($programacion)
 
     protected function apagarInyectores()
         {
-            // Obtener la configuración actual de s4 y apagar los inyectores de fertilizante
-            $estadoSistema = EstadoSistema::first();
-            $s4Actual =$estadoSistema->s4;
+            // Obtener el estado del sistema desde la caché
+            $estadoSistema = Cache::rememberForever('estado_sistema', function () {
+                return EstadoSistema::first()->toArray();
+            });
 
-            // Crear una nueva instancia de S4 para el nuevo estado
-            $s4Final = new S4;
-            $s4Final->fill($s4Actual->toArray());
+            // Obtener la configuración actual de s4 desde la caché
+            $s4Actual = Cache::rememberForever("estado_s4_actual", function () use ($estadoSistema) {
+                return S4::find($estadoSistema["s4_id"]);
+            });
 
-            // Buscar el comando de hardware correcto
+            // Clonar la configuración actual para crear un nuevo estado de S4
+            $s4Final = $s4Actual->replicate();
+            $nuevoS4Id = (string) Str::uuid();  // Generar un nuevo UUID
+            $s4Final->id = $nuevoS4Id;
+
+            // Buscar el comando de hardware correcto en la caché
             $comandoBuscado = '{"actions":["pump1:off:1","pump2:off:1"]}';
-            $comandoHardware = ComandoHardware::where('sistema', 's4')
-                                            ->where('comando', $comandoBuscado)
-                                            ->first();
-
+            $comandoHardware = Cache::rememberForever("comando_hardware_s4_{$comandoBuscado}", function () use ($comandoBuscado) {
+                return ComandoHardware::where('sistema', 's4')
+                                    ->where('comando', $comandoBuscado)
+                                    ->first();
+            });
+                    
             // Si se encuentra el comando de hardware, asignar el comando_id
             if ($comandoHardware) {
                 $s4Final->comando_id = $comandoHardware->id;
                 $s4Final->estado = "apagando";
-
             } else {
                 Log::info('El comando de apagado de inyectores no pudo ser encontrado');
             }
 
-            // Guardar el nuevo estado
-            $s4Final->save();
+            // Guardar el nuevo estado en la caché
+            Cache::forever('estado_s4_actual', $s4Final->toArray());
 
-            // Actualizar el estado del sistema
-            $estadoSistema->update(['s4' => $s4Final->id]);
+            // Actualizar el estado del sistema con la nueva entrada s4
+            $estadoSistema['s4_id'] = $nuevoS4Id;
+            Cache::forever('estado_sistema', $estadoSistema);
+
+            // Despachar los trabajos para actualizar la base de datos
+            Archivador::dispatch('s4', $s4Final->toArray());
+            Archivador::dispatch('estado_sistema', $estadoSistema);
 
             Log::info('Inyectores de fertilizante apagados');
         }
