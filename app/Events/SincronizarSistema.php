@@ -56,6 +56,5 @@ class SincronizarSistema
         $this->estadoActual = [
             'estado_id' => $this->cultivo->estadoActual,
         ];
-        Log::error('lo que se esta mandando desde el evento es:', ['pilla pues' => $this->cultivo]);
     }
 }
