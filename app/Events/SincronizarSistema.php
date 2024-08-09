@@ -9,6 +9,8 @@ use App\Models\Mensaje;
 use App\Models\Estado;
 use App\Models\Programacion;
 use App\Models\Cultivo;
+use Illuminate\Support\Facades\Log;
+
 
 class SincronizarSistema
 {
@@ -54,5 +56,6 @@ class SincronizarSistema
         $this->estadoActual = [
             'estado_id' => $this->cultivo->estadoActual,
         ];
+        Log::error('lo que se esta mandando desde el evento es:', ['pilla pues' => $this->cultivo]);
     }
 }
