@@ -7,6 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class Archivador implements ShouldQueue
 {
@@ -30,5 +31,6 @@ class Archivador implements ShouldQueue
     public function handle()
     {
         \DB::table($this->table)->insert($this->data);
+        Log::info("Acción de almacenamiento sobre la tabla {$this->table}, con los datos: ", $this->data);
     }
 }
