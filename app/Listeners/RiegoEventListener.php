@@ -405,7 +405,10 @@ protected function inyectarFertilizante($programacion)
             // Despachar la actualización para que se refleje en la base de datos
             Archivador::dispatch('programaciones', $programacionActual);
 
-            Log::info('Evento de riego completado exitosamente', ['descripcion' => $programacionActual['comando']['descripcion']]);
+            // Registrar en el log el evento exitoso
+            Log::info('Evento de riego exitoso', [
+                'programacion_id' => $programacionActual['id'],
+        ]);
         } else {
             Log::error('No se pudo encontrar la programación en la caché', ['programacion_id' => $programacion['id']]);
         }
@@ -413,10 +416,31 @@ protected function inyectarFertilizante($programacion)
 
     protected function marcarEventoFallido($programacion)
     {
-        // Marcar el evento como fallido en la base de datos
-        //$programacion = Programacion::find($programacion);
-        $programacion->update(['estado' => 'fallido']);
-        Log::info('Evento de riego fallido', ['descripcion' => $programacion->comando->descripcion]);
+         // Cargar la programación desde la caché utilizando su ID
+        $programacionCacheKey = "programacion_{$programacion['id']}";
+        $programacionActual = Cache::get($programacionCacheKey);
+
+        if ($programacionActual) {
+            // Actualizar el estado de la programación
+            $programacionActual['estado'] = 'fallido';
+            $programacionActual['updated_at'] = now();
+
+            // Actualizar la caché con el estado modificado
+            Cache::put($programacionCacheKey, $programacionActual);
+
+            // Guardar la programación actualizada en la caché
+            Cache::forever($programacionCacheKey, $programacionActual);
+
+            // Despachar la actualización para que se refleje en la base de datos
+            Archivador::dispatch('programaciones', $programacionActual);
+            // Registrar en el log el evento fallido
+            Log::info('Evento de riego fallo', [
+                'programacion_id' => $programacionActual['id'],
+            ]);
+        } else {
+            Log::error('No se pudo encontrar la programación en la caché', ['programacion_id' => $programacion['id']]);
+        }
+
     }
     protected function apagarElectrovalvulas($programacion)
     {
