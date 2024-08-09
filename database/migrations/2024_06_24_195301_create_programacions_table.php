@@ -12,11 +12,11 @@ class CreateProgramacionsTable extends Migration
     public function up(): void
     {
         Schema::create('programacions', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->unsignedBigInteger('hora_unix');
             $table->foreignId('cultivo_id')->constrained()->onDelete('cascade');
             $table->foreignId('comando_id')->constrained()->onDelete('cascade');
-            $table->string('estado')->default('por enviar');
+            $table->string('estado', 50)->default('por enviar');
             $table->timestamps();
 
             // Agregar índices
