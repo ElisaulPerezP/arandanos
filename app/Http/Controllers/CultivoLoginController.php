@@ -91,7 +91,7 @@ class CultivoLoginController extends Controller
             'password' => $request->password,
             'cultivo_nombre' => $request->cultivo,
         ]);
-
+        
         // Aquí puedes manejar la respuesta como desees
         if ($response->successful()) {
             $token = $response->json()['token'];  // Extrae el token del JSON de respuesta

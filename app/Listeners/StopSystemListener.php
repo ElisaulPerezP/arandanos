@@ -50,7 +50,7 @@ class StopSystemListener
             ];
 
             // Despachar el trabajo para escribir en la base de datos
-            Archivador::dispatch('cultivo', $cultivoData);
+            Archivador::dispatch('cultivos', $cultivoData);
 
             $this->ejecutarStopTotal($scriptStopTotal);
 

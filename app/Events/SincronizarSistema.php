@@ -25,7 +25,7 @@ class SincronizarSistema
      */
     public function __construct()
     {
-        $this->cultivo = Cultivo::first();;
+        $this->cultivo = Cultivo::first();
         // Preparar comandos
         $this->comandos = Comando::all()->map(function ($comando) {
             return [
