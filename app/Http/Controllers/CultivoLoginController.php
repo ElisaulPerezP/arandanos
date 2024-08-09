@@ -110,7 +110,7 @@ class CultivoLoginController extends Controller
             $cultivo->update([
                 'nombre' => $request->cultivo,
                 'api_token'  => $token,
-                'estado_id' => "2"
+                'estado_id' => 2,
             ]);
             // Redirigir al dashboard con un mensaje de éxito
             return redirect()->route('dashboard')->with('success', 'Cultivo actualizado exitosamente!');
