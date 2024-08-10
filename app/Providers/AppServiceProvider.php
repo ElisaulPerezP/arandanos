@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Cache;
+use App\Models\ComandoHardware;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +21,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        
+        // Cargar comandos hardware en la caché si no están cacheados
+        Cache::rememberForever('comandos_hardware', function () {
+            return ComandoHardware::all();
+        });
     }
 }
