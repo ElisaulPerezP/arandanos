@@ -38,15 +38,21 @@ class StopSystemListener
         if ($estadoInactivo) {
             $this->detenerProcesos($scriptsEjecutandose);
 
+            // Actualizar el estado del cultivo
+            $cultivo->estado_id = $estadoInactivo->id;
+            $cultivo->updated_at = now();
+
             // Actualizar la caché con el cultivo actualizado
             Cache::forever('cultivo_primero', $cultivo);
 
             // Preparar los datos para archivarlos
             $cultivoData = [
+                'nombre' => $cultivo-> nombre,
                 'id' => $cultivo->id,
                 'estado_id' => $estadoInactivo->id,
                 'updated_at' => now(),
                 'created_at' => $cultivo->created_at,
+                'api_token' => $cultivo->api_token,
             ];
 
             // Despachar el trabajo para escribir en la base de datos
