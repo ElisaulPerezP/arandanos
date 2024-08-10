@@ -15,14 +15,18 @@ class Archivador implements ShouldQueue
 
     protected $table;
     protected $data;
+    protected $action; // Nuevo parámetro para la acción
+    protected $identifier; // Identificador para las actualizaciones
 
     /**
      * Create a new job instance.
      */
-    public function __construct($table, $data)
+    public function __construct($table, $data, $action = 'insert', $identifier = null)
     {
         $this->table = $table;
         $this->data = $data;
+        $this->action = $action;
+        $this->identifier = $identifier;
     }
 
     /**
@@ -30,7 +34,14 @@ class Archivador implements ShouldQueue
      */
     public function handle()
     {
-        \DB::table($this->table)->insert($this->data);
-        Log::info("Acción de almacenamiento sobre la tabla {$this->table}, con los datos: ", $this->data);
+        if ($this->action === 'update' && $this->identifier) {
+            \DB::table($this->table)
+                ->where($this->identifier['column'], $this->identifier['value'])
+                ->update($this->data);
+            Log::info("Acción de actualización sobre la tabla {$this->table}, con los datos: ", $this->data);
+        } else {
+            \DB::table($this->table)->insert($this->data);
+            Log::info("Acción de almacenamiento sobre la tabla {$this->table}, con los datos: ", $this->data);
+        }
     }
 }
