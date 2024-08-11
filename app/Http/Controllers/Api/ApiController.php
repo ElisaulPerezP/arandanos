@@ -35,7 +35,7 @@ class ApiController extends Controller
         });
 
         // Determinar el nuevo estado y el evento a emitir basado en el estado actual
-        if ($s0Actual && $s0Actual->estado === 'Parada activada') {
+        if ($s0Actual && $s0Actual['estado'] === 'Parada activada') {
             $nuevoEstado = 'Parada desactivada';
             $evento = new InicioDeAplicacion();
         } else {
@@ -50,7 +50,7 @@ class ApiController extends Controller
         $s0Final = [
             'id' => $nuevoS0Id,
             'estado' => $nuevoEstado,
-            'comando_id' => $s0Actual->comando_id ?? null,
+            'comando_id' => $s0Actual['comando_id'] ?? null,
             'sensor3' => 0,
             'created_at' => now(),
             'updated_at' => now()
@@ -92,8 +92,8 @@ class ApiController extends Controller
 
         // Obtener el comando hardware con el comando_id desde la caché
         $comandoHardware = null;
-        if ($s1Actual && isset($s1Actual->comando_id)) {
-            $comandoHardware = $comandosHardware->firstWhere('id', $s1Actual->comando_id);
+        if ($s1Actual && isset($s1Actual['comando_id'])) {
+            $comandoHardware = $comandosHardware->firstWhere('id', $s1Actual['comando_id']);
         }
 
         // Si no se encuentra el comando hardware, usar el comando por defecto 'esperar'
@@ -104,7 +104,7 @@ class ApiController extends Controller
         // Verificar si existe el comando
         if ($comandoHardware) {
             // Obtener el comando desde la relación s1
-            $comandoExplicito = $comandoHardware->comando;
+            $comandoExplicito = $comandoHardware['comando'];
 
             // Retornar el comando si existe
             if ($comandoExplicito) {
@@ -142,11 +142,11 @@ class ApiController extends Controller
             // Crear una nueva entrada s1 con la información nueva y la faltante
             $s1Nueva = [
                 'id' => $s1NuevaId,
-                'estado' => $request->input('estado', $s1Actual->estado),
-                'sensor1' => $request->input('sensor1', $s1Actual->sensor1),
-                'sensor2' => $request->input('sensor2', $s1Actual->sensor2),
-                'valvula14' => $request->input('valvula14', $s1Actual->valvula14),
-                'comando_id' => $s1Actual->comando_id ?? $comandoEsperar->id,
+                'estado' => $request->input('estado', $s1Actual['estado']),
+                'sensor1' => $request->input('sensor1', $s1Actual['sensor1']),
+                'sensor2' => $request->input('sensor2', $s1Actual['sensor2']),
+                'valvula14' => $request->input('valvula14', $s1Actual['valvula14']),
+                'comando_id' => $s1Actual['comando_id'] ?? $comandoEsperar['id'],
                 'created_at' => now(),
                 'updated_at' => now()
             ];
@@ -196,10 +196,10 @@ class ApiController extends Controller
             $s1Nueva = [
                 'id' => $s1NuevaId,
                 'estado' => false,
-                'sensor1' => $s1Actual->sensor1,
-                'sensor2' => $s1Actual->sensor2,
-                'valvula14' => $s1Actual->valvula14,
-                'comando_id' => $comandoEsperar->id,
+                'sensor1' => $s1Actual['sensor1'],
+                'sensor2' => $s1Actual['sensor2'],
+                'valvula14' => $s1Actual['valvula14'],
+                'comando_id' => $comandoEsperar['id'],
                 'created_at' => now(),
                 'updated_at' => now()
             ];
@@ -239,8 +239,8 @@ class ApiController extends Controller
             $comandosHardware = Cache::get('comandos_hardware');
 
             $comandoHardware = null;
-            if ($s2Actual && isset($s2Actual->comando_id)) {
-                $comandoHardware = $comandosHardware->firstWhere('id', $s2Actual->comando_id);
+            if ($s2Actual && isset($s2Actual['comando_id'])) {
+                $comandoHardware = $comandosHardware->firstWhere('id', $s2Actual['comando_id']);
             }
 
             // Si no se encuentra el comando hardware, usar el comando por defecto 'off:valvula1'
@@ -251,7 +251,7 @@ class ApiController extends Controller
             // Verificar si existe el comando
             if ($comandoHardware) {
                 // Obtener el comando desde la relación s2
-                $comandoExplicito = $comandoHardware->comando;
+                $comandoExplicito = $comandoHardware['comando'];
 
                 // Retornar el comando si existe
                 if ($comandoExplicito) {
@@ -284,8 +284,8 @@ class ApiController extends Controller
             $comandosHardware = Cache::get('comandos_hardware');
 
             $comandoHardware = null;
-            if ($s2Actual && isset($s2Actual->comando_id)) {
-                $comandoHardware = $comandosHardware->firstWhere('id', $s2Actual->comando_id);
+            if ($s2Actual && isset($s2Actual['comando_id'])) {
+                $comandoHardware = $comandosHardware->firstWhere('id', $s2Actual['comando_id']);
             }
 
             // Si no se encuentra el comando hardware, usar el comando por defecto 'off:valvula1'
@@ -304,7 +304,7 @@ class ApiController extends Controller
             $s2Nueva = [
                 'id' => (string) Str::uuid(), // Asignar un UUID
                 'estado' => 'funcionando',
-                'comando_id' => $s2Actual->comando_id ?? $comandoHardware,
+                'comando_id' => $s2Actual['comando_id'] ?? $comandoHardware,
                 'created_at' => now(),
                 'updated_at' => now()
             ] + $valvulas;
@@ -346,8 +346,8 @@ class ApiController extends Controller
             });
 
             $comandoHardware = null;
-            if ($s2Actual && isset($s2Actual->comando_id)) {
-                $comandoHardware = $comandosHardware->firstWhere('id', $s2Actual->comando_id);
+            if ($s2Actual && isset($s2Actual['comando_id'])) {
+                $comandoHardware = $comandosHardware->firstWhere('id', $s2Actual['comando_id']);
             }
 
             // Si no se encuentra el comando hardware, usar el comando por defecto 'off:valvula1'
@@ -397,13 +397,13 @@ class ApiController extends Controller
 
             // Obtener el comando desde la caché utilizando el comando_id de s3
             $comando = null;
-            if ($s3Actual && isset($s3Actual->comando_id)) {
-                $comando = $comandosHardware->firstWhere('id', $s3Actual->comando_id);
+            if ($s3Actual && isset($s3Actual['comando_id'])) {
+                $comando = $comandosHardware->firstWhere('id', $s3Actual['comando_id']);
             }
 
             // Verificar si existe el comando
             if ($comando) {
-                $action = json_decode($comando->comando, true);
+                $action = json_decode($comando['comando'], true);
                 Log::info('Request sent by getImpulsoresCommand:', ['actions' => $action]);
                 return response()->json(['actions' => $action], 200);
             }
@@ -436,8 +436,8 @@ class ApiController extends Controller
         $comandosHardware = Cache::get('comandos_hardware');
 
         $comandoHardware = null;
-        if ($s3Actual && isset($s2Actual->comando_id)) {
-            $comandoHardware = $comandosHardware->firstWhere('id', $s3Actual->comando_id);
+        if ($s3Actual && isset($s2Actual['comando_id'])) {
+            $comandoHardware = $comandosHardware->firstWhere('id', $s3Actual['comando_id']);
         }
 
         // Si no se encuentra el comando hardware, usar el comando por defecto 'off:valvula1'
@@ -447,7 +447,7 @@ class ApiController extends Controller
 
         // Crear una nueva entrada s3 con la información proporcionada en el request y el comando del antecesor
         $s3Nueva = array_merge($validatedData, [
-            'comando_id' => $s3Actual ? $s3Actual->comando_id : $comandoHardware,
+            'comando_id' => $s3Actual ? $s3Actual['comando_id'] : $comandoHardware,
             'estado' => 'funcionando',
             'created_at' => now(),
             'updated_at' => now()
@@ -501,7 +501,7 @@ class ApiController extends Controller
                 $request->all(),
                 [
                     'id' => $s3NuevaId,
-                    'comando_id' => $comando ? $comando->id : ($s3Actual ? $s3Actual->comando_id : null),
+                    'comando_id' => $comando ? $comando['id'] : ($s3Actual ? $s3Actual['comando_id'] : null),
                     'estado' => 'apagado',
                     'created_at' => now(),
                     'updated_at' => now()
@@ -546,13 +546,13 @@ class ApiController extends Controller
 
             // Obtener el comando desde la caché utilizando el comando_id de s4
             $comando = null;
-            if ($s4Actual && isset($s4Actual->comando_id)) {
-                $comando = $comandosHardware->firstWhere('id', $s4Actual->comando_id);
+            if ($s4Actual && isset($s4Actual['comando_id'])) {
+                $comando = $comandosHardware->firstWhere('id', $s4Actual['comando_id']);
             }
 
             // Verificar si existe el comando
             if ($comando) {
-                $actions = json_decode($comando->comando, true)['actions'];
+                $actions = json_decode($comando['comando'], true)['actions'];
                 return response()->json(['actions' => $actions], 200);
             }
         }
@@ -585,8 +585,8 @@ class ApiController extends Controller
 
         // Obtener el comando desde la caché utilizando el comando_id de s4
         $comandoHardware = null;
-        if ($s4Actual && isset($s4Actual->comando_id)) {
-            $comandoHardware = $comandosHardware->firstWhere('id', $s4Actual->comando_id);
+        if ($s4Actual && isset($s4Actual['comando_id'])) {
+            $comandoHardware = $comandosHardware->firstWhere('id', $s4Actual['comando_id']);
         }
 
         // Si no se encuentra el comando hardware, usar el comando por defecto 'off:pump3' y 'off:pump4'
@@ -600,7 +600,7 @@ class ApiController extends Controller
         // Crear una nueva entrada s4 con la información proporcionada en el request y el comando del antecesor
         $s4Nueva = array_merge($validatedData, [
             'id' => $s4NuevaId,
-            'comando_id' => $s4Actual ? $s4Actual->comando_id : $comandoHardware,
+            'comando_id' => $s4Actual ? $s4Actual['comando_id'] : $comandoHardware,
             'estado' => 'funcionando',
             'created_at' => now(),
             'updated_at' => now()
@@ -643,8 +643,8 @@ class ApiController extends Controller
 
         // Obtener el comando desde la caché utilizando el comando_id de s4
         $comandoHardware = null;
-        if ($s4Actual && isset($s4Actual->comando_id)) {
-            $comandoHardware = $comandosHardware->firstWhere('id', $s4Actual->comando_id);
+        if ($s4Actual && isset($s4Actual['comando_id'])) {
+            $comandoHardware = $comandosHardware->firstWhere('id', $s4Actual['comando_id']);
         }
 
         // Si no se encuentra el comando hardware, usar el comando por defecto 'off:pump3' y 'off:pump4'
@@ -659,7 +659,7 @@ class ApiController extends Controller
         $s4Nueva = [
             'id' => $s4NuevaId,
             'estado' => 'apagado',
-            'comando_id' => $comandoHardware ? $comandoHardware->id : null,
+            'comando_id' => $comandoHardware ? $comandoHardware['id'] : null,
             'pump3' => 'apagado',
             'pump4' => 'apagado',
             'created_at' => now(),
@@ -708,7 +708,7 @@ class ApiController extends Controller
         $s5Nueva = array_merge($validatedData, [
             'id' => $s5NuevaId,
             'estado' => $request->input('status', 'Apagado con exito'),
-            'comando_id' => $s5Actual ? $s5Actual->comando_id : null,
+            'comando_id' => $s5Actual ? $s5Actual['comando_id'] : null,
             'created_at' => now(),
             'updated_at' => now()
         ]);
@@ -750,7 +750,7 @@ class ApiController extends Controller
         $s5Nueva = [
             'id' => $s5NuevaId,
             'estado' => $request->input('status', 'Apagado con exito'),
-            'comando_id' => $s5Actual ? $s5Actual->comando_id : null,
+            'comando_id' => $s5Actual ? $s5Actual['comando_id'] : null,
             'flux1' => '0',
             'flux2' => '0',
             'created_at' => now(),
