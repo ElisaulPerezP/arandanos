@@ -94,12 +94,6 @@ class RiegoEventListener implements ShouldQueue
             return EstadoSistema::first();
         });
 
-
-         // Obtener el estado del sistema desde la caché como objeto
-        $estadoSistema = Cache::rememberForever('estado_sistema', function () {
-            return EstadoSistema::first();
-        });
-
          // Obtener la configuración actual de s2 desde la caché como objeto
         $s2Actual = Cache::rememberForever("estado_s2_actual", function () use ($estadoSistema) {
             return S2::find($estadoSistema["s2_id"]);
@@ -109,7 +103,7 @@ class RiegoEventListener implements ShouldQueue
         // Clonar la configuración actual para crear un nuevo estado de S2
         $s2Final = $s2Actual->replicate();
         $nuevoS2Id = (string) Str::uuid();  // Generar un nuevo UUID
-        $s2Final->id = $nuevoS2Id;
+        $s2Final['id'] = $nuevoS2Id;
 
         // Buscar el comando de hardware correcto en la caché como objeto
         $comandoBuscado = 'on:valvula' . $camellon;
@@ -121,7 +115,7 @@ class RiegoEventListener implements ShouldQueue
 
 
         if ($comandoHardware) {
-            $s2Final->comando_id = $comandoHardware->id;
+            $s2Final['comando_id'] = $comandoHardware['id'];
         } else {
             // Registrar un mensaje en el log si no se encuentra el comando
             Log::info("El comando para encender la electrovalvula del camellon $camellon no pudo ser encontrado");
@@ -132,7 +126,7 @@ class RiegoEventListener implements ShouldQueue
     
         // Despachar los trabajos para actualizar la base de datos
         Archivador::dispatch('s2', $s2Final->toArray());
-        Archivador::dispatch('estado_sistema', ['s2_id' => $s2Final->id] + $estadoSistema);
+        Archivador::dispatch('estado_sistema', ['s2_id' => $s2Final['id']] + $estadoSistema);
     
         Log::info('Electrovalvula del camellon ' . $camellon . ' encendida');
     }
@@ -164,7 +158,7 @@ class RiegoEventListener implements ShouldQueue
 
     // Si se encuentra el comando de hardware, asignar el comando_id
     if ($comandoHardware) {
-        $s3Final->comando_id = $comandoHardware->id;
+        $s3Final['comando_id'] = $comandoHardware['id'];
     } else {
         // Registrar un mensaje en el log si no se encuentra el comando
         Log::info("El comando para encender las bombas principales no pudo ser encontrado");
@@ -209,24 +203,24 @@ protected function inyectarFertilizante($programacion)
     // Clonar la configuración actual para crear un nuevo estado de S4
     $s4Final = $s4Actual->replicate();
     $nuevoS4Id = (string) Str::uuid();  // Generar un nuevo UUID
-    $s4Final->id = $nuevoS4Id;
+    $s4Final['id']= $nuevoS4Id;
 
     // Calcular el comando para los inyectores basado en la concentración
     $comandoHardware = $this->calcularComandoInyectores($concentracion);
-    $s4Final->comando_id = $comandoHardware->id;
-    $s4Final->estado = 'inyectando';
-    $s4Final->pump3 = true;
-    $s4Final->pump4 = false;
+    $s4Final['comando_id'] = $comandoHardware['id'];
+    $s4Final['estado'] = 'inyectando';
+    $s4Final['pump3'] = true;
+    $s4Final['pump4'] = false;
 
     // Actualizar la caché con el nuevo estado
-    Cache::forever('estado_s4_actual', $s4Final->toArray());
+    Cache::forever('estado_s4_actual', $s4Final);
 
     // Actualizar el estado del sistema en la caché
     $estadoSistema['s4_id'] = $nuevoS4Id;
     Cache::forever('estado_sistema', $estadoSistema);
 
     // Despachar los trabajos para actualizar la base de datos
-    Archivador::dispatch('s4', $s4Final->toArray());
+    Archivador::dispatch('s4', $s4Final);
     Archivador::dispatch('estado_sistemas', $estadoSistema);
 
     Log::info('Fertilizante inyectado con concentración ' . $concentracion);
@@ -285,8 +279,8 @@ protected function inyectarFertilizante($programacion)
             });
     
             // Obtener el estado actual del flujo
-            $flujoActual1 = $s5Actual->flux1;
-            $flujoActual2 = $s5Actual->flux2;
+            $flujoActual1 = $s5Actual['flux1'];
+            $flujoActual2 = $s5Actual['flux2'];
             $flujoActual = $flujoActual1 + $flujoActual2;
     
             // Acumular el flujo
@@ -296,19 +290,19 @@ protected function inyectarFertilizante($programacion)
         if ($flujoAcumulado >= $cuentasEsperadas) {
                 // Crear una nueva instancia de S5 para el nuevo estado
                 $s5Final = $s5Actual->replicate();
-                $s5Final->flux1 = 0;
-                $s5Final->flux2 = 0;
-                $s5Final->id = (string) Str::uuid();
+                $s5Final['flux1'] = 0;
+                $s5Final['flux2'] = 0;
+                $s5Final['id'] = (string) Str::uuid();
 
                 // Guardar el nuevo estado en la caché
                 Cache::forever('estado_s5_actual', $s5Final);
 
                 // Actualizar el estado del sistema en la caché
-                $estadoSistema['s5_id'] = $s5Final->id;
+                $estadoSistema['s5_id'] = $s5Final['id'];
                 Cache::forever('estado_sistema', $estadoSistema);
 
                 // Despachar los trabajos para actualizar la base de datos
-                Archivador::dispatch('s5', $s5Final->toArray());
+                Archivador::dispatch('s5', $s5Final);
                 Archivador::dispatch('estado_sistema', $estadoSistema);
 
                 Log::info('El flujo cumple con los requisitos', ['flujo_acumulado' => $flujoAcumulado, 'cuentas_esperadas' => $cuentasEsperadas]);
@@ -320,19 +314,19 @@ protected function inyectarFertilizante($programacion)
 
         // Si el flujo no cumple con los requisitos en el tiempo límite, retornar false
         $s5Final = $s5Actual->replicate();
-        $s5Final->flux1 = 0;
-        $s5Final->flux2 = 0;
-        $s5Final->id = (string) Str::uuid();
+        $s5Final['flux1'] = 0;
+        $s5Final['flux2'] = 0;
+        $s5Final['id'] = (string) Str::uuid();
 
         // Guardar el nuevo estado en la caché
         Cache::forever('estado_s5_actual', $s5Final);
 
         // Actualizar el estado del sistema en la caché
-        $estadoSistema['s5_id'] = $s5Final->id;
+        $estadoSistema['s5_id'] = $s5Final['id'];
         Cache::forever('estado_sistema', $estadoSistema);
 
         // Despachar los trabajos para actualizar la base de datos
-        Archivador::dispatch('s5', $s5Final->toArray());
+        Archivador::dispatch('s5', $s5Final);
         Archivador::dispatch('estado_sistema', $estadoSistema);
 
         Log::info('El flujo no cumple con los requisitos', ['flujo_acumulado' => $flujoAcumulado, 'cuentas_esperadas' => $cuentasEsperadas]);
@@ -364,7 +358,7 @@ protected function inyectarFertilizante($programacion)
 
         // Si se encuentra el comando de hardware, asignar el comando_id
         if ($comandoHardware) {
-            $s1Final->comando_id = $comandoHardware->id;
+            $s1Final['comando_id'] = $comandoHardware['id'];
         } else {
             // Registrar un mensaje en el log si no se encuentra el comando
             Log::info("El comando de llenado de tanques no pudo ser encontrado");
@@ -376,13 +370,13 @@ protected function inyectarFertilizante($programacion)
 
         // Actualizar el estado del sistema con la nueva entrada s1
         $estadoSistemaActualizado = $estadoSistema;
-        $estadoSistemaActualizado['s1_id'] = $s1Final->id;
+        $estadoSistemaActualizado['s1_id'] = $s1Final['id'];
 
         // Guardar la nueva configuración del sistema en la caché
         Cache::forever('estado_sistema', $estadoSistemaActualizado);
 
         // Despachar los trabajos para actualizar la base de datos
-        Archivador::dispatch('s1', $s1Final->toArray());
+        Archivador::dispatch('s1', $s1Final);
         Archivador::dispatch('estado_sistema', $estadoSistemaActualizado);
 
         Log::info('Tanques llenando');
@@ -468,7 +462,7 @@ protected function inyectarFertilizante($programacion)
         // Clonar la configuración actual para crear un nuevo estado de S2
         $s2Final = $s2Actual->replicate();
         $nuevoS2Id = (string) Str::uuid();  // Generar un nuevo UUID
-        $s2Final->id = $nuevoS2Id;
+        $s2Final['id'] = $nuevoS2Id;
 
         // Buscar el comando de hardware correcto en la caché
         $comandoBuscado = 'off:valvula' . $camellon;
@@ -480,7 +474,7 @@ protected function inyectarFertilizante($programacion)
 
         // Si se encuentra el comando de hardware, asignar el comando_id
         if ($comandoHardware) {
-            $s2Final->comando_id = $comandoHardware->id;
+            $s2Final['comando_id'] = $comandoHardware['id'];
         } else {
             Log::info("El comando de apagado de válvulas para el camellon $camellon no pudo ser encontrado");
         }
@@ -488,14 +482,14 @@ protected function inyectarFertilizante($programacion)
 
                 
         // Guardar el nuevo estado en la caché
-        Cache::forever('estado_s2_actual', $s2Final->toArray());
+        Cache::forever('estado_s2_actual', $s2Final);
 
         // Actualizar el estado del sistema con la nueva entrada s2
         $estadoSistema['s2_id'] = $nuevoS2Id;
         Cache::forever('estado_sistema', $estadoSistema);
 
         // Despachar los trabajos para actualizar la base de datos
-        Archivador::dispatch('s2', $s2Final->toArray());
+        Archivador::dispatch('s2', $s2Final);
         Archivador::dispatch('estado_sistema', $estadoSistema);
 
         Log::info('Electrovalvula del camellon ' . $camellon . ' apagada');
@@ -518,7 +512,7 @@ protected function inyectarFertilizante($programacion)
         // Clonar la configuración actual para crear un nuevo estado de S3
         $s3Final = $s3Actual->replicate();
         $nuevoS3Id = (string) Str::uuid();  // Generar un nuevo UUID
-        $s3Final->id = $nuevoS3Id;
+        $s3Final['id'] = $nuevoS3Id;
 
         // Buscar el comando de hardware correcto en la caché
         $comandoBuscado = '{"actions":["pump1:off","pump2:off"]}';
@@ -531,13 +525,13 @@ protected function inyectarFertilizante($programacion)
 
         // Si se encuentra el comando de hardware, asignar el comando_id
         if ($comandoHardware) {
-            $s3Final->comando_id = $comandoHardware->id;
+            $s3Final['comando_id'] = $comandoHardware['id'];
         } else {
             Log::info('El comando de apagado de las bombas no fue encontrado');
         }
 
         // Guardar el nuevo estado en la caché
-        Cache::forever('estado_s3_actual', $s3Final->toArray());
+        Cache::forever('estado_s3_actual', $s3Final);
 
         // Actualizar el estado del sistema con la nueva entrada s3
         $estadoSistema['s3_id'] = $nuevoS3Id;
@@ -545,7 +539,7 @@ protected function inyectarFertilizante($programacion)
 
 
         // Despachar los trabajos para actualizar la base de datos
-        Archivador::dispatch('s3', $s3Final->toArray());
+        Archivador::dispatch('s3', $s3Final);
         Archivador::dispatch('estado_sistema', $estadoSistema);
 
         Log::info('Motor principal apagado');
@@ -567,7 +561,7 @@ protected function inyectarFertilizante($programacion)
             // Clonar la configuración actual para crear un nuevo estado de S4
             $s4Final = $s4Actual->replicate();
             $nuevoS4Id = (string) Str::uuid();  // Generar un nuevo UUID
-            $s4Final->id = $nuevoS4Id;
+            $s4Final['id'] = $nuevoS4Id;
 
             // Buscar el comando de hardware correcto en la caché
             $comandoBuscado = '{"actions":["pump1:off:1","pump2:off:1"]}';
@@ -579,14 +573,14 @@ protected function inyectarFertilizante($programacion)
                     
             // Si se encuentra el comando de hardware, asignar el comando_id
             if ($comandoHardware) {
-                $s4Final->comando_id = $comandoHardware->id;
-                $s4Final->estado = "apagando";
+                $s4Final['comando_id'] = $comandoHardware['id'];
+                $s4Final['estado'] = "apagando";
             } else {
                 Log::info('El comando de apagado de inyectores no pudo ser encontrado');
             }
 
             // Guardar el nuevo estado en la caché
-            Cache::forever('estado_s4_actual', $s4Final->toArray());
+            Cache::forever('estado_s4_actual', $s4Final);
 
             // Actualizar el estado del sistema con la nueva entrada s4
             $estadoSistema['s4_id'] = $nuevoS4Id;
