@@ -31,7 +31,7 @@ class ApiController extends Controller
         });
 
         $s0Actual = Cache::rememberForever('estado_s0_actual', function () use ($estadosDelSistema) {
-            return S0::find($estadosDelSistema->s0_id);
+            return S0::find($estadosDelSistema['s0_id']);
         });
 
         // Determinar el nuevo estado y el evento a emitir basado en el estado actual
@@ -84,7 +84,7 @@ class ApiController extends Controller
 
         // Obtener el s1 actual desde la caché
         $s1Actual = Cache::rememberForever('estado_s1_actual', function () use ($estado) {
-            return S1::find($estado->s1_id);
+            return S1::find($estado['s1_id']);
         });
 
         // Obtener el comando hardware desde la caché cargada en el AppServiceProvider
@@ -133,7 +133,7 @@ class ApiController extends Controller
         // Verificar si existe el estadoSistema y la relación s1 en la caché
         if ($estadoSistema) {
             $s1Actual = Cache::rememberForever('estado_s1_actual', function () use ($estadoSistema) {
-                return S1::find($estadoSistema->s1_id);
+                return S1::find($estadoSistema['s1_id']);
             });
 
             // Generar un nuevo UUID para la nueva entrada s1
@@ -180,7 +180,7 @@ class ApiController extends Controller
         // Verificar si existe el estadoSistema y la relación s1 en la caché
         if ($estadoSistema) {
             $s1Actual = Cache::rememberForever('estado_s1_actual', function () use ($estadoSistema) {
-                return S1::find($estadoSistema->s1_id);
+                return S1::find($estadoSistema['s1_id']);
             });
             
             // Obtener los comandos hardware desde la caché
@@ -232,7 +232,7 @@ class ApiController extends Controller
 
         if ($estado) {
             $s2Actual = Cache::rememberForever('estado_s2_actual', function () use ($estado) {
-                return S2::find($estado->s2_id);
+                return S2::find($estado['s2_id']);
             });
 
             // Obtener el comando hardware desde la caché cargada en el AppServiceProvider
@@ -277,7 +277,7 @@ class ApiController extends Controller
         if ($estadoSistema) {
             // Obtener la entrada s2 actual si existe en la caché
             $s2Actual = Cache::rememberForever('estado_s2_actual', function () use ($estadoSistema) {
-                return S2::find($estadoSistema->s2_id);
+                return S2::find($estadoSistema['s2_id']);
             });
 
             // Obtener los comandos hardware desde la caché
@@ -342,7 +342,7 @@ class ApiController extends Controller
         if ($estadoSistema) {
             // Obtener la entrada s2 actual si existe en la caché
             $s2Actual = Cache::rememberForever('estado_s2_actual', function () use ($estadoSistema) {
-                return S2::find($estadoSistema->s2_id);
+                return S2::find($estadoSistema['s2_id']);
             });
 
             $comandoHardware = null;
@@ -389,7 +389,7 @@ class ApiController extends Controller
         // Verificar si existe el estado y la relación s3 en la caché
         if ($estado) {
             $s3Actual = Cache::rememberForever('estado_s3_actual', function () use ($estado) {
-                return S3::find($estado->s3_id);
+                return S3::find($estado['s3_id']);
             });
 
             // Obtener los comandos hardware desde la caché
@@ -422,7 +422,7 @@ class ApiController extends Controller
 
         // Obtener la entrada s3 actual desde la caché
         $s3Actual = Cache::rememberForever('estado_s3_actual', function () use ($estadoSistema) {
-            return S3::find($estadoSistema->s3_id);
+            return S3::find($estadoSistema['s3_id']);
         });
 
         // Validar los datos del request
@@ -483,7 +483,7 @@ class ApiController extends Controller
         if ($estadoSistema) {
             // Obtener la entrada s3 actual desde la caché
             $s3Actual = Cache::rememberForever('estado_s3_actual', function () use ($estadoSistema) {
-                return S3::find($estadoSistema->s3_id);
+                return S3::find($estadoSistema['s3_id']);
             });
 
             // Obtener los comandos hardware desde la caché
@@ -538,7 +538,7 @@ class ApiController extends Controller
         if ($estado) {
             // Obtener la entrada s4 actual desde la caché
             $s4Actual = Cache::rememberForever('estado_s4_actual', function () use ($estado) {
-                return S4::find($estado->s4_id);
+                return S4::find($estado['s4_id']);
             });
 
             // Obtener los comandos hardware desde la caché
@@ -570,7 +570,7 @@ class ApiController extends Controller
 
         // Obtener la entrada s4 actual desde la caché
         $s4Actual = Cache::rememberForever('estado_s4_actual', function () use ($estadoSistema) {
-            return S4::find($estadoSistema->s4_id);
+            return S4::find($estadoSistema['s4_id']);
         });
 
         // Validar los datos del request
@@ -635,7 +635,7 @@ class ApiController extends Controller
 
         // Obtener la entrada s4 actual desde la caché
         $s4Actual = Cache::rememberForever('estado_s4_actual', function () use ($estadoSistema) {
-            return S4::find($estadoSistema->s4_id);
+            return S4::find($estadoSistema['s4_id']);
         });
 
         // Obtener los comandos hardware desde la caché
@@ -692,7 +692,7 @@ class ApiController extends Controller
     
         // Obtener la entrada s5 actual desde la caché
         $s5Actual = Cache::rememberForever('estado_s5_actual', function () use ($estadoSistema) {
-            return S5::find($estadoSistema->s5_id);
+            return S5::find($estadoSistema['s5_id']);
         });
     
         // Validar los datos del request
@@ -740,7 +740,7 @@ class ApiController extends Controller
 
         // Obtener la entrada s5 actual desde la caché
         $s5Actual = Cache::rememberForever('estado_s5_actual', function () use ($estadoSistema) {
-            return S5::find($estadoSistema->s5_id);
+            return S5::find($estadoSistema['s5_id']);
         });
 
         // Generar un nuevo UUID para la nueva entrada s5
