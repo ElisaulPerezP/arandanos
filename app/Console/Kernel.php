@@ -1,11 +1,10 @@
 <?php
-
 namespace App\Console;
 
 use App\Jobs\FetchRevistaData;
-use App\Models\Cultivo;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\Cache;
 use App\Jobs\ProcessScheduledCommands;
 
 class Kernel extends ConsoleKernel
@@ -16,8 +15,15 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->call(function () {
-            $cultivo = Cultivo::first();
+            // Obtener el cultivo desde la caché
+            $cultivo = Cache::get('culvivo');
+            
+            // Asegúrate de que $cultivo no sea nulo antes de despachar el trabajo
+            if ($cultivo) {
                 FetchRevistaData::dispatch($cultivo);
+            } else {
+                \Log::warning('No se encontró un cultivo en la caché.');
+            }
         })->everyMinute();
 
         $schedule->job(new ProcessScheduledCommands)->everyMinute();

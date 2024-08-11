@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Cache;
 use App\Models\ComandoHardware;
+use App\Models\Cultivo;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,5 +26,10 @@ class AppServiceProvider extends ServiceProvider
         Cache::rememberForever('comandos_hardware', function () {
             return ComandoHardware::all();
         });
+
+        Cache::rememberForever('culvivo', function () {
+            return Cultivo::first();
+        });
+
     }
 }
