@@ -57,7 +57,7 @@ class ApiController extends Controller
         ];
 
         // Actualizar el estado del sistema con el nuevo s0_id
-        $estadoSistemaActualizado = $estadosDelSistema->toArray();
+        $estadoSistemaActualizado = $estadosDelSistema;
         $estadoSistemaActualizado['s0_id'] = $nuevoS0Id;
 
         // Actualizar la caché con los nuevos valores
@@ -152,7 +152,7 @@ class ApiController extends Controller
             ];
 
             // Actualizar el estado del sistema con la nueva entrada s1
-            $estadoSistemaActualizado = $estadoSistema->toArray();
+            $estadoSistemaActualizado = $estadoSistema;
             $estadoSistemaActualizado['s1_id'] = $s1NuevaId;
 
             // Actualizar la caché con los nuevos valores
@@ -205,7 +205,7 @@ class ApiController extends Controller
             ];
             
             // Actualizar el estado del sistema con la nueva entrada s1
-            $estadoSistemaActualizado = $estadoSistema->toArray();
+            $estadoSistemaActualizado = $estadoSistema;
             $estadoSistemaActualizado['s1_id'] = $s1NuevaId;
 
             // Actualizar la caché con los nuevos valores
@@ -310,7 +310,7 @@ class ApiController extends Controller
             ] + $valvulas;
 
             // Actualizar el estado del sistema con la nueva entrada s2
-            $estadoSistemaActualizado = $estadoSistema->toArray();
+            $estadoSistemaActualizado = $estadoSistema;
             $estadoSistemaActualizado['s2_id'] = $s2Nueva['id'];
 
             // Actualizar la caché con los nuevos valores
@@ -365,7 +365,7 @@ class ApiController extends Controller
         ] + $request->except('estado');
 
         // Actualizar el estado del sistema con la nueva entrada s2
-        $estadoSistemaActualizado = $estadoSistema->toArray();
+        $estadoSistemaActualizado = $estadoSistema;
         $estadoSistemaActualizado['s2_id'] = $s2Nueva['id'];
 
         // Actualizar la caché con los nuevos valores
@@ -457,7 +457,7 @@ class ApiController extends Controller
         $s3Nueva['id'] = (string) Str::uuid();
 
         // Actualizar el estado del sistema con la nueva entrada s3
-        $estadoSistemaActualizado = $estadoSistema->toArray();
+        $estadoSistemaActualizado = $estadoSistema;
         $estadoSistemaActualizado['s3_id'] = $s3Nueva['id'];
 
         // Actualizar la caché con los nuevos valores
@@ -509,7 +509,7 @@ class ApiController extends Controller
             );
 
             // Actualizar el estado del sistema con la nueva entrada s3
-            $estadoSistemaActualizado = $estadoSistema->toArray();
+            $estadoSistemaActualizado = $estadoSistema;
             $estadoSistemaActualizado['s3_id'] = $s3NuevaId;
 
             // Actualizar la caché con los nuevos valores
@@ -607,7 +607,7 @@ class ApiController extends Controller
         ]);
 
         // Actualizar el estado del sistema con la nueva entrada s4
-        $estadoSistemaActualizado = $estadoSistema->toArray();
+        $estadoSistemaActualizado = $estadoSistema;
         $estadoSistemaActualizado['s4_id'] = $s4NuevaId;
 
         // Actualizar la caché con los nuevos valores
@@ -667,7 +667,7 @@ class ApiController extends Controller
         ];
 
         // Actualizar el estado del sistema con la nueva entrada s4
-        $estadoSistemaActualizado = $estadoSistema->toArray();
+        $estadoSistemaActualizado = $estadoSistema;
         $estadoSistemaActualizado['s4_id'] = $s4NuevaId;
 
         // Actualizar la caché con los nuevos valores
@@ -714,7 +714,7 @@ class ApiController extends Controller
         ]);
     
         // Actualizar el estado del sistema con la nueva entrada s5
-        $estadoSistemaActualizado = $estadoSistema->toArray();
+        $estadoSistemaActualizado = $estadoSistema;
         $estadoSistemaActualizado['s5_id'] = $s5NuevaId;
     
         // Actualizar la caché con los nuevos valores
@@ -758,7 +758,7 @@ class ApiController extends Controller
         ];
 
         // Actualizar el estado del sistema con la nueva entrada s5
-        $estadoSistemaActualizado = $estadoSistema->toArray();
+        $estadoSistemaActualizado = $estadoSistema;
         $estadoSistemaActualizado['s5_id'] = $s5NuevaId;
 
         // Actualizar la caché con los nuevos valores
