@@ -34,6 +34,11 @@ class Archivador implements ShouldQueue
      */
     public function handle()
     {
+        // Verificar si $this->data es un objeto y convertirlo a array si es necesario
+        if (is_object($this->data)) {
+            $this->data = $this->data->toArray();
+        }
+
         if ($this->action === 'update' && $this->identifier) {
             \DB::table($this->table)
                 ->where($this->identifier['column'], $this->identifier['value'])
