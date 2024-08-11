@@ -39,6 +39,10 @@ class Archivador implements ShouldQueue
             $this->data = $this->data->toArray();
         }
 
+        if (is_object($this->table)) {
+            $this->table = $this->table->toArray();
+        }
+
         if ($this->action === 'update' && $this->identifier) {
             \DB::table($this->table)
                 ->where($this->identifier['column'], $this->identifier['value'])
