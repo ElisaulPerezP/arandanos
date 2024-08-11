@@ -84,7 +84,7 @@ class StopSystemListener
             if (!empty($script)) {
                 // Obtener el nombre del script sin parámetros
                 $scriptName = explode(' ', $script)[0];
-                $pkillCommand = "sudo pkill -f " . escapeshellarg($scriptName);
+                $pkillCommand = "sudo /usr/bin/pkill " . escapeshellarg($scriptName);
                 
                 // Ejecutar pkill
                 exec($pkillCommand, $output, $returnVar);
@@ -93,12 +93,12 @@ class StopSystemListener
                     Log::error("Error al detener el script: {$scriptName} con pkill. Intentando con kill...");
 
                     // Intentar con kill
-                    $pgrepCommand = "pgrep -f " . escapeshellarg($scriptName);
+                    $pgrepCommand = "/usr/bin/pgrep -f " . escapeshellarg($scriptName);
                     exec("sudo " . $pgrepCommand, $pids, $pgrepReturnVar);
 
                     if ($pgrepReturnVar === 0) {
                         foreach ($pids as $pid) {
-                            $killCommand = "sudo kill " . escapeshellarg($pid);
+                            $killCommand = "sudo /usr/bin/kill " . escapeshellarg($pid);
                             exec($killCommand, $killOutput, $killReturnVar);
 
                             if ($killReturnVar !== 0) {
