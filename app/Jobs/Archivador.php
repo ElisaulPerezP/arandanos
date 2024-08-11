@@ -34,11 +34,6 @@ class Archivador implements ShouldQueue
      */
     public function handle()
     {
-        // Verificar si $this->data es un objeto y convertirlo a array si es necesario
-        if (is_object($this->data)) {
-            $this->data = $this->data->toArray();
-        }
-
         Log::info("La tabla que se está pasando es: " . gettype($this->table) . " ({$this->table}), y los datos son de tipo: " . gettype($this->data), $this->data);
 
         if ($this->action === 'update' && $this->identifier) {

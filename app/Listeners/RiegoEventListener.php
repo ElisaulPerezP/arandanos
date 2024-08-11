@@ -126,7 +126,8 @@ class RiegoEventListener implements ShouldQueue
     
         // Despachar los trabajos para actualizar la base de datos
         Archivador::dispatch('s2', $s2Final->toArray());
-        Archivador::dispatch('estado_sistema', ['s2_id' => $s2Final['id']] + $estadoSistema);
+
+        Archivador::dispatch('estado_sistemas', ['s2_id' => $s2Final['id']] + $estadoSistema, 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
     
         Log::info('Electrovalvula del camellon ' . $camellon . ' encendida');
     }
@@ -173,7 +174,8 @@ class RiegoEventListener implements ShouldQueue
 
     // Despachar los trabajos para escribir en la base de datos
     Archivador::dispatch('s3', $s3Final->toArray());
-    Archivador::dispatch('estado_sistemas', $estadoSistema);
+    Archivador::dispatch('estado_sistemas',  $estadoSistema, 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
+
 
     Log::info('Motor principal encendido');
 }
@@ -221,7 +223,8 @@ protected function inyectarFertilizante($programacion)
 
     // Despachar los trabajos para actualizar la base de datos
     Archivador::dispatch('s4', $s4Final);
-    Archivador::dispatch('estado_sistemas', $estadoSistema);
+    Archivador::dispatch('estado_sistemas',  $estadoSistema, 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
+
 
     Log::info('Fertilizante inyectado con concentración ' . $concentracion);
 
@@ -303,7 +306,8 @@ protected function inyectarFertilizante($programacion)
 
                 // Despachar los trabajos para actualizar la base de datos
                 Archivador::dispatch('s5', $s5Final);
-                Archivador::dispatch('estado_sistema', $estadoSistema);
+                Archivador::dispatch('estado_sistemas',  $estadoSistema, 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
+
 
                 Log::info('El flujo cumple con los requisitos', ['flujo_acumulado' => $flujoAcumulado, 'cuentas_esperadas' => $cuentasEsperadas]);
                 return true;
@@ -327,7 +331,8 @@ protected function inyectarFertilizante($programacion)
 
         // Despachar los trabajos para actualizar la base de datos
         Archivador::dispatch('s5', $s5Final);
-        Archivador::dispatch('estado_sistema', $estadoSistema);
+        Archivador::dispatch('estado_sistemas',  $estadoSistema, 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
+
 
         Log::info('El flujo no cumple con los requisitos', ['flujo_acumulado' => $flujoAcumulado, 'cuentas_esperadas' => $cuentasEsperadas]);
         return false;
@@ -377,7 +382,8 @@ protected function inyectarFertilizante($programacion)
 
         // Despachar los trabajos para actualizar la base de datos
         Archivador::dispatch('s1', $s1Final);
-        Archivador::dispatch('estado_sistema', $estadoSistemaActualizado);
+        Archivador::dispatch('estado_sistemas',  $estadoSistemaActualizado, 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
+
 
         Log::info('Tanques llenando');
     }
@@ -397,7 +403,8 @@ protected function inyectarFertilizante($programacion)
             Cache::forever($programacionCacheKey, $programacionActual);
 
             // Despachar la actualización para que se refleje en la base de datos
-            Archivador::dispatch('programaciones', $programacionActual);
+            Archivador::dispatch('programaciones',$programacionActual , 'update', ['column' => 'id', 'value' => $programacion['id']]);
+
 
             // Registrar en el log el evento exitoso
             Log::info('Evento de riego exitoso', [
@@ -426,7 +433,8 @@ protected function inyectarFertilizante($programacion)
             Cache::forever($programacionCacheKey, $programacionActual);
 
             // Despachar la actualización para que se refleje en la base de datos
-            Archivador::dispatch('programaciones', $programacionActual);
+            Archivador::dispatch('programaciones',$programacionActual , 'update', ['column' => 'id', 'value' => $programacion['id']]);
+            
             // Registrar en el log el evento fallido
             Log::info('Evento de riego fallo', [
                 'programacion_id' => $programacionActual['id'],
@@ -490,7 +498,8 @@ protected function inyectarFertilizante($programacion)
 
         // Despachar los trabajos para actualizar la base de datos
         Archivador::dispatch('s2', $s2Final);
-        Archivador::dispatch('estado_sistema', $estadoSistema);
+        Archivador::dispatch('estado_sistemas',  $estadoSistema , 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
+
 
         Log::info('Electrovalvula del camellon ' . $camellon . ' apagada');
     }
@@ -540,7 +549,8 @@ protected function inyectarFertilizante($programacion)
 
         // Despachar los trabajos para actualizar la base de datos
         Archivador::dispatch('s3', $s3Final);
-        Archivador::dispatch('estado_sistema', $estadoSistema);
+        Archivador::dispatch('estado_sistemas', $estadoSistema , 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
+
 
         Log::info('Motor principal apagado');
     }
@@ -588,7 +598,8 @@ protected function inyectarFertilizante($programacion)
 
             // Despachar los trabajos para actualizar la base de datos
             Archivador::dispatch('s4', $s4Final->toArray());
-            Archivador::dispatch('estado_sistema', $estadoSistema);
+        Archivador::dispatch('estado_sistemas', $estadoSistema , 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
+
 
             Log::info('Inyectores de fertilizante apagados');
         }

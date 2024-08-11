@@ -66,7 +66,8 @@ class ApiController extends Controller
 
         // Despachar los trabajos para escribir en la base de datos
         Archivador::dispatch('s0', $s0Final);
-        Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado);
+
+        Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado, 'update', ['column' => 'id', 'value' => $estadosDelSistema['id']]);
 
         // Emitir el evento correspondiente
         event($evento);
@@ -161,7 +162,7 @@ class ApiController extends Controller
 
             // Despachar los trabajos para escribir en la base de datos
             Archivador::dispatch('s1', $s1Nueva);
-            Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado);
+            Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado, 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
 
             return response()->json(['message' => 'Estado reportado exitosamente'], 200);
         }
@@ -214,7 +215,8 @@ class ApiController extends Controller
 
             // Despachar los trabajos para escribir en la base de datos
             Archivador::dispatch('s1', $s1Nueva);
-            Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado);
+            Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado, 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
+
 
             return response()->json(['message' => 'Apagado con éxito'], 200);
         }
@@ -319,7 +321,8 @@ class ApiController extends Controller
 
             // Despachar los trabajos para escribir en la base de datos
             Archivador::dispatch('s2', $s2Nueva);
-            Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado);
+            Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado, 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
+
 
             return response()->json(['message' => 'Estado reportado exitosamente'], 200);
         }
@@ -374,7 +377,7 @@ class ApiController extends Controller
 
         // Despachar los trabajos para escribir en la base de datos
         Archivador::dispatch('s2', $s2Nueva);
-        Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado);
+        Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado, 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
 
         return response()->json(['message' => 'Apagado con exito'], 200);
         }
@@ -466,7 +469,7 @@ class ApiController extends Controller
 
         // Despachar los trabajos para escribir en la base de datos
         Archivador::dispatch('s3', $s3Nueva);
-        Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado);
+        Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado, 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
 
         Log::info('Request received for reportImpulsoresState:', $s3Nueva);
 
@@ -518,7 +521,7 @@ class ApiController extends Controller
 
             // Despachar los trabajos para escribir en la base de datos
             Archivador::dispatch('s3', $s3Nueva);
-            Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado);
+            Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado, 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
 
             return response()->json(['message' => 'Apagado con éxito'], 200);
         }
@@ -616,7 +619,7 @@ class ApiController extends Controller
 
         // Despachar los trabajos para escribir en la base de datos
         Archivador::dispatch('s4', $s4Nueva);
-        Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado);
+        Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado, 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
 
         Log::info('Request received for ReportInyectoresState:', $s4Nueva);
 
@@ -676,7 +679,7 @@ class ApiController extends Controller
 
         // Despachar los trabajos para escribir en la base de datos
         Archivador::dispatch('s4', $s4Nueva);
-        Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado);
+        Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado, 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
 
         return response()->json(['message' => 'Apagado con éxito'], 200);
     }
@@ -723,7 +726,7 @@ class ApiController extends Controller
     
         // Despachar los trabajos para escribir en la base de datos
         Archivador::dispatch('s5', $s5Nueva);
-        Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado);
+        Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado, 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
     
         return response()->json(['message' => 'Conteo reportado exitosamente'], 200);
     }
@@ -767,7 +770,7 @@ class ApiController extends Controller
 
         // Despachar los trabajos para escribir en la base de datos
         Archivador::dispatch('s5', $s5Nueva);
-        Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado);
+        Archivador::dispatch('estado_sistemas', $estadoSistemaActualizado, 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
 
         return response()->json(['message' => 'Apagado con exito'], 200);
     }

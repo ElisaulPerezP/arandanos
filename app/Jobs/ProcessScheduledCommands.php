@@ -68,7 +68,8 @@ class ProcessScheduledCommands implements ShouldQueue
                         Cache::put("programacion_{$programacion['id']}", $programacion, 60);
 
                         // Despachar la actualización a la base de datos
-                        Archivador::dispatch('programaciones', $programacion);
+                        Archivador::dispatch('programaciones',$programacion , 'update', ['column' => 'id', 'value' => $programacion['id']]);
+
 
                         Log::info('Emitiendo evento: ' . $comando['nombre'], ['programacion_id' => $programacion['id'], 'event' => $event]);
                     }
@@ -82,7 +83,8 @@ class ProcessScheduledCommands implements ShouldQueue
                     Cache::put("programacion_{$programacion['id']}", $programacion, 60);
 
                     // Despachar la actualización a la base de datos
-                    Archivador::dispatch('programaciones', $programacion);
+                    Archivador::dispatch('programaciones',$programacion , 'update', ['column' => 'id', 'value' => $programacion['id']]);
+
                 }
             }
         } catch (\Exception $e) {
