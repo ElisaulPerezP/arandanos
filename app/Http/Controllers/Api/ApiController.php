@@ -80,7 +80,7 @@ class ApiController extends Controller
     {
         // Obtener el estado actual del sistema desde la caché
         $estado = Cache::rememberForever('estado_sistema', function () {
-            return EstadoSistema::find(1);
+            return EstadoSistema::find(1)->toArray();
         });
 
         // Obtener el s1 actual desde la caché
@@ -229,7 +229,7 @@ class ApiController extends Controller
     {
         // Obtener el estado actual del sistema desde la caché
         $estado = Cache::rememberForever('estado_sistema', function () {
-            return EstadoSistema::find(1);
+            return EstadoSistema::find(1)->toArray();
         });
 
         if ($estado) {
@@ -335,7 +335,7 @@ class ApiController extends Controller
     {
         // Obtener el estado actual del sistema desde la caché
         $estadoSistema = Cache::rememberForever('estado_sistema', function () {
-            return EstadoSistema::find(1);
+            return EstadoSistema::find(1)->toArray();
         });
             
         // Obtener los comandos hardware desde la caché
@@ -387,7 +387,7 @@ class ApiController extends Controller
     {
         // Obtener el estado actual del sistema desde la caché
         $estado = Cache::rememberForever('estado_sistema', function () {
-            return EstadoSistema::firstOrCreate(['id' => 1]);
+            return EstadoSistema::find(1)->toArray();
         });
         // Verificar si existe el estado y la relación s3 en la caché
         if ($estado) {
@@ -420,7 +420,7 @@ class ApiController extends Controller
     {
         // Obtener el estado actual del sistema desde la caché
         $estadoSistema = Cache::rememberForever('estado_sistema', function () {
-            return EstadoSistema::find(1);
+            return EstadoSistema::find(1)->toArray();
         });
 
         // Obtener la entrada s3 actual desde la caché
@@ -480,7 +480,7 @@ class ApiController extends Controller
     {
         // Obtener el estado actual del sistema desde la caché
         $estadoSistema = Cache::rememberForever('estado_sistema', function () {
-            return EstadoSistema::find(1);
+            return EstadoSistema::find(1)->toArray();
         });
 
         if ($estadoSistema) {
@@ -535,7 +535,7 @@ class ApiController extends Controller
     {
         // Obtener el estado actual del sistema desde la caché
         $estado = Cache::rememberForever('estado_sistema', function () {
-            return EstadoSistema::firstOrCreate(['id' => 1]);
+            return EstadoSistema::find(1)->toArray();
         });
 
         if ($estado) {
@@ -568,7 +568,7 @@ class ApiController extends Controller
     {
         // Obtener el estado actual del sistema desde la caché
         $estadoSistema = Cache::rememberForever('estado_sistema', function () {
-            return EstadoSistema::find(1);
+            return EstadoSistema::find(1)->toArray();
         });
 
         // Obtener la entrada s4 actual desde la caché
@@ -633,7 +633,7 @@ class ApiController extends Controller
 
         // Obtener el estado actual del sistema desde la caché
         $estadoSistema = Cache::rememberForever('estado_sistema', function () {
-            return EstadoSistema::find(1);
+            return EstadoSistema::find(1)->toArray();
         });
 
         // Obtener la entrada s4 actual desde la caché
@@ -690,7 +690,7 @@ class ApiController extends Controller
 
         // Obtener el estado actual del sistema desde la caché
         $estadoSistema = Cache::rememberForever('estado_sistema', function () {
-            return EstadoSistema::find(1);
+            return EstadoSistema::find(1)->toArray();
         });
     
         // Obtener la entrada s5 actual desde la caché
@@ -738,7 +738,7 @@ class ApiController extends Controller
 
         // Obtener el estado actual del sistema desde la caché
         $estadoSistema = Cache::rememberForever('estado_sistema', function () {
-            return EstadoSistema::find(1);
+            return EstadoSistema::find(1)->toArray();
         });
 
         // Obtener la entrada s5 actual desde la caché
