@@ -15,8 +15,6 @@ class RestartEventListener implements ShouldQueue
     public function handle(RestartEvent $event)
     {
         // Implementa la lógica para el evento Restart
-        Log::info('Restart event handled', ['descripcion' => $event->descripcion]);
-
         // Aquí puedes agregar la lógica que necesitas para manejar el evento Restart
     }
 }

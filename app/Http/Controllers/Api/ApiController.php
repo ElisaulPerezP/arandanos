@@ -450,7 +450,7 @@ class ApiController extends Controller
 
         // Crear una nueva entrada s3 con la información proporcionada en el request y el comando del antecesor
         $s3Nueva = array_merge($validatedData, [
-            'comando_id' => $s3Actual ? $s3Actual['comando_id'] : $comandoHardware,
+            'comando_id' => $s3Actual ? $s3Actual['comando_id'] : $comandoHardware['id'],
             'estado' => 'funcionando',
             'created_at' => now(),
             'updated_at' => now()
@@ -603,7 +603,7 @@ class ApiController extends Controller
         // Crear una nueva entrada s4 con la información proporcionada en el request y el comando del antecesor
         $s4Nueva = array_merge($validatedData, [
             'id' => $s4NuevaId,
-            'comando_id' => $s4Actual ? $s4Actual['comando_id'] : $comandoHardware,
+            'comando_id' => $s4Actual ? $s4Actual['comando_id'] : $comandoHardware['id'],
             'estado' => 'funcionando',
             'created_at' => now(),
             'updated_at' => now()
