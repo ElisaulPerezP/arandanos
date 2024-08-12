@@ -91,7 +91,7 @@ class RiegoEventListener implements ShouldQueue
 
         // Obtener el estado del sistema desde la caché
         $estadoSistema = Cache::rememberForever('estado_sistema', function () {
-            return EstadoSistema::first();
+            return EstadoSistema::first()->toArray();
         });
 
          // Obtener la configuración actual de s2 desde la caché como objeto
