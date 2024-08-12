@@ -43,7 +43,7 @@ class AppServiceProvider extends ServiceProvider
             return Cultivo::first();
         });
         $estadosDelSistema = Cache::rememberForever('estado_sistema', function () {
-            return EstadoSistema::find(1);
+            return EstadoSistema::find(1)->toArray();
         });
 
         $s0Actual = Cache::rememberForever('estado_s0_actual', function () use ($estadosDelSistema) {
