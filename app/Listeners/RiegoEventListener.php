@@ -110,7 +110,7 @@ class RiegoEventListener implements ShouldQueue
         $comandoHardware = Cache::rememberForever("comando_hardware_{$comandoBuscado}", function () use ($comandoBuscado) {
             return ComandoHardware::where('sistema', 's2')
                                 ->where('comando', $comandoBuscado)
-                                ->first();
+                                ->first()->toArray();
         });
 
 
@@ -477,7 +477,7 @@ protected function inyectarFertilizante($programacion)
         $comandoHardware = Cache::rememberForever("comando_hardware_{$comandoBuscado}", function () use ($comandoBuscado) {
             return ComandoHardware::where('sistema', 's2')
                                 ->where('comando', $comandoBuscado)
-                                ->first();
+                                ->first()->toArray();
         });
 
         // Si se encuentra el comando de hardware, asignar el comando_id
