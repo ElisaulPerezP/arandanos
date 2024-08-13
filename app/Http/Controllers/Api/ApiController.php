@@ -311,6 +311,8 @@ class ApiController extends Controller
                 'updated_at' => now()
             ] + $valvulas;
 
+            Log::info('este es el problema:', ["s2nueva" => $s2Nueva]);
+
             // Actualizar el estado del sistema con la nueva entrada s2
             $estadoSistemaActualizado = $estadoSistema;
             $estadoSistemaActualizado['s2_id'] = $s2Nueva['id'];
@@ -362,7 +364,7 @@ class ApiController extends Controller
         $s2Nueva = [
             'id' => (string) Str::uuid(), // Asignar un UUID
             'estado' => 'apagado',
-            'comando_id' =>  $s2Actual['comando_id'],
+            'comando_id' => $comandoHardware['id'],
             'created_at' => now(),
             'updated_at' => now()
         ] + $request->except('estado');
@@ -647,7 +649,7 @@ class ApiController extends Controller
         // Obtener el comando desde la caché utilizando el comando_id de s4
         $comandoHardware = null;
         if ($s4Actual && isset($s4Actual['comando_id'])) {
-            $comandoHardware = $comandosHardware->firstWhere('id', $s4Actual['comando_id'])->toArray();
+            $comandoHardware = $comandosHardware->firstWhere('id', $s4Actual['comando_id']);
         }
 
         // Si no se encuentra el comando hardware, usar el comando por defecto 'off:pump3' y 'off:pump4'
