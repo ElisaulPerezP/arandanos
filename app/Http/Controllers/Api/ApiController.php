@@ -350,19 +350,19 @@ class ApiController extends Controller
 
             $comandoHardware = null;
             if ($s2Actual && isset($s2Actual['comando_id'])) {
-                $comandoHardware = $comandosHardware->firstWhere('id', $s2Actual['comando_id']);
+                $comandoHardware = $comandosHardware->firstWhere('id', $s2Actual['comando_id'])->toArray();
             }
 
             // Si no se encuentra el comando hardware, usar el comando por defecto 'off:valvula1'
             if (!$comandoHardware) {
-                $comandoHardware = $comandosHardware->firstWhere('comando', 'off:valvula1');
+                $comandoHardware = $comandosHardware->firstWhere('comando', 'off:valvula1')->toArray();
             }
 
         // Crear una nueva entrada s2 con el estado inactivo y el comando del antecesor
         $s2Nueva = [
             'id' => (string) Str::uuid(), // Asignar un UUID
             'estado' => 'apagado',
-            'comando_id' => $comandoHardware->id,
+            'comando_id' => $comandoHardware['id'],
             'created_at' => now(),
             'updated_at' => now()
         ] + $request->except('estado');
@@ -494,7 +494,7 @@ class ApiController extends Controller
 
             // Buscar el comando en la caché
             $comandoAccion = '{"actions":["pump1:off","pump2:off"]}';
-            $comando = $comandosHardware->firstWhere('comando', $comandoAccion);
+            $comando = $comandosHardware->firstWhere('comando', $comandoAccion)->toArray();
 
             // Generar un nuevo UUID para la nueva entrada s3
             $s3NuevaId = (string) Str::uuid();
@@ -647,7 +647,7 @@ class ApiController extends Controller
         // Obtener el comando desde la caché utilizando el comando_id de s4
         $comandoHardware = null;
         if ($s4Actual && isset($s4Actual['comando_id'])) {
-            $comandoHardware = $comandosHardware->firstWhere('id', $s4Actual['comando_id']);
+            $comandoHardware = $comandosHardware->firstWhere('id', $s4Actual['comando_id'])->toArray();
         }
 
         // Si no se encuentra el comando hardware, usar el comando por defecto 'off:pump3' y 'off:pump4'
