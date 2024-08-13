@@ -362,7 +362,7 @@ class ApiController extends Controller
         $s2Nueva = [
             'id' => (string) Str::uuid(), // Asignar un UUID
             'estado' => 'apagado',
-            'comando_id' => $comandoHardware['id'],
+            'comando_id' => $comandoHardware->id,
             'created_at' => now(),
             'updated_at' => now()
         ] + $request->except('estado');
