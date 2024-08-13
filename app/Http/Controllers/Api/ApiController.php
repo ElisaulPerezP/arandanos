@@ -287,12 +287,12 @@ class ApiController extends Controller
 
             $comandoHardware = null;
             if ($s2Actual && isset($s2Actual['comando_id'])) {
-                $comandoHardware = $comandosHardware->firstWhere('id', $s2Actual['comando_id']);
+                $comandoHardware = $comandosHardware->firstWhere('id', $s2Actual['comando_id'])->toArray();
             }
 
             // Si no se encuentra el comando hardware, usar el comando por defecto 'off:valvula1'
             if (!$comandoHardware) {
-                $comandoHardware = $comandosHardware->firstWhere('comando', 'off:valvula1');
+                $comandoHardware = $comandosHardware->firstWhere('comando', 'off:valvula1')->toArray();
             }
 
             // Desglosar el campo 'status' del request
@@ -306,7 +306,7 @@ class ApiController extends Controller
             $s2Nueva = [
                 'id' => (string) Str::uuid(), // Asignar un UUID
                 'estado' => 'funcionando',
-                'comando_id' => $s2Actual['comando_id'] ?? $comandoHardware,
+                'comando_id' => $s2Actual['comando_id'] ?? $comandoHardware['id'],
                 'created_at' => now(),
                 'updated_at' => now()
             ] + $valvulas;
@@ -350,12 +350,12 @@ class ApiController extends Controller
 
             $comandoHardware = null;
             if ($s2Actual && isset($s2Actual['comando_id'])) {
-                $comandoHardware = $comandosHardware->firstWhere('id', $s2Actual['comando_id']);
+                $comandoHardware = $comandosHardware->firstWhere('id', $s2Actual['comando_id'])->toArray();
             }
 
             // Si no se encuentra el comando hardware, usar el comando por defecto 'off:valvula1'
             if (!$comandoHardware) {
-                $comandoHardware = $comandosHardware->firstWhere('comando', 'off:valvula1');
+                $comandoHardware = $comandosHardware->firstWhere('comando', 'off:valvula1')->toArray();
             }
 
         // Crear una nueva entrada s2 con el estado inactivo y el comando del antecesor
