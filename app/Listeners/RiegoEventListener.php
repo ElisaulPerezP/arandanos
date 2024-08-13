@@ -495,7 +495,6 @@ protected function inyectarFertilizante($programacion)
         // Actualizar el estado del sistema con la nueva entrada s2
         $estadoSistema['s2_id'] = $nuevoS2Id;
         Cache::forever('estado_sistema', $estadoSistema);
-
         // Despachar los trabajos para actualizar la base de datos
         Archivador::dispatch('s2', $s2Final);
         Archivador::dispatch('estado_sistemas', ['s2_id' => $s2Final['id']], 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
