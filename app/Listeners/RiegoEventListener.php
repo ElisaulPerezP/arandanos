@@ -498,7 +498,7 @@ protected function inyectarFertilizante($programacion)
 
         // Despachar los trabajos para actualizar la base de datos
         Archivador::dispatch('s2', $s2Final);
-        Archivador::dispatch('estado_sistemas', ['s2_id' => $estadoSistema['s2_id']], 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
+        Archivador::dispatch('estado_sistemas', ['s2_id' => $s2Final['id']], 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
 
 
         Log::info('Electrovalvula del camellon ' . $camellon . ' apagada');
