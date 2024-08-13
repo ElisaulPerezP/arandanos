@@ -279,7 +279,7 @@ class ApiController extends Controller
         if ($estadoSistema) {
             // Obtener la entrada s2 actual si existe en la caché
             $s2Actual = Cache::rememberForever('estado_s2_actual', function () use ($estadoSistema) {
-                return S2::find($estadoSistema['s2_id']);
+                return S2::find($estadoSistema['s2_id'])->toArray();
             });
 
             // Obtener los comandos hardware desde la caché
@@ -345,7 +345,7 @@ class ApiController extends Controller
         if ($estadoSistema) {
             // Obtener la entrada s2 actual si existe en la caché
             $s2Actual = Cache::rememberForever('estado_s2_actual', function () use ($estadoSistema) {
-                return S2::find($estadoSistema['s2_id']);
+                return S2::find($estadoSistema['s2_id'])->toArray();
             });
 
             $comandoHardware = null;

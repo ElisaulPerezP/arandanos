@@ -96,7 +96,7 @@ class RiegoEventListener implements ShouldQueue
 
          // Obtener la configuración actual de s2 desde la caché como objeto
         $s2Actual = Cache::rememberForever("estado_s2_actual", function () use ($estadoSistema) {
-            return S2::find($estadoSistema["s2_id"]);
+            return S2::find($estadoSistema["s2_id"])->toArray();
         });
         
 
@@ -463,7 +463,7 @@ protected function inyectarFertilizante($programacion)
 
         // Obtener la configuración actual de s2 desde la caché
         $s2Actual = Cache::rememberForever("estado_s2_actual", function () use ($estadoSistema) {
-            return S2::find($estadoSistema['s2_id']);
+            return S2::find($estadoSistema['s2_id'])->toArray();
         });
        
 
