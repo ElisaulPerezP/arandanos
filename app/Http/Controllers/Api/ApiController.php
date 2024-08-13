@@ -306,7 +306,7 @@ class ApiController extends Controller
             $s2Nueva = [
                 'id' => (string) Str::uuid(), // Asignar un UUID
                 'estado' => 'funcionando',
-                'comando_id' => $s2Actual['comando_id'] ?? $comandoHardware['id'],
+                'comando_id' => $comandoHardware['id'],
                 'created_at' => now(),
                 'updated_at' => now()
             ] + $valvulas;
