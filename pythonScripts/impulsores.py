@@ -192,7 +192,7 @@ def main(output_file, output_neg_file, impulsores_url, estado_url, apagado_url, 
                             set_pin_value(output_neg_pins[pin_name], "1", api_error_url)
             else:
                 report_error(api_error_url, "Formato de comando inválido o falta el campo 'actions'")
-            time.sleep(10)
+            time.sleep(15)
 
     # Función para reportar estado a la API
     def report_state():
@@ -200,7 +200,7 @@ def main(output_file, output_neg_file, impulsores_url, estado_url, apagado_url, 
         while not stop_threads:
             status_message = gather_status(output_pins, output_neg_pins, api_error_url)
             report_status(estado_url, status_message, api_error_url)
-            time.sleep(15)
+            time.sleep(30)
 
     # Manejar señales de interrupción
     def handle_signal(signum, frame):

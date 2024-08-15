@@ -138,7 +138,7 @@ def main(input_file, post_url, stop_url, api_error_url):
     def report_state():
         nonlocal stop_threads
         while not stop_threads:
-            time.sleep(10)
+            time.sleep(15)
             current_counts = counts.copy()
             if report_count(post_url, current_counts, api_error_url):
                 for name in counts:

@@ -168,7 +168,7 @@ def main(input_file, output_file, output_neg_file, selector_url, estado_url, apa
                         set_pin_value(pin, "0", api_error_url)
                     for pin in output_neg_pins.values():
                         set_pin_value(pin, "1", api_error_url)
-            time.sleep(10)
+            time.sleep(30)
 
     # Función para reportar estado a la API
     def report_state():
@@ -182,7 +182,7 @@ def main(input_file, output_file, output_neg_file, selector_url, estado_url, apa
             for name, pin in sensor_pins.items():
                 status_message[name] = check_pin_value(pin, api_error_url)
             report_status(estado_url, status_message, api_error_url)
-            time.sleep(10)
+            time.sleep(60)
 
     # Iniciar hilos
     command_thread = Thread(target=handle_commands)

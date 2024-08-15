@@ -213,7 +213,7 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
                             del pwm_threads[pin_name]
                             del pwm_stop_events[pin_name]
                         set_pin_value(pin, "0" if pin_name in output_pins else "1", api_error_url)
-            time.sleep(10)
+            time.sleep(15)
 
     # Función para reportar estado a la API
     def report_state():
@@ -225,7 +225,7 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
             for name, pin in output_neg_pins.items():
                 status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "0" else 'apagada'
             report_status(estado_url, status_message, api_error_url)
-            time.sleep(10)
+            time.sleep(30)
 
     # Iniciar hilos
     command_thread = Thread(target=handle_commands)
