@@ -22,7 +22,7 @@ class IniciarAplicacionListener
         // Ejecutar la lógica de los scripts de base
         if (is_array($event->scriptsDeBase)) {
             $this->iniciarScripts($event->scriptsDeBase);
-            Log::info("Los scripts de base han sido iniciados: " . implode(', ', $event->scriptsDeBase));
+            //Log::info("Los scripts de base han sido iniciados: " . implode(', ', $event->scriptsDeBase));
         } else {
             Log::error("scriptsDeBase no está definido o no es un array.");
         }
@@ -37,7 +37,7 @@ class IniciarAplicacionListener
 
     protected function iniciarScripts(array $scripts)
     {
-        Log::info("Iniciando scripts");
+        //Log::info("Iniciando scripts");
         $reportFilePath = '/var/www/arandanos/pythonScripts/scriptsReport.php';
         if (!file_exists($reportFilePath)) {
             Log::error("El archivo de reporte no existe: {$reportFilePath}");
@@ -63,7 +63,7 @@ class IniciarAplicacionListener
                 // Iniciar el proceso
                 try {
                     $process->mustRun();
-                    Log::info("Script iniciado exitosamente: {$script}");
+                    //Log::info("Script iniciado exitosamente: {$script}");
                     $report['scriptsEjecutandose'] .= empty($report['scriptsEjecutandose']) ? $script : ', ' . $script;
                 } catch (ProcessFailedException $exception) {
                     Log::error("Error al ejecutar el script: {$script}. Error: " . $exception->getMessage());

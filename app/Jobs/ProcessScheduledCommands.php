@@ -71,7 +71,7 @@ class ProcessScheduledCommands implements ShouldQueue
                         Archivador::dispatch('programaciones',$programacion , 'update', ['column' => 'id', 'value' => $programacion['id']]);
 
 
-                        Log::info('Emitiendo evento: ' . $comando['nombre'], ['programacion_id' => $programacion['id'], 'event' => $event]);
+                        //Log::info('Emitiendo evento: ' . $comando['nombre'], ['programacion_id' => $programacion['id'], 'event' => $event]);
                     }
                 } catch (\Exception $e) {
                     Log::error('Error procesando la programación.', ['programacion_id' => $programacion['id'], 'exception' => $e->getMessage()]);

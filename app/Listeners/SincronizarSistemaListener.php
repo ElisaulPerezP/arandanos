@@ -37,7 +37,7 @@ class SincronizarSistemaListener implements ShouldQueue
             }
         }
 
-        Log::info('Programaciones data:', ['programaciones' => $event->programaciones]);
+        //Log::info('Programaciones data:', ['programaciones' => $event->programaciones]);
 
         // Realizar la solicitud HTTP
         $programacionesResponse = Http::withToken($token)->post("$baseUrl/api/cultivos/programaciones/sincronizar", $event->programaciones);
@@ -108,10 +108,10 @@ class SincronizarSistemaListener implements ShouldQueue
                 'status' => $estadoActualResponse->status()
             ]);
         } else {
-            Log::info('Estado actual reportado exitosamente', [
-                'response' => $estadoActualResponse->body(),
-                'status' => $estadoActualResponse->status()
-            ]);
+            //Log::info('Estado actual reportado exitosamente', [
+            //    'response' => $estadoActualResponse->body(),
+            //    'status' => $estadoActualResponse->status()
+            //]);
         }
     }
 }

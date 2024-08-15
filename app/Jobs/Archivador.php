@@ -41,16 +41,16 @@ class Archivador implements ShouldQueue
             $dataArray = $this->data;  // Si ya es un array, no se hace nada
         }
         
-        Log::info("La tabla que se está pasando es: " . gettype($this->table) . " ({$this->table}), y los datos son de tipo: " . gettype($dataArray), $dataArray);
+        //Log::info("La tabla que se está pasando es: " . gettype($this->table) . " ({$this->table}), y los datos son de tipo: " . gettype($dataArray), $dataArray);
 
         if ($this->action === 'update' && $this->identifier) {
             \DB::table($this->table)
                 ->where($this->identifier['column'], $this->identifier['value'])
                 ->update($dataArray);
-            Log::info("Acción de actualización sobre la tabla {$this->table}, con los datos: ", $dataArray);
+            //Log::info("Acción de actualización sobre la tabla {$this->table}, con los datos: ", $dataArray);
         } else {
             \DB::table($this->table)->insert($dataArray);
-            Log::info("Acción de almacenamiento sobre la tabla {$this->table}, con los datos: ", $dataArray);
+            //Log::info("Acción de almacenamiento sobre la tabla {$this->table}, con los datos: ", $dataArray);
         }
     }
 }

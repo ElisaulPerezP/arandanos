@@ -71,7 +71,7 @@ class ApiController extends Controller
 
         // Emitir el evento correspondiente
         event($evento);
-        Log::info('Evento emitido ', [$nuevoEstado]);
+        //Log::info('Evento emitido ', [$nuevoEstado]);
 
         return response()->json(['message' => "Estado cambiado a '$nuevoEstado', evento emitido"], 200);
     }
@@ -109,7 +109,7 @@ class ApiController extends Controller
 
             // Retornar el comando si existe
             if ($comandoExplicito) {
-                Log::info('Comando de tanques entregado por el controlador', [$comandoExplicito]);
+                //Log::info('Comando de tanques entregado por el controlador', [$comandoExplicito]);
                 return response()->json(['command' => $comandoExplicito], 200);
             }
         }
@@ -257,7 +257,7 @@ class ApiController extends Controller
 
                 // Retornar el comando si existe
                 if ($comandoExplicito) {
-                    Log::info('Comando de selector entregado por el controlador', ['action' => $comandoExplicito]);
+                    //Log::info('Comando de selector entregado por el controlador', ['action' => $comandoExplicito]);
                     return response()->json(['actions' => [$comandoExplicito]], 200); // Empaquetar en un array
                 }
             }
@@ -311,7 +311,7 @@ class ApiController extends Controller
                 'updated_at' => now()
             ] + $valvulas;
 
-            Log::info('este es el problema:', ["s2nueva" => $s2Nueva]);
+            //Log::info('este es el problema:', ["s2nueva" => $s2Nueva]);
 
             // Actualizar el estado del sistema con la nueva entrada s2
             $estadoSistemaActualizado = $estadoSistema;
@@ -409,7 +409,7 @@ class ApiController extends Controller
             // Verificar si existe el comando
             if ($comando) {
                 $action = json_decode($comando['comando'], true);
-                Log::info('Request sent by getImpulsoresCommand:', ['actions' => $action]);
+                //Log::info('Request sent by getImpulsoresCommand:', ['actions' => $action]);
                 return response()->json(['actions' => $action], 200);
             }
         } 
@@ -473,7 +473,7 @@ class ApiController extends Controller
         Archivador::dispatch('s3', $s3Nueva);
         Archivador::dispatch('estado_sistemas', ['s3_id' => $estadoSistemaActualizado['s3_id']], 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
 
-        Log::info('Request received for reportImpulsoresState:', $s3Nueva);
+        //Log::info('Request received for reportImpulsoresState:', $s3Nueva);
 
         return response()->json(['message' => 'Estado reportado exitosamente'], 200);
     }
@@ -623,7 +623,7 @@ class ApiController extends Controller
         Archivador::dispatch('s4', $s4Nueva);
         Archivador::dispatch('estado_sistemas', ['s4_id' => $estadoSistemaActualizado['s4_id']], 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
 
-        Log::info('Request received for ReportInyectoresState:', $s4Nueva);
+        //Log::info('Request received for ReportInyectoresState:', $s4Nueva);
 
         return response()->json(['message' => 'Estado reportado exitosamente'], 200);
     }
@@ -631,7 +631,7 @@ class ApiController extends Controller
     public function reportInyectoresShutdown(Request $request)
     {
 
-            Log::info('Request received for reportInyectoresShutdown:', $request->all());
+            //Log::info('Request received for reportInyectoresShutdown:', $request->all());
 
         // Obtener el estado actual del sistema desde la caché
         $estadoSistema = Cache::rememberForever('estado_sistema', function () {
@@ -688,7 +688,7 @@ class ApiController extends Controller
 
     public function reportFlujoConteo(Request $request)
     {
-        Log::info('Request received for reportFlujoConteo:', $request->all());
+        //Log::info('Request received for reportFlujoConteo:', $request->all());
 
         // Obtener el estado actual del sistema desde la caché
         $estadoSistema = Cache::rememberForever('estado_sistema', function () {
@@ -736,7 +736,7 @@ class ApiController extends Controller
     public function reportFlujoApagado(Request $request)
     {
 
-        Log::info('Request received for reportFLujoApagado:', $request->all());
+        //Log::info('Request received for reportFLujoApagado:', $request->all());
 
         // Obtener el estado actual del sistema desde la caché
         $estadoSistema = Cache::rememberForever('estado_sistema', function () {

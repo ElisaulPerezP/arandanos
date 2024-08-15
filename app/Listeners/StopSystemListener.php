@@ -111,7 +111,7 @@ class StopSystemListener
                         Log::error("Error al encontrar PIDs para el script: {$scriptName}. Output: " . implode("\n", $pids));
                     }
                 } else {
-                    Log::info("Script detenido exitosamente: {$scriptName}");
+                    //Log::info("Script detenido exitosamente: {$scriptName}");
                 }
             }
         }

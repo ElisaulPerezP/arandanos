@@ -49,7 +49,7 @@ class FetchRevistaData implements ShouldQueue
             $baseUrl = env('API_URL', '');
 
             $url = $baseUrl . '/api/revista';
-            Log::info('URL', ['Url' => $url]);
+            //Log::info('URL', ['Url' => $url]);
 
             $response = Http::withToken($cultivo->api_token)
                 ->withHeaders([
@@ -59,11 +59,11 @@ class FetchRevistaData implements ShouldQueue
                 ->timeout(3)
                 ->get($url);
 
-            Log::info('Response status', ['status' => $response->status()]);
+            //Log::info('Response status', ['status' => $response->status()]);
 
             if ($response->successful()) {
                 $data = $response->json();
-                Log::info('Data fetched successfully.', $data);
+                //Log::info('Data fetched successfully.', $data);
 
                 if ($data['message'] === 'Conexion registrada con exito.') {
                     $commandId = $data['command'];

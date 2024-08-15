@@ -39,7 +39,7 @@ class RiegoEventListener implements ShouldQueue
         $timeoutTime = $startTime->addSeconds($this->timeout);
 
         try {
-            Log::info('si esta entrando al try');
+            //Log::info('si esta entrando al try');
             // Encender electrovalvulas
             $this->encenderElectrovalvulas($programacion);
 
@@ -118,7 +118,7 @@ class RiegoEventListener implements ShouldQueue
             $s2Final['comando_id'] = $comandoHardware['id'];
         } else {
             // Registrar un mensaje en el log si no se encuentra el comando
-            Log::info("El comando para encender la electrovalvula del camellon $camellon no pudo ser encontrado");
+            //Log::info("El comando para encender la electrovalvula del camellon $camellon no pudo ser encontrado");
         }
     
         // Guardar el nuevo estado en la caché
@@ -129,7 +129,7 @@ class RiegoEventListener implements ShouldQueue
 
         Archivador::dispatch('estado_sistemas', ['s2_id' => $s2Final['id']], 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
     
-        Log::info('Electrovalvula del camellon ' . $camellon . ' encendida');
+        //Log::info('Electrovalvula del camellon ' . $camellon . ' encendida');
     }
 
     protected function encenderMotorPrincipal()
@@ -162,7 +162,7 @@ class RiegoEventListener implements ShouldQueue
         $s3Final['comando_id'] = $comandoHardware['id'];
     } else {
         // Registrar un mensaje en el log si no se encuentra el comando
-        Log::info("El comando para encender las bombas principales no pudo ser encontrado");
+        //Log::info("El comando para encender las bombas principales no pudo ser encontrado");
     }
 
     // Actualizar la caché con los nuevos valores
@@ -177,7 +177,7 @@ class RiegoEventListener implements ShouldQueue
     Archivador::dispatch('estado_sistemas',  ['s3_id' => $estadoSistema['s3_id']], 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
 
 
-    Log::info('Motor principal encendido');
+    //Log::info('Motor principal encendido');
 }
 
 protected function inyectarFertilizante($programacion)
@@ -226,7 +226,7 @@ protected function inyectarFertilizante($programacion)
     Archivador::dispatch('estado_sistemas', ['s4_id' => $estadoSistema['s4_id']], 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
 
 
-    Log::info('Fertilizante inyectado con concentración ' . $concentracion);
+    //Log::info('Fertilizante inyectado con concentración ' . $concentracion);
 
 }
 
@@ -247,7 +247,7 @@ protected function inyectarFertilizante($programacion)
             return $comandoHardware;
         } else {
             // Manejar el caso donde no se encuentra el comando, si es necesario
-            Log::warning("El comando de inyectores para la concentración {$concentracion} no pudo ser encontrado");
+            //Log::warning("El comando de inyectores para la concentración {$concentracion} no pudo ser encontrado");
         }
     }
 
@@ -366,7 +366,7 @@ protected function inyectarFertilizante($programacion)
             $s1Final['comando_id'] = $comandoHardware['id'];
         } else {
             // Registrar un mensaje en el log si no se encuentra el comando
-            Log::info("El comando de llenado de tanques no pudo ser encontrado");
+            Log::error("El comando de llenado de tanques no pudo ser encontrado");
         }
 
         // Guardar el nuevo estado en la caché
@@ -385,7 +385,7 @@ protected function inyectarFertilizante($programacion)
         Archivador::dispatch('estado_sistemas', ['s1_id' => $estadoSistemaActualizado['s1_id']], 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
 
 
-        Log::info('Tanques llenando');
+        //Log::info('Tanques llenando');
     }
 
     protected function marcarEventoExitoso($programacion)
@@ -484,7 +484,7 @@ protected function inyectarFertilizante($programacion)
         if ($comandoHardware) {
             $s2Final['comando_id'] = $comandoHardware['id'];
         } else {
-            Log::info("El comando de apagado de válvulas para el camellon $camellon no pudo ser encontrado");
+            Log::error("El comando de apagado de válvulas para el camellon $camellon no pudo ser encontrado");
         }
        
 
@@ -500,7 +500,7 @@ protected function inyectarFertilizante($programacion)
         Archivador::dispatch('estado_sistemas', ['s2_id' => $s2Final['id']], 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
 
 
-        Log::info('Electrovalvula del camellon ' . $camellon . ' apagada');
+        //Log::info('Electrovalvula del camellon ' . $camellon . ' apagada');
     }
     
 
@@ -535,7 +535,7 @@ protected function inyectarFertilizante($programacion)
         if ($comandoHardware) {
             $s3Final['comando_id'] = $comandoHardware['id'];
         } else {
-            Log::info('El comando de apagado de las bombas no fue encontrado');
+            Log::error('El comando de apagado de las bombas no fue encontrado');
         }
 
         // Guardar el nuevo estado en la caché
@@ -551,7 +551,7 @@ protected function inyectarFertilizante($programacion)
         Archivador::dispatch('estado_sistemas', ['s3_id' => $estadoSistema['s3_id']] , 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
 
 
-        Log::info('Motor principal apagado');
+        //Log::info('Motor principal apagado');
     }
     
 
@@ -585,7 +585,7 @@ protected function inyectarFertilizante($programacion)
                 $s4Final['comando_id'] = $comandoHardware['id'];
                 $s4Final['estado'] = "apagando";
             } else {
-                Log::info('El comando de apagado de inyectores no pudo ser encontrado');
+                //Log::info('El comando de apagado de inyectores no pudo ser encontrado');
             }
 
             // Guardar el nuevo estado en la caché
@@ -600,7 +600,7 @@ protected function inyectarFertilizante($programacion)
         Archivador::dispatch('estado_sistemas', ['s4_id' => $estadoSistema['s4_id']] , 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
 
 
-            Log::info('Inyectores de fertilizante apagados');
+            //Log::info('Inyectores de fertilizante apagados');
         }
     
 }
