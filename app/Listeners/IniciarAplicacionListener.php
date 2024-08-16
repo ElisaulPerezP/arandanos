@@ -37,41 +37,38 @@ class IniciarAplicacionListener
 
     protected function iniciarScripts(array $scripts)
     {
-        //Log::info("Iniciando scripts");
         $reportFilePath = '/var/www/arandanos/pythonScripts/scriptsReport.php';
         if (!file_exists($reportFilePath)) {
             Log::error("El archivo de reporte no existe: {$reportFilePath}");
             return;
         }
-
+    
         $report = include($reportFilePath);
-
+    
+        // Asegúrate de que `scriptsEjecutandose` sea un array
+        if (!is_array($report['scriptsEjecutandose'])) {
+            $report['scriptsEjecutandose'] = [];
+        }
+    
         foreach ($scripts as $script) {
             if (!empty($script)) {
-                // Separar el script y sus argumentos en una lista, eliminando espacios adicionales y nuevas líneas
                 $arguments = array_filter(preg_split('/\s+/', $script));
-
-                // Agregar python3 al inicio de la lista
                 array_unshift($arguments, 'python3');
-
-                // Crear el comando completo como una cadena
                 $command = implode(' ', $arguments) . ' > /dev/null 2>&1 &';
-                
-                // Ejecutar el script en segundo plano
                 $process = new Process(['bash', '-c', $command]);
-
-                // Iniciar el proceso
+    
                 try {
                     $process->mustRun();
-                    //Log::info("Script iniciado exitosamente: {$script}");
-                    $report['scriptsEjecutandose'] .= empty($report['scriptsEjecutandose']) ? $script : ', ' . $script;
+                    // Agregar el script al array `scriptsEjecutandose`
+                    $report['scriptsEjecutandose'][] = $script;
                 } catch (ProcessFailedException $exception) {
                     Log::error("Error al ejecutar el script: {$script}. Error: " . $exception->getMessage());
                 }
             }
         }
-
+    
         $content = "<?php\nreturn " . var_export($report, true) . ";\n";
         file_put_contents($reportFilePath, $content);
     }
+    
 }

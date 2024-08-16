@@ -72,35 +72,30 @@ class StopSystemListener
     protected function detenerProcesos(array $scripts)
     {
         $reportFilePath = '/var/www/arandanos/pythonScripts/scriptsReport.php';
-
+    
         if (!file_exists($reportFilePath)) {
             Log::error("El archivo de reporte no existe: {$reportFilePath}");
             return;
         }
-
+    
         $report = include($reportFilePath);
-
+    
         foreach ($scripts as $script) {
             if (!empty($script)) {
-                // Obtener el nombre del script sin parámetros
                 $scriptName = explode(' ', $script)[0];
                 $pkillCommand = "sudo /usr/bin/pkill " . escapeshellarg($scriptName);
-                
-                // Ejecutar pkill
                 exec($pkillCommand, $output, $returnVar);
-
+    
                 if ($returnVar !== 0) {
                     Log::error("Error al detener el script: {$scriptName} con pkill. Intentando con kill...");
-
-                    // Intentar con kill
                     $pgrepCommand = "/usr/bin/pgrep -f " . escapeshellarg($scriptName);
                     exec("sudo " . $pgrepCommand, $pids, $pgrepReturnVar);
-
+    
                     if ($pgrepReturnVar === 0) {
                         foreach ($pids as $pid) {
                             $killCommand = "sudo /usr/bin/kill " . escapeshellarg($pid);
                             exec($killCommand, $killOutput, $killReturnVar);
-
+    
                             if ($killReturnVar !== 0) {
                                 Log::error("Error al detener el proceso con PID: {$pid}. Output: " . implode("\n", $killOutput));
                             } else {
@@ -110,19 +105,17 @@ class StopSystemListener
                     } else {
                         Log::error("Error al encontrar PIDs para el script: {$scriptName}. Output: " . implode("\n", $pids));
                     }
-                } else {
-                    //Log::info("Script detenido exitosamente: {$scriptName}");
                 }
             }
         }
-
-        // Vaciar el campo scriptsEjecutandose
-        $report['scriptsEjecutandose'] = '';
-
+    
+        // Limpia el array `scriptsEjecutandose` después de detener los procesos
+        $report['scriptsEjecutandose'] = [];
+    
         $content = "<?php\nreturn " . var_export($report, true) . ";\n";
         file_put_contents($reportFilePath, $content);
     }
-
+    
     protected function ejecutarStopTotal($scriptStopTotal)
     {
         if (!empty($scriptStopTotal)) {
