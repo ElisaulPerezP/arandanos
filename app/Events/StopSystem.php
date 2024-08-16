@@ -22,7 +22,9 @@ class StopSystem
     {
         // Cargar los scripts ejecutandose desde el archivo de configuración
         $scriptsReport = include(base_path('pythonScripts/scriptsReport.php'));
-        $this->scriptsEjecutandose = explode(', ', $scriptsReport['scriptsEjecutandose']);
+        
+        // scriptsEjecutandose ya es un array, así que lo asignamos directamente
+        $this->scriptsEjecutandose = $scriptsReport['scriptsEjecutandose'];
         $this->scriptStopTotal = $scriptsReport['scriptStopTotal'];
     }
 
