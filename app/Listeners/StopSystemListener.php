@@ -87,7 +87,7 @@ class StopSystemListener
         foreach ($scripts as $script) {
             if (!empty($script)) {
                 $scriptName = explode(' ', $script)[0];
-                $pkillCommand = "/usr/bin/pkill " . escapeshellarg($scriptName);
+                $pkillCommand = "sudo /usr/bin/pkill " . escapeshellarg($scriptName);
                 
                 // Log del comando ejecutado
                 Log::info("Ejecutando comando pkill: {$pkillCommand}");
@@ -99,7 +99,7 @@ class StopSystemListener
     
                 if ($returnVar !== 0) {
                     Log::error("Error al detener el script: {$scriptName} con pkill. Intentando con kill...");
-                    $pgrepCommand = "/usr/bin/pgrep -f '^python3 " . escapeshellarg($scriptName) . "'";
+                    $pgrepCommand = "sudo /usr/bin/pgrep -f '^python3 " . escapeshellarg($scriptName) . "'";
                     
                     // Log del comando ejecutado
                     Log::info("Ejecutando comando pgrep: {$pgrepCommand}");
@@ -111,7 +111,7 @@ class StopSystemListener
     
                     if ($pgrepReturnVar === 0) {
                         foreach ($pids as $pid) {
-                            $killCommand = "/usr/bin/kill " . escapeshellarg($pid);
+                            $killCommand = "sudo /usr/bin/kill " . escapeshellarg($pid);
                             
                             // Log del comando ejecutado
                             Log::info("Ejecutando comando kill para PID {$pid}: {$killCommand}");
@@ -149,7 +149,7 @@ class StopSystemListener
     protected function ejecutarStopTotal($scriptStopTotal)
     {
         if (!empty($scriptStopTotal)) {
-            $command = "python3 /var/www/arandanos/pythonScripts/{$scriptStopTotal}";
+            $command = "sudo python3 /var/www/arandanos/pythonScripts/{$scriptStopTotal}";
             
             // Log del comando ejecutado
             Log::info("Ejecutando comando stopTotal: {$command}");

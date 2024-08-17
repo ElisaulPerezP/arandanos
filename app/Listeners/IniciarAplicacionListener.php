@@ -53,7 +53,7 @@ class IniciarAplicacionListener
         foreach ($scripts as $script) {
             if (!empty($script)) {
                 $arguments = array_filter(preg_split('/\s+/', $script));
-                array_unshift($arguments, 'python3');
+                array_unshift($arguments, 'sudo python3');
                 $command = implode(' ', $arguments) . ' > /dev/null 2>&1 &';
                 $process = new Process(['bash', '-c', $command]);
     

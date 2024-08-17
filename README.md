@@ -802,6 +802,21 @@ sudo chmod -R 777 /sys/class/gpio
 entregar los permisos de gpio a www-data:
 abrir el archivo con el siguiente comando:
 
+corregir mas tarde:
+entregar a www-data el sistema servido en bandeja de plata
+
+sudo usermod -aG sudo www-data
+
+revisar que aparesca:
+getent group sudo
+
+sudo visudo
+
+www-data ALL=(ALL) NOPASSWD: /usr/bin/python3
+www-data ALL=(ALL) NOPASSWD: /usr/bin/pkill, /usr/bin/kill
+
+
+
 sudo nano /etc/udev/rules.d/99-gpio.rules
 
 reemplazar su contenido con estas lineas:
@@ -813,6 +828,17 @@ SUBSYSTEM=="gpio", KERNEL=="gpio*", ACTION=="add", RUN+="/bin/sh -c 'chmod 770 /
 
 sudo udevadm control --reload-rules
 sudo udevadm trigger
+
+
+
+
+revisa ejecutando como www-data
+sudo -u www-data sudo python3 /var/www/arandanos/pythonScripts/flujo.py /var/www/arandanos/pythonScripts/input_pins_file_flujo.txt http://127.0.0.1/api/flujo/conteo http://127.0.0.1/api/flujo/apagado http://127.0.0.1/api/error
+
+sigue el log de errores:
+truncate -s 0 /var/www/arandanos/storage/logs/scriptsErrors.log
+tail -f -n 200 /var/www/arandanos/storage/logs/scriptsErrors.log 
+
 
 intalar redis
 
