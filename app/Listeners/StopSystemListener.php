@@ -87,7 +87,7 @@ class StopSystemListener
         foreach ($scripts as $script) {
             if (!empty($script)) {
                 $scriptName = explode(' ', $script)[0];
-                $pkillCommand = "sudo /usr/bin/pkill " . escapeshellarg($scriptName);
+                $pkillCommand = "/usr/bin/pkill " . escapeshellarg($scriptName);
                 
                 // Log del comando ejecutadoLog::info("Ejecutando comando pkill: {$pkillCommand}");
                 
@@ -101,13 +101,13 @@ class StopSystemListener
                     
                     // Log del comando ejecutadoLog::info("Ejecutando comando pgrep: {$pgrepCommand}");
                     
-                    exec("sudo " . $pgrepCommand, $pids, $pgrepReturnVar);
+                    exec($pgrepCommand, $pids, $pgrepReturnVar);
     
                     // Log de la respuesta del sistemaLog::info("Respuesta de pgrep para {$scriptName}: Return Var = {$pgrepReturnVar}, PIDs = " . implode(", ", $pids));
     
                     if ($pgrepReturnVar === 0) {
                         foreach ($pids as $pid) {
-                            $killCommand = "sudo /usr/bin/kill " . escapeshellarg($pid);
+                            $killCommand = " /usr/bin/kill " . escapeshellarg($pid);
                             
                             // Log del comando ejecutadoLog::info("Ejecutando comando kill para PID {$pid}: {$killCommand}");
                             
