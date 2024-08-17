@@ -81,7 +81,7 @@ class StopSystemListener
             return false;
         }
     
-        $report = include($reportFilePath);
+        $report = include $reportFilePath;
         $allProcessesStopped = true;
     
         foreach ($scripts as $script) {
@@ -89,31 +89,37 @@ class StopSystemListener
                 $scriptName = explode(' ', $script)[0];
                 $pkillCommand = "/usr/bin/pkill " . escapeshellarg($scriptName);
                 
-                // Log del comando ejecutadoLog::info("Ejecutando comando pkill: {$pkillCommand}");
+                // Log del comando ejecutado
+                Log::info("Ejecutando comando pkill: {$pkillCommand}");
                 
                 exec($pkillCommand, $output, $returnVar);
     
-                // Log de la respuesta del sistemaLog::info("Respuesta de pkill para {$scriptName}: Return Var = {$returnVar}, Output = " . implode("\n", $output));
+                // Log de la respuesta del sistema
+                Log::info("Respuesta de pkill para {$scriptName}: Return Var = {$returnVar}, Output = " . implode("\n", $output));
     
                 if ($returnVar !== 0) {
                     Log::error("Error al detener el script: {$scriptName} con pkill. Intentando con kill...");
                     $pgrepCommand = "/usr/bin/pgrep -f " . escapeshellarg($scriptName);
                     
-                    // Log del comando ejecutadoLog::info("Ejecutando comando pgrep: {$pgrepCommand}");
+                    // Log del comando ejecutado
+                    Log::info("Ejecutando comando pgrep: {$pgrepCommand}");
                     
                     exec($pgrepCommand, $pids, $pgrepReturnVar);
     
-                    // Log de la respuesta del sistemaLog::info("Respuesta de pgrep para {$scriptName}: Return Var = {$pgrepReturnVar}, PIDs = " . implode(", ", $pids));
+                    // Log de la respuesta del sistema
+                    Log::info("Respuesta de pgrep para {$scriptName}: Return Var = {$pgrepReturnVar}, PIDs = " . implode(", ", $pids));
     
                     if ($pgrepReturnVar === 0) {
                         foreach ($pids as $pid) {
                             $killCommand = " /usr/bin/kill " . escapeshellarg($pid);
                             
-                            // Log del comando ejecutadoLog::info("Ejecutando comando kill para PID {$pid}: {$killCommand}");
+                            // Log del comando ejecutado
+                            Log::info("Ejecutando comando kill para PID {$pid}: {$killCommand}");
                             
                             exec($killCommand, $killOutput, $killReturnVar);
     
-                            // Log de la respuesta del sistemaLog::info("Respuesta de kill para PID {$pid}: Return Var = {$killReturnVar}, Output = " . implode("\n", $killOutput));
+                            // Log de la respuesta del sistema
+                            Log::info("Respuesta de kill para PID {$pid}: Return Var = {$killReturnVar}, Output = " . implode("\n", $killOutput));
     
                             if ($killReturnVar !== 0) {
                                 Log::error("Error al detener el proceso con PID: {$pid}. Output: " . implode("\n", $killOutput));
