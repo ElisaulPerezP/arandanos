@@ -99,7 +99,7 @@ class StopSystemListener
     
                 if ($returnVar !== 0) {
                     Log::error("Error al detener el script: {$scriptName} con pkill. Intentando con kill...");
-                    $pgrepCommand = "/usr/bin/pgrep -f '^python3 " . escapeshellarg($scriptName);
+                    $pgrepCommand = "/usr/bin/pgrep -f '^python3 " . escapeshellarg($scriptName) . "'";
                     
                     // Log del comando ejecutado
                     Log::info("Ejecutando comando pgrep: {$pgrepCommand}");
