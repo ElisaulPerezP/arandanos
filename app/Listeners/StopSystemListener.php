@@ -99,7 +99,7 @@ class StopSystemListener
     
                 if ($returnVar !== 0) {
                     Log::error("Error al detener el script: {$scriptName} con pkill. Intentando con kill...");
-                    $pgrepCommand = "/usr/bin/pgrep -f " . escapeshellarg($scriptName);
+                    $pgrepCommand = "/usr/bin/pgrep -f '^python3 " . escapeshellarg($scriptName);
                     
                     // Log del comando ejecutado
                     Log::info("Ejecutando comando pgrep: {$pgrepCommand}");
@@ -111,7 +111,7 @@ class StopSystemListener
     
                     if ($pgrepReturnVar === 0) {
                         foreach ($pids as $pid) {
-                            $killCommand = " /usr/bin/kill " . escapeshellarg($pid);
+                            $killCommand = "/usr/bin/kill " . escapeshellarg($pid);
                             
                             // Log del comando ejecutado
                             Log::info("Ejecutando comando kill para PID {$pid}: {$killCommand}");
@@ -136,12 +136,13 @@ class StopSystemListener
             }
         }
     
-        // Limpia el array `scriptsEjecutandose` después de detener los procesos$report['scriptsEjecutandose'] = [];
+        // Limpia el array `scriptsEjecutandose` después de detener los procesos
+        $report['scriptsEjecutandose'] = [];
     
         $content = "<?php\nreturn " . var_export($report, true) . ";\n";
         file_put_contents($reportFilePath, $content);
     
-        return$allProcessesStopped;
+        return $allProcessesStopped;
     }
     
     
