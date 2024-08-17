@@ -11,7 +11,6 @@ use App\Models\Cultivo;
 use App\Events\SincronizarSistema;
 use Illuminate\Support\Facades\Cache;
 use App\Jobs\Archivador;
-use Illuminate\Support\Str;
 
 class StopSystemListener
 {
@@ -56,7 +55,6 @@ class StopSystemListener
             ];
 
             // Despachar el trabajo para escribir en la base de datos
-
             Archivador::dispatch('cultivos', $cultivoData, 'update', ['column' => 'id', 'value' => $cultivo->id]);
 
             $this->ejecutarStopTotal($scriptStopTotal);
@@ -84,17 +82,38 @@ class StopSystemListener
             if (!empty($script)) {
                 $scriptName = explode(' ', $script)[0];
                 $pkillCommand = "sudo /usr/bin/pkill " . escapeshellarg($scriptName);
+                
+                // Log del comando ejecutado
+                Log::info("Ejecutando comando pkill: {$pkillCommand}");
+                
                 exec($pkillCommand, $output, $returnVar);
+
+                // Log de la respuesta del sistema
+                Log::info("Respuesta de pkill para {$scriptName}: Return Var = {$returnVar}, Output = " . implode("\n", $output));
     
                 if ($returnVar !== 0) {
                     Log::error("Error al detener el script: {$scriptName} con pkill. Intentando con kill...");
                     $pgrepCommand = "/usr/bin/pgrep -f " . escapeshellarg($scriptName);
+                    
+                    // Log del comando ejecutado
+                    Log::info("Ejecutando comando pgrep: {$pgrepCommand}");
+                    
                     exec("sudo " . $pgrepCommand, $pids, $pgrepReturnVar);
+
+                    // Log de la respuesta del sistema
+                    Log::info("Respuesta de pgrep para {$scriptName}: Return Var = {$pgrepReturnVar}, PIDs = " . implode(", ", $pids));
     
                     if ($pgrepReturnVar === 0) {
                         foreach ($pids as $pid) {
                             $killCommand = "sudo /usr/bin/kill " . escapeshellarg($pid);
+                            
+                            // Log del comando ejecutado
+                            Log::info("Ejecutando comando kill para PID {$pid}: {$killCommand}");
+                            
                             exec($killCommand, $killOutput, $killReturnVar);
+    
+                            // Log de la respuesta del sistema
+                            Log::info("Respuesta de kill para PID {$pid}: Return Var = {$killReturnVar}, Output = " . implode("\n", $killOutput));
     
                             if ($killReturnVar !== 0) {
                                 Log::error("Error al detener el proceso con PID: {$pid}. Output: " . implode("\n", $killOutput));
@@ -120,7 +139,15 @@ class StopSystemListener
     {
         if (!empty($scriptStopTotal)) {
             $command = "python3 /var/www/arandanos/pythonScripts/{$scriptStopTotal}";
+            
+            // Log del comando ejecutado
+            Log::info("Ejecutando comando stopTotal: {$command}");
+            
             exec($command . " > /dev/null 2>&1 &", $output, $returnVar);
+            
+            // Log de la respuesta del sistema
+            Log::info("Respuesta de stopTotal: Return Var = {$returnVar}, Output = " . implode("\n", $output));
+            
             if ($returnVar !== 0) {
                 Log::error("Error al ejecutar el script stopTotal: {$scriptStopTotal}. Output: " . implode("\n", $output));
             } else {
