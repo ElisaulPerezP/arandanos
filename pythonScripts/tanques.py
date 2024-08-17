@@ -31,7 +31,7 @@ def set_pin_direction(pin, direction, api_error_url):
     """Configurar la dirección de un pin GPIO."""
     try:
         with open(f"/sys/class/gpio/gpio{pin}/direction", "w") as f:
-            f.write(direction)
+            f.write(str(direction))
     except IOError as e:
         report_error(api_error_url, f"Error configurando la dirección del pin {pin}: {e}")
 
@@ -39,7 +39,7 @@ def set_pin_value(pin, value, api_error_url):
     """Configurar el valor de un pin GPIO."""
     try:
         with open(f"/sys/class/gpio/gpio{pin}/value", "w") as f:
-            f.write(value)
+            f.write(str(value))
             print(f"Pin {pin} escrito con valor {value}.")
     except IOError as e:
         report_error(api_error_url, f"Error configurando el valor del pin {pin}: {e}")
