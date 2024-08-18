@@ -15,10 +15,10 @@ class RiegoEvent
     /**
      * Create a new event instance.
      */
-    public function __construct(array $programacion)
+    public function __construct($programacion)
     {
         // Almacenar $programacion como un array para mantener flexibilidad
-        $this->programacion = $programacion;
+        $this->programacion = $programacion->toArray();
     }
 
     /**
