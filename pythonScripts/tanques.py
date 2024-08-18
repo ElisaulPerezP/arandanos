@@ -4,7 +4,7 @@ import os
 import time
 import requests
 import argparse
-from threading import Thread, Event
+from threading import Thread
 import signal
 
 # Configuración del tiempo de espera en segundos
@@ -108,7 +108,7 @@ def report_shutdown(url, status_message, api_error_url):
 
 def report_error(url, error_message):
     payload = {
-        'script_name': 'inyectores.py',
+        'script_name': 'tanques.py',
         'error_message': error_message,
         'timestamp': time.strftime("%Y-%m-%dT%H:%M:%S")
     }
@@ -128,30 +128,20 @@ def load_pins_from_file(filename):
             pins[name] = int(pin)
     return pins
 
-def pwm_control(pin, duty_cycle, stop_event, api_error_url):
-    """Controlar el pin con un ciclo de trabajo PWM"""
-    period = 2  # Periodo de 2 segundos
-    on_time = period * duty_cycle / 100
-    off_time = period - on_time
-    while not stop_event.is_set():
-        set_pin_value(pin, "1", api_error_url)
-        time.sleep(on_time)
-        set_pin_value(pin, "0", api_error_url)
-        time.sleep(off_time)
-
 def main(input_file, output_file, output_neg_file, selector_url, estado_url, apagado_url, api_error_url):
     # Cargar pines desde archivos
     output_pins = load_pins_from_file(output_file)
     output_neg_pins = load_pins_from_file(output_neg_file)
+    input_pins = load_pins_from_file(input_file)
 
-    all_pins = {**output_pins, **output_neg_pins}
+    all_pins = {**output_pins, **output_neg_pins, **input_pins}
 
     # Exportar y configurar los pines
     for pin in all_pins.values():
         export_pin(pin, api_error_url)
-        set_pin_direction(pin, "out", api_error_url)
+        set_pin_direction(pin, "out" if pin in output_pins.values() or pin in output_neg_pins.values() else "in", api_error_url)
 
-    # Apagar todos los inyectores al inicio
+    # Apagar todas las electrovalvulas al inicio
     for pin in output_pins.values():
         set_pin_value(pin, "0", api_error_url)
     for pin in output_neg_pins.values():
@@ -159,53 +149,40 @@ def main(input_file, output_file, output_neg_file, selector_url, estado_url, apa
 
     # Variables de control
     stop_threads = False
-    pwm_threads = {}
-    pwm_stop_events = {}
 
     # Función para manejar comandos desde la API
     def handle_commands():
         nonlocal stop_threads
         while not stop_threads:
-            current_time = time.localtime()
-            current_second = current_time.tm_sec
+            command = get_selector_command(selector_url, api_error_url)
+            if command:
+                action = command.get('command')
+                if action == "llenar":
+                    print("Comando 'llenar' recibido, encendiendo electrovalvulas...")
+                    # Encender las electrovalvulas
+                    for pin in output_pins.values():
+                        set_pin_value(pin, "1", api_error_url)
+                    for pin in output_neg_pins.values():
+                        set_pin_value(pin, "0", api_error_url)
 
-            # Verifica si el segundo actual es 7, 22, 37 o 52
-            if current_second in [7, 22, 37, 52]:
-                command = get_selector_command(selector_url, api_error_url)
-                if command:
-                    for action in command['actions']:
-                        try:
-                            pin_name, state, duty_cycle = action.split(':')
-                            duty_cycle = int(duty_cycle)
-                        except ValueError:
-                            report_error(api_error_url, f"Formato de acción inválido: {action}")
-                            continue
+                    # Monitorear los sensores de nivel
+                    while not all(check_pin_value(pin, api_error_url) == "1" for pin in input_pins.values()):
+                        time.sleep(1)
 
-                        if pin_name in output_pins:
-                            pin = output_pins[pin_name]
-                        elif pin_name in output_neg_pins:
-                            pin = output_neg_pins[pin_name]
-                        else:
-                            report_error(api_error_url, f"Pin no encontrado: {pin_name}")
-                            continue
+                    # Apagar las electrovalvulas cuando los tanques estén llenos
+                    for pin in output_pins.values():
+                        set_pin_value(pin, "0", api_error_url)
+                    for pin in output_neg_pins.values():
+                        set_pin_value(pin, "1", api_error_url)
 
-                        if state == "on":
-                            if pin_name in pwm_threads:
-                                pwm_stop_events[pin_name].set()
-                                pwm_threads[pin_name].join()
-
-                            stop_event = Event()
-                            pwm_thread = Thread(target=pwm_control, args=(pin, duty_cycle, stop_event, api_error_url))
-                            pwm_threads[pin_name] = pwm_thread
-                            pwm_stop_events[pin_name] = stop_event
-                            pwm_thread.start()
-                        elif state == "off":
-                            if pin_name in pwm_threads:
-                                pwm_stop_events[pin_name].set()
-                                pwm_threads[pin_name].join()
-                                del pwm_threads[pin_name]
-                                del pwm_stop_events[pin_name]
-                            set_pin_value(pin, "0" if pin_name in output_pins else "1", api_error_url)
+                    # Reportar el estado
+                    status_message = {name: 'lleno' for name in input_pins.keys()}
+                    report_status(estado_url, status_message, api_error_url)
+                    print("Tanques llenos, electrovalvulas apagadas.")
+                elif action == "esperar":
+                    print("Comando 'esperar' recibido, en espera de nuevas instrucciones.")
+                else:
+                    report_error(api_error_url, f"Comando desconocido: {action}")
 
             # Espera hasta el próximo segundo
             time.sleep(1 - time.time() % 1)
@@ -214,20 +191,15 @@ def main(input_file, output_file, output_neg_file, selector_url, estado_url, apa
     def report_state():
         nonlocal stop_threads
         while not stop_threads:
-            current_time = time.localtime()
-            current_second = current_time.tm_sec
-
-            # Verifica si el segundo actual es 13 o 43
-            if current_second in [13, 43]:
-                status_message = {}
-                for name, pin in output_pins.items():
-                    status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "1" else 'apagada'
-                for name, pin in output_neg_pins.items():
-                    status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "0" else 'apagada'
-                report_status(estado_url, status_message, api_error_url)
+            status_message = {}
+            for name, pin in output_pins.items():
+                status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "1" else 'apagada'
+            for name, pin in output_neg_pins.items():
+                status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "0" else 'apagada'
+            report_status(estado_url, status_message, api_error_url)
 
             # Espera hasta el próximo segundo
-            time.sleep(1 - time.time() % 1)
+            time.sleep(30)
 
     # Iniciar hilos
     command_thread = Thread(target=handle_commands)
@@ -238,8 +210,6 @@ def main(input_file, output_file, output_neg_file, selector_url, estado_url, apa
     def handle_signal(signum, frame):
         nonlocal stop_threads
         stop_threads = True
-        for stop_event in pwm_stop_events.values():
-            stop_event.set()
         command_thread.join()
         state_thread.join()
         for pin in output_pins.values():

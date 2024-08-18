@@ -94,12 +94,12 @@ class ApiController extends Controller
         // Obtener el comando hardware con el comando_id desde la caché
         $comandoHardware = null;
         if ($s1Actual && isset($s1Actual['comando_id'])) {
-            $comandoHardware = $comandosHardware->firstWhere('id', $s1Actual['comando_id']);
+            $comandoHardware = $comandosHardware->find($s1Actual['comando_id']);
         }
 
         // Si no se encuentra el comando hardware, usar el comando por defecto 'esperar'
         if (!$comandoHardware) {
-            $comandoHardware = $comandosHardware->firstWhere('comando', 'esperar');
+            $comandoHardware = $comandosHardware->find(2);
         }
 
         // Verificar si existe el comando
