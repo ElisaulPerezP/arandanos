@@ -158,35 +158,39 @@ def main(input_file, output_file, output_neg_file, selector_url, estado_url, apa
     def handle_commands():
         nonlocal stop_threads
         while not stop_threads:
-            command = get_selector_command(selector_url, api_error_url)
-            if command:
-                action = command.get('command')
-                if action == "llenar":
-                    print("Comando 'llenar' recibido, encendiendo electrovalvulas...")
-                    # Encender las electrovalvulas
-                    for pin in output_pins.values():
-                        set_pin_value(pin, "1", api_error_url)
-                    for pin in output_neg_pins.values():
-                        set_pin_value(pin, "0", api_error_url)
+            current_time = time.localtime()
+            current_second = current_time.tm_sec
 
-                    # Monitorear los sensores de nivel
-                    while not all(check_pin_value(pin, api_error_url) == "1" for pin in input_pins.values()):
-                        time.sleep(1)
+            if current_second in [22, 58]:
+                command = get_selector_command(selector_url, api_error_url)
+                if command:
+                    action = command.get('command')
+                    if action == "llenar":
+                        print("Comando 'llenar' recibido, encendiendo electrovalvulas...")
+                        # Encender las electrovalvulas
+                        for pin in output_pins.values():
+                            set_pin_value(pin, "1", api_error_url)
+                        for pin in output_neg_pins.values():
+                            set_pin_value(pin, "0", api_error_url)
 
-                    # Apagar las electrovalvulas cuando los tanques estén llenos
-                    for pin in output_pins.values():
-                        set_pin_value(pin, "0", api_error_url)
-                    for pin in output_neg_pins.values():
-                        set_pin_value(pin, "1", api_error_url)
+                        # Monitorear los sensores de nivel
+                        while not all(check_pin_value(pin, api_error_url) == "1" for pin in input_pins.values()):
+                            time.sleep(1)
 
-                    # Reportar el estado
-                    status_message = {name: 'lleno' for name in input_pins.keys()}
-                    report_status(estado_url, status_message, api_error_url)
-                    print("Tanques llenos, electrovalvulas apagadas.")
-                elif action == "esperar":
-                    print("Comando 'esperar' recibido, en espera de nuevas instrucciones.")
-                else:
-                    report_error(api_error_url, f"Comando desconocido: {action}")
+                        # Apagar las electrovalvulas cuando los tanques estén llenos
+                        for pin in output_pins.values():
+                            set_pin_value(pin, "0", api_error_url)
+                        for pin in output_neg_pins.values():
+                            set_pin_value(pin, "1", api_error_url)
+
+                        # Reportar el estado
+                        status_message = {name: 'lleno' for name in input_pins.keys()}
+                        report_status(estado_url, status_message, api_error_url)
+                        print("Tanques llenos, electrovalvulas apagadas.")
+                    elif action == "esperar":
+                        print("Comando 'esperar' recibido, en espera de nuevas instrucciones.")
+                    else:
+                        report_error(api_error_url, f"Comando desconocido: {action}")
 
             # Espera hasta el próximo segundo
             time.sleep(1 - time.time() % 1)
@@ -195,15 +199,19 @@ def main(input_file, output_file, output_neg_file, selector_url, estado_url, apa
     def report_state():
         nonlocal stop_threads
         while not stop_threads:
-            status_message = {}
-            for name, pin in output_pins.items():
-                status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "1" else 'apagada'
-            for name, pin in output_neg_pins.items():
-                status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "0" else 'apagada'
-            report_status(estado_url, status_message, api_error_url)
+            current_time = time.localtime()
+            current_second = current_time.tm_sec
+
+            if current_second in [56]:
+                status_message = {}
+                for name, pin in output_pins.items():
+                    status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "1" else 'apagada'
+                for name, pin in output_neg_pins.items():
+                    status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "0" else 'apagada'
+                report_status(estado_url, status_message, api_error_url)
 
             # Espera hasta el próximo segundo
-            time.sleep(30)
+            time.sleep(1 - time.time() % 1)
 
     # Iniciar hilos
     command_thread = Thread(target=handle_commands)
