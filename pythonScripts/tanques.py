@@ -124,8 +124,12 @@ def load_pins_from_file(filename):
     pins = {}
     with open(filename, 'r') as f:
         for line in f:
-            name, pin = line.strip().split(':')
-            pins[name] = int(pin)
+            if ':' in line:
+                name, pin = line.strip().split(':')
+                pins[name] = int(pin)
+            else:
+                # Omitir líneas vacías o mal formateadas
+                continue
     return pins
 
 def main(input_file, output_file, output_neg_file, selector_url, estado_url, apagado_url, api_error_url):
