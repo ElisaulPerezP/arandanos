@@ -166,66 +166,68 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
     def handle_commands():
         nonlocal stop_threads
         while not stop_threads:
-            command = get_selector_command(selector_url, api_error_url)
-            if command:
-                for action in command['actions']:
-                    print(f"Accion recibida en el for: {action}")  # Añadir depuración aquí
-                    try:
-                        pin_name, state, duty_cycle = action.split(':')
-                        duty_cycle = int(duty_cycle)
-                        print(f"Identificacion de nombre: {pin_name}")  # Añadir depuración aquí
-                        print(f"Identificacion de estado: {state}")  # Añadir depuración aquí
-                        print(f"Identificacion de dureza de ciclo: {duty_cycle}")  # Añadir depuración aquí
-                    except ValueError:
-                        report_error(api_error_url, f"Formato de acción inválido: {action}")
-                        continue
-                    
-                    print(f"pines de salida: {output_pins}")  # Añadir depuración aquí
-                    print(f"pines de salida logica negada: {output_neg_pins}")  # Añadir depuración aquí
+            current_time = time.localtime()
+            current_second = current_time.tm_sec
 
-                    if pin_name in output_pins:
-                        pin = output_pins[pin_name]
-                        print(f"Numero del pin para {pin_name}: {pin}")  # Añadir depuración aquíç
-                    elif pin_name in output_neg_pins:
-                        pin = output_neg_pins[pin_name]
-                        print(f"Numero del pin negativo para {pin_name}: {pin}")  # Añadir depuración aquíç
-                    else:
-                        report_error(api_error_url, f"Pin no encontrado: {pin_name}")
-                        continue
+            # Verifica si el segundo actual es 5, 20, 35 o 50
+            if current_second in [5, 20, 35, 50]:
+                command = get_selector_command(selector_url, api_error_url)
+                if command:
+                    for action in command['actions']:
+                        try:
+                            pin_name, state, duty_cycle = action.split(':')
+                            duty_cycle = int(duty_cycle)
+                        except ValueError:
+                            report_error(api_error_url, f"Formato de acción inválido: {action}")
+                            continue
 
-                    if state == "on":
-                        if pin_name in pwm_threads:
-                            # Detener el hilo PWM anterior si existe
-                            pwm_stop_events[pin_name].set()
-                            pwm_threads[pin_name].join()
+                        if pin_name in output_pins:
+                            pin = output_pins[pin_name]
+                        elif pin_name in output_neg_pins:
+                            pin = output_neg_pins[pin_name]
+                        else:
+                            report_error(api_error_url, f"Pin no encontrado: {pin_name}")
+                            continue
 
-                        # Iniciar un nuevo hilo PWM
-                        stop_event = Event()
-                        pwm_thread = Thread(target=pwm_control, args=(pin, duty_cycle, stop_event, api_error_url))
-                        pwm_threads[pin_name] = pwm_thread
-                        pwm_stop_events[pin_name] = stop_event
-                        pwm_thread.start()
-                    elif state == "off":
-                        if pin_name in pwm_threads:
-                            # Detener el hilo PWM si existe
-                            pwm_stop_events[pin_name].set()
-                            pwm_threads[pin_name].join()
-                            del pwm_threads[pin_name]
-                            del pwm_stop_events[pin_name]
-                        set_pin_value(pin, "0" if pin_name in output_pins else "1", api_error_url)
-            time.sleep(15)
+                        if state == "on":
+                            if pin_name in pwm_threads:
+                                pwm_stop_events[pin_name].set()
+                                pwm_threads[pin_name].join()
+
+                            stop_event = Event()
+                            pwm_thread = Thread(target=pwm_control, args=(pin, duty_cycle, stop_event, api_error_url))
+                            pwm_threads[pin_name] = pwm_thread
+                            pwm_stop_events[pin_name] = stop_event
+                            pwm_thread.start()
+                        elif state == "off":
+                            if pin_name in pwm_threads:
+                                pwm_stop_events[pin_name].set()
+                                pwm_threads[pin_name].join()
+                                del pwm_threads[pin_name]
+                                del pwm_stop_events[pin_name]
+                            set_pin_value(pin, "0" if pin_name in output_pins else "1", api_error_url)
+
+            # Espera hasta el próximo segundo
+            time.sleep(1 - time.time() % 1)
 
     # Función para reportar estado a la API
     def report_state():
         nonlocal stop_threads
         while not stop_threads:
-            status_message = {}
-            for name, pin in output_pins.items():
-                status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "1" else 'apagada'
-            for name, pin in output_neg_pins.items():
-                status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "0" else 'apagada'
-            report_status(estado_url, status_message, api_error_url)
-            time.sleep(30)
+            current_time = time.localtime()
+            current_second = current_time.tm_sec
+
+            # Verifica si el segundo actual es 12 o 42
+            if current_second in [12, 42]:
+                status_message = {}
+                for name, pin in output_pins.items():
+                    status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "1" else 'apagada'
+                for name, pin in output_neg_pins.items():
+                    status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "0" else 'apagada'
+                report_status(estado_url, status_message, api_error_url)
+
+            # Espera hasta el próximo segundo
+            time.sleep(1 - time.time() % 1)
 
     # Iniciar hilos
     command_thread = Thread(target=handle_commands)
