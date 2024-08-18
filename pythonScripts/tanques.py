@@ -8,7 +8,7 @@ from threading import Thread
 import signal
 
 # Configuración del tiempo de espera en segundos
-TIMEOUT = 3  # Tiempo de espera total de 2 segundos
+TIMEOUT = 5  # Tiempo de espera total de 2 segundos
 
 # Funciones para manipular GPIO
 def export_pin(pin, api_error_url):
