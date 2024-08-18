@@ -473,7 +473,7 @@ class ApiController extends Controller
         Archivador::dispatch('s3', $s3Nueva);
         Archivador::dispatch('estado_sistemas', ['s3_id' => $estadoSistemaActualizado['s3_id']], 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
 
-        Log::info('Request received for reportImpulsoresState:', $s3Nueva);
+        //Log::info('Request received for reportImpulsoresState:', $s3Nueva);
 
         return response()->json(['message' => 'Estado reportado exitosamente'], 200);
     }

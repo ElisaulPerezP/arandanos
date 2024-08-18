@@ -61,6 +61,7 @@ def report_status(url, status_message, api_error_url):
     payload = status_message
     try:
         response = requests.post(url, json=payload, timeout=TIMEOUT)
+        print(f"el estado que esta llegando al script es:: {response.status_code}")
         if response.status_code == 200:
             print(f"Estado reportado exitosamente: {status_message}")
             return True
