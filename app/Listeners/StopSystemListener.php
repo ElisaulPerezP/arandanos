@@ -36,7 +36,14 @@ class StopSystemListener
     
         if ($estadoInactivo) {
             // Intentar detener los procesos
-            $procesosDetenidos = $this->detenerProcesos($scriptsEjecutandose);
+            if (isset($scriptsEjecutandose) && !empty($scriptsEjecutandose)) {
+                // Intentar detener los procesos
+                $procesosDetenidos = $this->detenerProcesos($scriptsEjecutandose);
+            } else {
+                // Si no hay scripts ejecutándose, consideramos que los procesos ya están detenidos
+                $procesosDetenidos = true;
+            }
+        
     
             if ($procesosDetenidos) {
                 // Actualizar el estado del cultivo
