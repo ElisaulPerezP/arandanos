@@ -13,7 +13,6 @@ TIMEOUT = 2  # Tiempo de espera total de 2 segundos
 
 # Funciones para manipular GPIO
 def export_pin(pin, api_error_url):
-    """Exportar un pin GPIO."""
     try:
         with open("/sys/class/gpio/export", "w") as f:
             f.write(str(pin))
@@ -24,7 +23,6 @@ def export_pin(pin, api_error_url):
             report_error(api_error_url, f"Error exportando el pin {pin}: {e}")
 
 def unexport_pin(pin, api_error_url):
-    """Desexportar un pin GPIO."""
     try:
         with open("/sys/class/gpio/unexport", "w") as f:
             f.write(str(pin))
@@ -32,7 +30,6 @@ def unexport_pin(pin, api_error_url):
         report_error(api_error_url, f"Error desexportando el pin {pin}: {e}")
 
 def set_pin_direction(pin, direction, api_error_url):
-    """Configurar la dirección de un pin GPIO."""
     try:
         with open(f"/sys/class/gpio/gpio{pin}/direction", "w") as f:
             f.write(direction)
@@ -40,7 +37,6 @@ def set_pin_direction(pin, direction, api_error_url):
         report_error(api_error_url, f"Error configurando la dirección del pin {pin}: {e}")
 
 def set_pin_edge(pin, edge, api_error_url):
-    """Configurar el edge de un pin GPIO."""
     try:
         with open(f"/sys/class/gpio/gpio{pin}/edge", "w") as f:
             f.write(edge)
@@ -138,11 +134,18 @@ def main(input_file, post_url, stop_url, api_error_url):
     def report_state():
         nonlocal stop_threads
         while not stop_threads:
-            time.sleep(15)
-            current_counts = counts.copy()
-            if report_count(post_url, current_counts, api_error_url):
-                for name in counts:
-                    counts[name] = 0
+            current_time = time.localtime()
+            current_second = current_time.tm_sec
+
+            # Verifica si el segundo actual es 1, 15, 30 o 45
+            if current_second in [1, 15, 30, 45]:
+                current_counts = counts.copy()
+                if report_count(post_url, current_counts, api_error_url):
+                    for name in counts:
+                        counts[name] = 0
+
+            # Espera hasta el próximo segundo
+            time.sleep(1 - time.time() % 1)
 
     # Manejar señales de interrupción
     def handle_signal(signum, frame):
