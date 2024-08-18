@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os
 import time
 import requests
@@ -8,22 +6,20 @@ import signal
 from threading import Thread
 
 # Configuración del tiempo de espera en segundos
-TIMEOUT = 3  # Tiempo de espera total de 2 segundos
+TIMEOUT = 3  # Tiempo de espera total de 3 segundos
 
-# Funciones para manipular GPIO
+# Funciones para manipular GPIO (sin cambios)
 def export_pin(pin, api_error_url):
-    """Exportar un pin GPIO."""
     try:
         with open("/sys/class/gpio/export", "w") as f:
             f.write(str(pin))
     except IOError as e:
         if "Device or resource busy" in str(e):
-            pass  # El pin ya puede estar exportado
+            pass
         else:
             report_error(api_error_url, f"Error exportando el pin {pin}: {e}")
 
 def unexport_pin(pin, api_error_url):
-    """Desexportar un pin GPIO."""
     try:
         with open("/sys/class/gpio/unexport", "w") as f:
             f.write(str(pin))
@@ -31,7 +27,6 @@ def unexport_pin(pin, api_error_url):
         report_error(api_error_url, f"Error desexportando el pin {pin}: {e}")
 
 def set_pin_direction(pin, direction, api_error_url):
-    """Configurar la dirección de un pin GPIO."""
     try:
         with open(f"/sys/class/gpio/gpio{pin}/direction", "w") as f:
             f.write(direction)
@@ -39,7 +34,6 @@ def set_pin_direction(pin, direction, api_error_url):
         report_error(api_error_url, f"Error configurando la dirección del pin {pin}: {e}")
 
 def set_pin_value(pin, value, api_error_url):
-    """Configurar el valor de un pin GPIO."""
     try:
         with open(f"/sys/class/gpio/gpio{pin}/value", "w") as f:
             f.write(str(value))
@@ -48,7 +42,6 @@ def set_pin_value(pin, value, api_error_url):
         report_error(api_error_url, f"Error configurando el valor del pin {pin}: {e}")
 
 def check_pin_value(pin, api_error_url):
-    """Leer el valor de un pin GPIO."""
     try:
         with open(f"/sys/class/gpio/gpio{pin}/value", "r") as f:
             return f.read().strip()
@@ -56,12 +49,11 @@ def check_pin_value(pin, api_error_url):
         report_error(api_error_url, f"Error leyendo el valor del pin {pin}: {e}")
         return None
 
-# Funciones para interactuar con la API
+# Funciones para interactuar con la API (sin cambios)
 def report_status(url, status_message, api_error_url):
     payload = status_message
     try:
         response = requests.post(url, json=payload, timeout=TIMEOUT)
-        print(f"el estado que esta llegando al script es:: {response.status_code}")
         if response.status_code == 200:
             print(f"Estado reportado exitosamente: {status_message}")
             return True
@@ -120,7 +112,7 @@ def report_error(url, error_message):
     except Exception as e:
         print(f"Excepción al reportar el error: {e}")
 
-# Funciones auxiliares
+# Funciones auxiliares (sin cambios)
 def load_pins_from_file(filename):
     pins = {}
     with open(filename, 'r') as f:
@@ -130,7 +122,6 @@ def load_pins_from_file(filename):
     return pins
 
 def gather_status(output_pins, output_neg_pins, api_error_url):
-    """Recolectar el estado actual de las bombas."""
     status_message = {}
     for name, pin in output_pins.items():
         status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "1" else 'apagada'
@@ -139,71 +130,67 @@ def gather_status(output_pins, output_neg_pins, api_error_url):
     return status_message
 
 def main(output_file, output_neg_file, impulsores_url, estado_url, apagado_url, api_error_url):
-    # Cargar pines desde archivos
     output_pins = load_pins_from_file(output_file)
     output_neg_pins = load_pins_from_file(output_neg_file)
 
     all_pins = {**output_pins, **output_neg_pins}
 
-    # Exportar y configurar los pines
     for pin in all_pins.values():
         export_pin(pin, api_error_url)
         set_pin_direction(pin, "out", api_error_url)
 
-    # Apagar todas las bombas al inicio
     for pin in output_pins.values():
         set_pin_value(pin, "0", api_error_url)
     for pin in output_neg_pins.values():
         set_pin_value(pin, "1", api_error_url)
 
-    # Variables de control
     stop_threads = False
 
-    # Función para manejar comandos desde la API
     def handle_commands():
         nonlocal stop_threads
         while not stop_threads:
-            command = get_impulsores_command(impulsores_url, api_error_url)
-            if command and 'actions' in command and 'actions' in command['actions']:
-                print(f"Comando recibido: {command}")  # Añadir depuración aquí
-                for action in command['actions']['actions']:
-                    print(f"Acción recibida: {action}")  # Añadir depuración aquí
-                    parts = action.split(':')
-                    if len(parts) != 2:
-                        report_error(api_error_url, f"Formato de acción inválido: {action}")
-                        continue
+            current_time = time.localtime()
+            current_second = current_time.tm_sec
 
-                    pin_name = parts[0]
-                    action_type = parts[1]
-                    print(f"Pin name: {pin_name}, Action type: {action_type}")  # Añadir depuración aquí
+            # Verifica si el segundo actual es 1, 16, 31 o 46
+            if current_second in [1, 16, 31, 46]:
+                command = get_impulsores_command(impulsores_url, api_error_url)
+                if command and 'actions' in command and 'actions' in command['actions']:
+                    for action in command['actions']['actions']:
+                        parts = action.split(':')
+                        if len(parts) != 2:
+                            report_error(api_error_url, f"Formato de acción inválido: {action}")
+                            continue
 
-                    if pin_name in output_pins:
-                        if action_type == 'on':
-                            print(f"Encendiendo {pin_name}")  # Añadir depuración aquí
-                            set_pin_value(output_pins[pin_name], "1", api_error_url)
-                        elif action_type == 'off':
-                            print(f"Apagando {pin_name}")  # Añadir depuración aquí
-                            set_pin_value(output_pins[pin_name], "0", api_error_url)
-                    elif pin_name in output_neg_pins:
-                        if action_type == 'on':
-                            print(f"Encendiendo {pin_name} (negativo)")  # Añadir depuración aquí
-                            set_pin_value(output_neg_pins[pin_name], "0", api_error_url)
-                        elif action_type == 'off':
-                            print(f"Apagando {pin_name} (negativo)")  # Añadir depuración aquí
-                            set_pin_value(output_neg_pins[pin_name], "1", api_error_url)
-            else:
-                report_error(api_error_url, "Formato de comando inválido o falta el campo 'actions'")
-            time.sleep(15)
+                        pin_name = parts[0]
+                        action_type = parts[1]
 
-    # Función para reportar estado a la API
+                        if pin_name in output_pins:
+                            if action_type == 'on':
+                                set_pin_value(output_pins[pin_name], "1", api_error_url)
+                            elif action_type == 'off':
+                                set_pin_value(output_pins[pin_name], "0", api_error_url)
+                        elif pin_name in output_neg_pins:
+                            if action_type == 'on':
+                                set_pin_value(output_neg_pins[pin_name], "0", api_error_url)
+                            elif action_type == 'off':
+                                set_pin_value(output_neg_pins[pin_name], "1", api_error_url)
+            # Espera hasta el próximo segundo
+            time.sleep(1 - time.time() % 1)
+
     def report_state():
         nonlocal stop_threads
         while not stop_threads:
-            status_message = gather_status(output_pins, output_neg_pins, api_error_url)
-            report_status(estado_url, status_message, api_error_url)
-            time.sleep(30)
+            current_time = time.localtime()
+            current_second = current_time.tm_sec
 
-    # Manejar señales de interrupción
+            # Verifica si el segundo actual es 1 o 30
+            if current_second in [1, 30]:
+                status_message = gather_status(output_pins, output_neg_pins, api_error_url)
+                report_status(estado_url, status_message, api_error_url)
+            # Espera hasta el próximo segundo
+            time.sleep(1 - time.time() % 1)
+
     def handle_signal(signum, frame):
         nonlocal stop_threads
         stop_threads = True
@@ -211,18 +198,15 @@ def main(output_file, output_neg_file, impulsores_url, estado_url, apagado_url, 
     signal.signal(signal.SIGINT, handle_signal)
     signal.signal(signal.SIGTERM, handle_signal)
 
-    # Iniciar hilos
     command_thread = Thread(target=handle_commands)
     state_thread = Thread(target=report_state)
     command_thread.start()
     state_thread.start()
 
     try:
-        # Esperar a que se interrumpa el script
         while not stop_threads:
             time.sleep(1)
     finally:
-        # Apagar todas las bombas y desexportar los pines
         status_message = gather_status(output_pins, output_neg_pins, api_error_url)
         for name, pin in output_pins.items():
             set_pin_value(pin, "0", api_error_url)
@@ -230,10 +214,9 @@ def main(output_file, output_neg_file, impulsores_url, estado_url, apagado_url, 
         for name, pin in output_neg_pins.items():
             set_pin_value(pin, "1", api_error_url)
             status_message[name] = 'apagada'
-        status_message['estado'] = 'Apagado'  # Agregar el estado "Apagado"
+        status_message['estado'] = 'Apagado'
         for pin in all_pins.values():
             unexport_pin(pin, api_error_url)
-        # Reportar apagado
         report_shutdown(apagado_url, status_message, api_error_url)
 
 if __name__ == "__main__":
