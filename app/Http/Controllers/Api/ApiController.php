@@ -594,12 +594,12 @@ class ApiController extends Controller
         // Obtener el comando desde la caché utilizando el comando_id de s4
         $comandoHardware = null;
         if ($s4Actual && isset($s4Actual['comando_id'])) {
-            $comandoHardware = $comandosHardware->firstWhere('id', $s4Actual['comando_id']);
+            $comandoHardware = $comandosHardware->find($s4Actual['comando_id']);
         }
 
         // Si no se encuentra el comando hardware, usar el comando por defecto 'off:pump3' y 'off:pump4'
         if (!$comandoHardware) {
-            $comandoHardware = $comandosHardware->firstWhere('comando', '{"actions":["pump3:off","pump4:off"]}');
+            $comandoHardware = $comandosHardware->find(10134);
         }
 
         // Generar un nuevo UUID para la nueva entrada s4
