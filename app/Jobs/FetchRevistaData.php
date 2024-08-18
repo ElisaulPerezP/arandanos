@@ -17,6 +17,7 @@ use App\Events\InicioDeAplicacion;
 use App\Events\CheckEvent;
 use App\Events\RestartEvent;
 use App\Events\RiegoEvent;
+use Illuminate\Support\Facades\Cache;
 
 class FetchRevistaData implements ShouldQueue
 {
@@ -29,8 +30,6 @@ class FetchRevistaData implements ShouldQueue
      */
     public function __construct()
     {
-        // Obtén el único cultivo registrado
-        $this->cultivo = Cultivo::first();
     }
 
     /**
@@ -39,7 +38,7 @@ class FetchRevistaData implements ShouldQueue
     public function handle()
     {
         try {
-            $cultivo = $this->cultivo;
+            $cultivo = Cache::get('cultivo');
 
             if (!$cultivo) {
                 Log::error('No cultivo found.');

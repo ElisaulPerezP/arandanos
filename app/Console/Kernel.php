@@ -12,22 +12,14 @@ class Kernel extends ConsoleKernel
     /**
      * Define the application's command schedule.
      */
-    protected function schedule(Schedule $schedule): void
-    {
-        $schedule->call(function () {
-            // Obtener el cultivo desde la caché
-            $cultivo = Cache::get('culvivo');
-            
-            // Asegúrate de que $cultivo no sea nulo antes de despachar el trabajo
-            if ($cultivo) {
-                FetchRevistaData::dispatch($cultivo);
-            } else {
-                \Log::warning('No se encontró un cultivo en la caché.');
-            }
-        })->everyMinute();
+    protected function schedule(Schedule $schedule)
+{
+    // Programa el trabajo FetchRevistaData como un job
+    $schedule->job(new FetchRevistaData())->everyMinute();
 
-        $schedule->job(new ProcessScheduledCommands)->everyMinute();
-    }
+    // Programa el trabajo ProcessScheduledCommands como un job
+    $schedule->job(new ProcessScheduledCommands)->everyMinute();
+}
 
     /**
      * Register the commands for the application.
