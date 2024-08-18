@@ -152,8 +152,7 @@ def main(output_file, output_neg_file, impulsores_url, estado_url, apagado_url, 
             current_time = time.localtime()
             current_second = current_time.tm_sec
 
-            # Verifica si el segundo actual es 1, 16, 31 o 46
-            if current_second in [1, 16, 31, 46]:
+            if current_second in [3, 18, 33, 48]:
                 command = get_impulsores_command(impulsores_url, api_error_url)
                 if command and 'actions' in command and 'actions' in command['actions']:
                     for action in command['actions']['actions']:
@@ -184,8 +183,7 @@ def main(output_file, output_neg_file, impulsores_url, estado_url, apagado_url, 
             current_time = time.localtime()
             current_second = current_time.tm_sec
 
-            # Verifica si el segundo actual es 1 o 30
-            if current_second in [1, 30]:
+            if current_second in [11, 41]:
                 status_message = gather_status(output_pins, output_neg_pins, api_error_url)
                 report_status(estado_url, status_message, api_error_url)
             # Espera hasta el próximo segundo
