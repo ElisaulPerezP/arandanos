@@ -141,40 +141,54 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
     def handle_commands():
         nonlocal stop_threads
         while not stop_threads:
-            command = get_selector_command(selector_url, api_error_url)
-            if command:
-                print(f"Comando recibido en handle_commands: {command}")  # Depuración
-                actions = command.get('actions')
-                if actions is not None:
-                    for action in actions:
-                        action_parts = action.split(':')
-                        action_type = action_parts[0]  # on or off
-                        pin_name = action_parts[1]    # valvula1, valvula2, etc.
-                        if pin_name in output_pins:
-                            if action_type == 'on':
-                                set_pin_value(output_pins[pin_name], "1", api_error_url)
-                            elif action_type == 'off':
-                                set_pin_value(output_pins[pin_name], "0", api_error_url)
-                        elif pin_name in output_neg_pins:
-                            if action_type == 'on':
-                                set_pin_value(output_neg_pins[pin_name], "0", api_error_url)
-                            elif action_type == 'off':
-                                set_pin_value(output_neg_pins[pin_name], "1", api_error_url)
-                else:
-                    report_error(api_error_url, "El comando no contiene acciones válidas.")
-            time.sleep(15)
+            current_time = time.localtime()
+            current_second = current_time.tm_sec
+
+            # Verifica si el segundo actual es 9, 24, 39 o 54
+            if current_second in [9, 24, 39, 54]:
+                command = get_selector_command(selector_url, api_error_url)
+                if command:
+                    print(f"Comando recibido en handle_commands: {command}")  # Depuración
+                    actions = command.get('actions')
+                    if actions is not None:
+                        for action in actions:
+                            action_parts = action.split(':')
+                            action_type = action_parts[0]  # on or off
+                            pin_name = action_parts[1]    # valvula1, valvula2, etc.
+                            if pin_name in output_pins:
+                                if action_type == 'on':
+                                    set_pin_value(output_pins[pin_name], "1", api_error_url)
+                                elif action_type == 'off':
+                                    set_pin_value(output_pins[pin_name], "0", api_error_url)
+                            elif pin_name in output_neg_pins:
+                                if action_type == 'on':
+                                    set_pin_value(output_neg_pins[pin_name], "0", api_error_url)
+                                elif action_type == 'off':
+                                    set_pin_value(output_neg_pins[pin_name], "1", api_error_url)
+                        else:
+                            report_error(api_error_url, "El comando no contiene acciones válidas.")
+
+            # Espera hasta el próximo segundo
+            time.sleep(1 - time.time() % 1)
 
     # Función para reportar estado a la API
     def report_state():
         nonlocal stop_threads
         while not stop_threads:
-            status_message = {}
-            for name, pin in output_pins.items():
-                status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "1" else 'apagada'
-            for name, pin in output_neg_pins.items():
-                status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "0" else 'apagada'
-            report_status(estado_url, status_message, api_error_url)
-            time.sleep(30)
+            current_time = time.localtime()
+            current_second = current_time.tm_sec
+
+            # Verifica si el segundo actual es 14 o 44
+            if current_second in [14, 44]:
+                status_message = {}
+                for name, pin in output_pins.items():
+                    status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "1" else 'apagada'
+                for name, pin in output_neg_pins.items():
+                    status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "0" else 'apagada'
+                report_status(estado_url, status_message, api_error_url)
+
+            # Espera hasta el próximo segundo
+            time.sleep(1 - time.time() % 1)
 
     # Iniciar hilos
     command_thread = Thread(target=handle_commands)
