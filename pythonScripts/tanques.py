@@ -139,7 +139,7 @@ def pwm_control(pin, duty_cycle, stop_event, api_error_url):
         set_pin_value(pin, "0", api_error_url)
         time.sleep(off_time)
 
-def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, api_error_url):
+def main(input_file, output_file, output_neg_file, selector_url, estado_url, apagado_url, api_error_url):
     # Cargar pines desde archivos
     output_pins = load_pins_from_file(output_file)
     output_neg_pins = load_pins_from_file(output_neg_file)
