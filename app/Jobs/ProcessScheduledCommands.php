@@ -34,7 +34,7 @@ class ProcessScheduledCommands implements ShouldQueue
             $oneMinuteAgo = now()->subMinute()->timestamp;
             $now = now()->timestamp;
 
-            $programaciones = Cache::remember('programaciones_pendientes', 600, function () use ($oneMinuteAgo, $now) {
+            $programaciones = Cache::rememberForever('programaciones_pendientes', function () use ($oneMinuteAgo, $now) {
                 return Programacion::where('hora_unix', '>=', $oneMinuteAgo)
                     ->where('hora_unix', '<=', $now)
                     ->whereNotIn('estado', ['ejecutado_exitosamente', 'ejecutandose', 'cancelado'])
