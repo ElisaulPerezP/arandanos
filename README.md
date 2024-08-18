@@ -866,3 +866,4 @@ QUEUE_CONNECTION=redis
 
 php artisan queue:table
 php artisan migrate
+
