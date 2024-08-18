@@ -165,11 +165,12 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
                                     set_pin_value(output_neg_pins[pin_name], "0", api_error_url)
                                 elif action_type == 'off':
                                     set_pin_value(output_neg_pins[pin_name], "1", api_error_url)
-                        else:
-                            report_error(api_error_url, "El comando no contiene acciones válidas.")
+                    else:
+                        report_error(api_error_url, "El comando no contiene acciones válidas.")
 
-            # Espera hasta el próximo segundo
-            time.sleep(1 - time.time() % 1)
+                # Espera hasta el próximo segundo
+                time.sleep(1 - time.time() % 1)
+
 
     # Función para reportar estado a la API
     def report_state():
