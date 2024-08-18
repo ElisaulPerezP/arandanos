@@ -867,3 +867,32 @@ QUEUE_CONNECTION=redis
 php artisan queue:table
 php artisan migrate
 
+sudo chmod +x /var/www/arandanos/pythonScripts/run_scripts.sh
+
+
+servicio para iniciar los scripts:
+sudo nano /etc/systemd/system/arandanos-scripts.service
+
+
+[Unit]
+Description=Servicio para ejecutar los scripts de Arandanos
+After=apache2.service 
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+ExecStart=/var/www/arandanos/pythonScripts/run_scripts.sh
+Restart=always
+RestartSec=30
+LimitNPROC=20
+StartLimitInterval=600
+StartLimitBurst=5
+
+[Install]
+WantedBy=multi-user.target
+
+
+para reiniciar el servicio:
+sudo systemctl daemon-reload
+sudo systemctl start arandanos-scripts.service
