@@ -545,7 +545,7 @@ class ApiController extends Controller
             $s4Actual = Cache::rememberForever('estado_s4_actual', function () use ($estado) {
                 return S4::find($estado['s4_id']);
             });
-
+            Log::info('el estado s4Actual', $s4Actual);
             // Obtener los comandos hardware desde la caché
             $comandosHardware = Cache::get('comandos_hardware');
 
@@ -554,6 +554,7 @@ class ApiController extends Controller
             if ($s4Actual && isset($s4Actual['comando_id'])) {
                 $comando = $comandosHardware->firstWhere('id', $s4Actual['comando_id']);
             }
+            Log::info('el estado $comando', $comando);
 
             // Verificar si existe el comando
             if ($comando) {
