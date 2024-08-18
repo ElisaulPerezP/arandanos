@@ -552,10 +552,10 @@ class ApiController extends Controller
             // Obtener el comando desde la caché utilizando el comando_id de s4
             $comando = null;
             if ($s4Actual && isset($s4Actual['comando_id'])) {
-                $comando = $comandosHardware->firstWhere('id', $s4Actual['comando_id']);
+                $comando = $comandosHardware->find($s4Actual['comando_id']);
             }
             if (!$comando) {
-                $comando = $comandosHardware->firstWhere('id', 10134);
+                $comando = $comandosHardware->find(10134);
             }
             
             // Verificar si existe el comando
