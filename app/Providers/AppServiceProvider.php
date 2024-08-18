@@ -39,7 +39,7 @@ class AppServiceProvider extends ServiceProvider
             return ComandoHardware::all();
         });
 
-        Cache::rememberForever('culvivo', function () {
+        Cache::rememberForever('cultivo', function () {
             return Cultivo::first();
         });
         $estadosDelSistema = Cache::rememberForever('estado_sistema', function () {
