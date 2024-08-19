@@ -1,11 +1,10 @@
 <?php
 namespace App\Console;
 
-use App\Jobs\FetchRevistaData;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Cache;
-use App\Jobs\ProcessScheduledCommands;
+
 
 class Kernel extends ConsoleKernel
 {
@@ -14,11 +13,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
 {
-    // Programa el trabajo FetchRevistaData como un job
-    $schedule->job(new FetchRevistaData())->everyMinute();
 
-    // Programa el trabajo ProcessScheduledCommands como un job
-    $schedule->job(new ProcessScheduledCommands)->everyMinute();
 }
 
     /**
