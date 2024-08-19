@@ -8,7 +8,7 @@ from threading import Thread, Event
 import signal
 
 # Configuración del tiempo de espera en segundos
-TIMEOUT = 5  # Tiempo de espera total de 2 segundos
+TIMEOUT = 10  # Tiempo de espera total de 2 segundos
 
 # Funciones para manipular GPIO
 def export_pin(pin, api_error_url):
@@ -169,8 +169,7 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
             current_time = time.localtime()
             current_second = current_time.tm_sec
 
-            # Verifica si el segundo actual es 5, 20, 35 o 50
-            if current_second in [5, 20, 35, 50]:
+            if current_second in [12, 42]:
                 command = get_selector_command(selector_url, api_error_url)
                 if command:
                     for action in command['actions']:
@@ -217,8 +216,7 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
             current_time = time.localtime()
             current_second = current_time.tm_sec
 
-            # Verifica si el segundo actual es 12 o 42
-            if current_second in [12, 42]:
+            if current_second in [15]:
                 status_message = {}
                 for name, pin in output_pins.items():
                     status_message[name] = 'encendida' if check_pin_value(pin, api_error_url) == "1" else 'apagada'

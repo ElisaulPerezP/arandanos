@@ -9,7 +9,7 @@ import signal
 from threading import Thread
 
 # Configuración del tiempo de espera en segundos
-TIMEOUT = 5  # Tiempo de espera total de 2 segundos
+TIMEOUT = 10  # Tiempo de espera total de 2 segundos
 
 # Funciones para manipular GPIO
 def export_pin(pin, api_error_url):
@@ -137,8 +137,7 @@ def main(input_file, post_url, stop_url, api_error_url):
             current_time = time.localtime()
             current_second = current_time.tm_sec
 
-            # Verifica si el segundo actual es 1, 15, 30 o 45
-            if current_second in [1, 15, 30, 45]:
+            if current_second in [1, 30]:
                 current_counts = counts.copy()
                 if report_count(post_url, current_counts, api_error_url):
                     for name in counts:

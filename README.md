@@ -896,3 +896,7 @@ WantedBy=multi-user.target
 para reiniciar el servicio:
 sudo systemctl daemon-reload
 sudo systemctl start arandanos-scripts.service
+
+habilitalo para que inicie automatico cada vez:
+
+sudo systemctl enable arandanos-scripts.service
