@@ -900,3 +900,8 @@ sudo systemctl start arandanos-scripts.service
 habilitalo para que inicie automatico cada vez:
 
 sudo systemctl enable arandanos-scripts.service
+
+
+
+php artisan queue:failed-table
+php artisan migrate
