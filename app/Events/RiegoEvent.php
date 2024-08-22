@@ -18,7 +18,7 @@ class RiegoEvent
     public function __construct($programacion)
     {
         // Almacenar $programacion como un array para mantener flexibilidad
-        $this->programacion = $programacion->toArray();
+        $this->programacion = $programacion;
     }
 
     /**
