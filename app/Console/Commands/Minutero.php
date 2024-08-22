@@ -30,8 +30,8 @@ class Minutero extends Command
     public function handle()
     {
     // Programa el trabajo FetchRevistaData como un job
-    $idRevita=dispatch(new FetchRevistaData())->id();
-    $idScheduled=dispatch(new ProcessScheduledCommands())->id();
+    $idRevita=dispatch(new FetchRevistaData())->id;
+    $idScheduled=dispatch(new ProcessScheduledCommands())->id;
     
     Log::info('los id de revista y scheduled son:.',[$idRevita, $idScheduled] );
 
