@@ -60,7 +60,7 @@ class ProcessScheduledCommands implements ShouldQueue
 
 
                     if ($event) {
-                        event(new $event((object) $programacion));
+                        event(new $event($programacion));
                         $programacion['estado'] = 'ejecutandose';
                         $programacion['updated_at'] = now();
 
@@ -80,7 +80,7 @@ class ProcessScheduledCommands implements ShouldQueue
                     $programacion['updated_at'] = now();
 
                     // Actualizar la caché
-                    Cache::put("programacion_{$programacion['id']}", $programacion, 60);
+                    Cache::put("programacion_{$programacion['id']}", $programacion, 600);
 
                     // Despachar la actualización a la base de datos
                     Archivador::dispatch('programaciones',$programacion , 'update', ['column' => 'id', 'value' => $programacion['id']]);
