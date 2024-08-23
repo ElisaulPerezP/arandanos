@@ -21,8 +21,6 @@ class RiegoEvent
     {
         // Almacenar $programacion como un array para mantener flexibilidad            
         Log::info("programacion es : " . $programacion);
-
-        $this->programacion = $programacion;
     }
 
     /**
