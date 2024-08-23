@@ -30,6 +30,8 @@ class ProcessScheduledCommands implements ShouldQueue
      */
     public function handle()
     {
+        Log::info("Entrando al handle del job process ");
+
         try {
             // Obtener el timestamp del minuto actual (con segundos y milisegundos en 0)
             $currentMinute = now()->startOfMinute()->timestamp;
