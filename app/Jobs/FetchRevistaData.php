@@ -55,7 +55,7 @@ class FetchRevistaData implements ShouldQueue
                     'Accept' => 'application/json',
                     'User-Agent' => 'PostmanRuntime/7.32.3',
                 ])
-                ->timeout(3)
+                ->timeout(5)
                 ->get($url);
 
             Log::info('Response status', ['status' => $response->status()]);
