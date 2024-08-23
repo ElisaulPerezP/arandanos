@@ -5,6 +5,8 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
 use App\Jobs\Archivador;
+use Illuminate\Support\Facades\Log;
+
 
 class RiegoEvent
 {
@@ -17,7 +19,9 @@ class RiegoEvent
      */
     public function __construct($programacion)
     {
-        // Almacenar $programacion como un array para mantener flexibilidad
+        // Almacenar $programacion como un array para mantener flexibilidad            
+        Log::info("programacion es : " . $programacion);
+
         $this->programacion = $programacion;
     }
 
