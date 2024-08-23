@@ -67,6 +67,8 @@ class ProcessScheduledCommands implements ShouldQueue
     
                         // Despachar la actualización a la base de datos
                         Archivador::dispatch('programaciones', $programacion, 'update', ['column' => 'id', 'value' => $programacion['id']]);
+                        Log::info("programacion es : " . $programacion);
+
                     }
                 } catch (\Exception $e) {
                     Log::error('Error procesando la programación.', ['programacion_id' => $programacion['id'], 'exception' => $e->getMessage()]);
