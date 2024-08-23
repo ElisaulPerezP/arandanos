@@ -15,6 +15,17 @@ class RiegoEvent
     public $programacion;
 
     /**
+     * Create a new event instance.
+     */
+    public function __construct($programacion)
+    {
+        // Almacenar $programacion como un array para mantener flexibilidad            
+        Log::info("programacion es : " . $programacion);
+
+        $this->programacion = $programacion;
+    }
+
+    /**
      * Manejar la actualización de estado sin afectar la base de datos directamente.
      */
     public function actualizarEstado(string $nuevoEstado)
