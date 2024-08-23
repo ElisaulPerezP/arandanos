@@ -31,22 +31,21 @@ class ProcessScheduledCommands implements ShouldQueue
     public function handle()
     {
         try {
-            $oneMinuteAgo = now()->subMinute()->timestamp;
-            $now = now()->timestamp;
-
-            $programaciones = Cache::rememberForever('programaciones_pendientes', function () use ($oneMinuteAgo, $now) {
-                return Programacion::where('hora_unix', '>=', $oneMinuteAgo)
-                    ->where('hora_unix', '<=', $now)
+            // Obtener el timestamp del minuto actual (con segundos y milisegundos en 0)
+            $currentMinute = now()->startOfMinute()->timestamp;
+    
+            $programaciones = Cache::rememberForever('programaciones_pendientes', function () use ($currentMinute) {
+                return Programacion::where('hora_unix', $currentMinute)
                     ->whereNotIn('estado', ['ejecutado_exitosamente', 'ejecutandose', 'cancelado'])
                     ->with('comando')
                     ->get()
                     ->toArray();
             });
-
+    
             foreach ($programaciones as $programacion) {
                 try {
                     $comando = $programacion['comando'];
-
+    
                     $event = match($comando['nombre']) {
                         'sincronizar' => SincronizarSistema::class,
                         'parar' => StopSystem::class,
@@ -56,39 +55,32 @@ class ProcessScheduledCommands implements ShouldQueue
                         'riego' => RiegoEvent::class,
                         default => null,
                     };
-
-
-
+    
                     if ($event) {
                         event(new $event($programacion));
                         $programacion['estado'] = 'ejecutandose';
                         $programacion['updated_at'] = now();
-
+    
                         // Actualizar la caché
                         Cache::put("programacion_{$programacion['id']}", $programacion, 60);
-
+    
                         // Despachar la actualización a la base de datos
-                        Archivador::dispatch('programaciones',$programacion , 'update', ['column' => 'id', 'value' => $programacion['id']]);
-
-
-                        //Log::info('Emitiendo evento: ' . $comando['nombre'], ['programacion_id' => $programacion['id'], 'event' => $event]);
+                        Archivador::dispatch('programaciones', $programacion, 'update', ['column' => 'id', 'value' => $programacion['id']]);
                     }
                 } catch (\Exception $e) {
                     Log::error('Error procesando la programación.', ['programacion_id' => $programacion['id'], 'exception' => $e->getMessage()]);
-
+    
                     $programacion['estado'] = 'fallido';
                     $programacion['updated_at'] = now();
-
+    
                     // Actualizar la caché
                     Cache::put("programacion_{$programacion['id']}", $programacion, 600);
-
+    
                     // Despachar la actualización a la base de datos
-                    Archivador::dispatch('programaciones',$programacion , 'update', ['column' => 'id', 'value' => $programacion['id']]);
-
+                    Archivador::dispatch('programaciones', $programacion, 'update', ['column' => 'id', 'value' => $programacion['id']]);
                 }
             }
         } catch (\Exception $e) {
             Log::error('Error en ProcessScheduledCommands job.', ['exception' => $e->getMessage()]);
         }
     }
-}

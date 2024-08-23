@@ -31,7 +31,7 @@ class RiegoEvent
         $this->programacion['updated_at'] = now();
 
         // Actualizar la caché
-        Cache::put("programacion_{$this->programacion['id']}", $this->programacion, 60);
+        Cache::put("programacion_{$this->programacion['id']}", $this->programacion, 600);
 
         // Despachar la actualización a la base de datos
         Archivador::dispatch('programaciones', $this->programacion, 'update', ['column' => 'id', 'value' => $this->programacion['estado']]);
