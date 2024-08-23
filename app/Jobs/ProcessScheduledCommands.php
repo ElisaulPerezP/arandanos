@@ -84,3 +84,4 @@ class ProcessScheduledCommands implements ShouldQueue
             Log::error('Error en ProcessScheduledCommands job.', ['exception' => $e->getMessage()]);
         }
     }
+}
