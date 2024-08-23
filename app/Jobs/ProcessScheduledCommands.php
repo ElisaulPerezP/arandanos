@@ -33,6 +33,7 @@ class ProcessScheduledCommands implements ShouldQueue
         try {
             // Obtener el timestamp del minuto actual (con segundos y milisegundos en 0)
             $currentMinute = now()->startOfMinute()->timestamp;
+            Log::info("El minuto invetigado es: " . $currentMinute);
     
             $programaciones = Cache::rememberForever('programaciones_pendientes', function () use ($currentMinute) {
                 return Programacion::where('hora_unix', $currentMinute)
