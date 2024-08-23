@@ -561,7 +561,7 @@ class ApiController extends Controller
             // Verificar si existe el comando
             if ($comando) {
                 $actions = json_decode($comando['comando'], true)['actions'];
-                Log::info('El comando de inyectores si se ereporto y fue: ', $actions);
+                //Log::info('El comando de inyectores si se ereporto y fue: ', $actions);
                 return response()->json(['actions' => $actions], 200);
             }
         }

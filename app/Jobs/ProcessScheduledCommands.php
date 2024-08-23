@@ -28,9 +28,17 @@ class ProcessScheduledCommands implements ShouldQueue
     /**
      * Execute the job.
      */
+
+
+     public function __construct()
+     {
+        Log::info("Entrando al constructor del job process ");
+     }
+
+
     public function handle()
     {
-        Log::info("Entrando al handle del job process ");
+        
 
         try {
             // Obtener el timestamp del minuto actual (con segundos y milisegundos en 0)
