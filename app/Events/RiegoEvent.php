@@ -38,6 +38,6 @@ class RiegoEvent
         Cache::put("programacion_{$this->programacion['id']}", $this->programacion, 600);
 
         // Despachar la actualización a la base de datos
-        Archivador::dispatch('programaciones', $this->programacion, 'update', ['column' => 'id', 'value' => $this->programacion['estado']]);
+        Archivador::dispatch('programacions', $this->programacion, 'update', ['column' => 'id', 'value' => $this->programacion['estado']]);
     }
 }

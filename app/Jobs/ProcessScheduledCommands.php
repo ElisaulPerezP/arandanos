@@ -46,7 +46,7 @@ class ProcessScheduledCommands implements ShouldQueue
             $currentMinute = now()->startOfMinute()->timestamp;
             Log::info("El minuto invetigado es: " . $currentMinute);
     
-            $programaciones = Cache::rememberForever('programaciones_pendientes', function () use ($currentMinute) {
+            $programaciones = Cache::rememberForever('programacions_pendientes', function () use ($currentMinute) {
                 return Programacion::where('hora_unix', $currentMinute)
                     ->whereNotIn('estado', ['ejecutado_exitosamente', 'ejecutandose', 'cancelado'])
                     ->with('comando')
@@ -77,7 +77,7 @@ class ProcessScheduledCommands implements ShouldQueue
                         Cache::put("programacion_{$programacion['id']}", $programacion, 60);
     
                         // Despachar la actualización a la base de datos
-                        Archivador::dispatch('programaciones', $programacion, 'update', ['column' => 'id', 'value' => $programacion['id']]);
+                        Archivador::dispatch('programacions', $programacion, 'update', ['column' => 'id', 'value' => $programacion['id']]);
                         Log::info("programacion es : " . json_encode($programacion));
 
                     }
@@ -91,7 +91,7 @@ class ProcessScheduledCommands implements ShouldQueue
                     Cache::put("programacion_{$programacion['id']}", $programacion, 600);
     
                     // Despachar la actualización a la base de datos
-                    Archivador::dispatch('programaciones', $programacion, 'update', ['column' => 'id', 'value' => $programacion['id']]);
+                    Archivador::dispatch('programacions', $programacion, 'update', ['column' => 'id', 'value' => $programacion['id']]);
                 }
             }
         } catch (\Exception $e) {

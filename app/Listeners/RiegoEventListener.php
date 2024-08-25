@@ -403,7 +403,7 @@ protected function inyectarFertilizante($programacion)
             Cache::forever($programacionCacheKey, $programacionActual);
 
             // Despachar la actualización para que se refleje en la base de datos
-            Archivador::dispatch('programaciones',$programacionActual , 'update', ['column' => 'id', 'value' => $programacion['id']]);
+            Archivador::dispatch('programacions',$programacionActual , 'update', ['column' => 'id', 'value' => $programacion['id']]);
 
 
             // Registrar en el log el evento exitoso
@@ -433,7 +433,7 @@ protected function inyectarFertilizante($programacion)
             Cache::forever($programacionCacheKey, $programacionActual);
 
             // Despachar la actualización para que se refleje en la base de datos
-            Archivador::dispatch('programaciones',$programacionActual , 'update', ['column' => 'id', 'value' => $programacion['id']]);
+            Archivador::dispatch('programacions',$programacionActual , 'update', ['column' => 'id', 'value' => $programacion['id']]);
             
             // Registrar en el log el evento fallido
             Log::info('Evento de riego fallo', [
