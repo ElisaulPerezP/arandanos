@@ -101,7 +101,7 @@ class RiegoEventListener implements ShouldQueue
         
 
         // Clonar la configuración actual para crear un nuevo estado de S2
-        $s2Final = $s2Actual->replicate();
+        $s2Final = $s2Actual;
         $nuevoS2Id = (string) Str::uuid();  // Generar un nuevo UUID
         $s2Final['id'] = $nuevoS2Id;
 
