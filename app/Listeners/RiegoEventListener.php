@@ -197,30 +197,36 @@ class RiegoEventListener implements ShouldQueue
 
 protected function inyectarFertilizante($programacion)
 {
+    Log::info('En zona 11');
 
     // Obtener el comando desde la caché
     $comando = Cache::rememberForever("comando_{$programacion['comando_id']}", function () use ($programacion) {
         return Comando::find($programacion['comando_id']);
     });
+    Log::info('En zona 12');
 
     // Parsear la descripción del comando para obtener la concentración
     parse_str(str_replace(',', '&', $comando['descripcion']), $params);
     $concentracion = $params['concentracion'];
+    Log::info('En zona 13');
 
     // Obtener el estado del sistema desde la caché
     $estadoSistema = Cache::rememberForever('estado_sistema', function () {
         return EstadoSistema::first()->toArray();
     });
+    Log::info('En zona 14');
 
     // Obtener la configuración actual de s4 desde la caché
     $s4Actual = Cache::rememberForever("estado_s4_actual", function () use ($estadoSistema) {
         return S4::find($estadoSistema["s4_id"]);
     });
+    Log::info('En zona 15');
 
     // Clonar la configuración actual para crear un nuevo estado de S4
     $s4Final = $s4Actual;
     $nuevoS4Id = (string) Str::uuid();  // Generar un nuevo UUID
     $s4Final['id']= $nuevoS4Id;
+    Log::info('En zona 16');
 
     // Calcular el comando para los inyectores basado en la concentración
     $comandoHardware = $this->calcularComandoInyectores($concentracion);
@@ -228,6 +234,7 @@ protected function inyectarFertilizante($programacion)
     $s4Final['estado'] = 'inyectando';
     $s4Final['pump3'] = true;
     $s4Final['pump4'] = false;
+    Log::info('En zona 17');
 
     // Actualizar la caché con el nuevo estado
     Cache::forever('estado_s4_actual', $s4Final);
@@ -235,9 +242,13 @@ protected function inyectarFertilizante($programacion)
     // Actualizar el estado del sistema en la caché
     $estadoSistema['s4_id'] = $nuevoS4Id;
     Cache::forever('estado_sistema', $estadoSistema);
+    Log::info('En zona 18');
 
     // Despachar los trabajos para actualizar la base de datos
     Archivador::dispatch('s4', $s4Final);
+
+    Log::info('En zona 19');
+
     Archivador::dispatch('estado_sistemas', ['s4_id' => $estadoSistema['s4_id']], 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
 
 
