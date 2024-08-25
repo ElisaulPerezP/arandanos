@@ -53,7 +53,9 @@ class ProcessScheduledCommands implements ShouldQueue
                     ->get()
                     ->toArray();
             });
-    
+
+            Log::info("La programacion encontraeda fue: " . $programaciones);
+
             foreach ($programaciones as $programacion) {
                 try {
                     $comando = $programacion['comando'];
