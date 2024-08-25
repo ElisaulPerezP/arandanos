@@ -125,7 +125,7 @@ class RiegoEventListener implements ShouldQueue
         Cache::forever('estado_s2_actual', $s2Final);
     
         // Despachar los trabajos para actualizar la base de datos
-        Archivador::dispatch('s2', $s2Final->toArray());
+        Archivador::dispatch('s2', $s2Final);
 
         Archivador::dispatch('estado_sistemas', ['s2_id' => $s2Final['id']], 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
     
@@ -173,7 +173,7 @@ class RiegoEventListener implements ShouldQueue
     Cache::forever('estado_sistema', $estadoSistema);
 
     // Despachar los trabajos para escribir en la base de datos
-    Archivador::dispatch('s3', $s3Final->toArray());
+    Archivador::dispatch('s3', $s3Final);
     Archivador::dispatch('estado_sistemas',  ['s3_id' => $estadoSistema['s3_id']], 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
 
 
