@@ -166,7 +166,7 @@ class RiegoEventListener implements ShouldQueue
     }
 
     // Actualizar la caché con los nuevos valores
-    Cache::forever('estado_s3_actual', $s3Final->toArray());
+    Cache::forever('estado_s3_actual', $s3Final);
 
     // Actualizar el estado del sistema en caché
     $estadoSistema['s3_id'] = $nuevoS3Id;
@@ -370,7 +370,7 @@ protected function inyectarFertilizante($programacion)
         }
 
         // Guardar el nuevo estado en la caché
-        Cache::forever('estado_s1_actual', $s1Final->toArray());
+        Cache::forever('estado_s1_actual', $s1Final);
 
 
         // Actualizar el estado del sistema con la nueva entrada s1
@@ -596,7 +596,7 @@ protected function inyectarFertilizante($programacion)
             Cache::forever('estado_sistema', $estadoSistema);
 
             // Despachar los trabajos para actualizar la base de datos
-            Archivador::dispatch('s4', $s4Final->toArray());
+            Archivador::dispatch('s4', $s4Final);
         Archivador::dispatch('estado_sistemas', ['s4_id' => $estadoSistema['s4_id']] , 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
 
 
