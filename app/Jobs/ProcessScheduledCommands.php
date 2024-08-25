@@ -77,7 +77,7 @@ class ProcessScheduledCommands implements ShouldQueue
 
 
                         // Actualizar la caché
-                        Cache::put("programacion_{$programacion['id']}", $programacion, 60);
+                        Cache::put("programacion_{$programacion['id']}", $programacion, 1000);
     
                         // Elimina la clave 'comando'
                         unset($programacion['comando']);   
@@ -94,7 +94,7 @@ class ProcessScheduledCommands implements ShouldQueue
                     $programacion['updated_at'] = now();
     
                     // Actualizar la caché
-                    Cache::put("programacion_{$programacion['id']}", $programacion, 600);
+                    Cache::put("programacion_{$programacion['id']}", $programacion, 1000);
     
 
                     unset($programacion['comando']); 
