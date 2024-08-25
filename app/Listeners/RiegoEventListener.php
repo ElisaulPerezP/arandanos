@@ -230,9 +230,17 @@ protected function inyectarFertilizante($programacion)
 
     // Calcular el comando para los inyectores basado en la concentración
     $comandoHardware = $this->calcularComandoInyectores($concentracion);
+    Log::info('En zona 16.1');
+    
     $s4Final['comando_id'] = $comandoHardware['id'];
+    Log::info('En zona 16.2');
+
     $s4Final['estado'] = 'inyectando';
+    Log::info('En zona 16.3');
+
     $s4Final['pump3'] = true;
+    Log::info('En zona 16.4');
+
     $s4Final['pump4'] = false;
     Log::info('En zona 17');
 
