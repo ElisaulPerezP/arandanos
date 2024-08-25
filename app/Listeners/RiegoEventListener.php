@@ -124,7 +124,7 @@ class RiegoEventListener implements ShouldQueue
         $comandoBuscado = 'on:valvula' . $camellon;
         $comandoHardware = Cache::rememberForever("comando_hardware_{$comandoBuscado}", function () use ($comandoBuscado) {
             return ComandoHardware::where('sistema', 's2')
-                                ->where('comando', $comandoBuscado^*)
+                                ->where('comando', $comandoBuscado)
                                 ->first()->toArray();
         });
 
