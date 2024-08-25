@@ -54,7 +54,7 @@ class ProcessScheduledCommands implements ShouldQueue
                     ->toArray();
             });
 
-            Log::info("la programacion captada de cache fue: $programaciones");
+            Log::info("la programacion captada de cache fue: " . json_encode($programaciones));
 
             foreach ($programaciones as $programacion) {
                 try {
