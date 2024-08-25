@@ -145,7 +145,7 @@ class RiegoEventListener implements ShouldQueue
     });
 
     // Replicar el estado actual de s3 para modificarlo
-    $s3Final = $s3Actual->replicate();
+    $s3Final = $s3Actual;
     $nuevoS3Id = (string) Str::uuid();  // Generar un nuevo UUID
     $s3Final['id'] = $nuevoS3Id;
 
@@ -203,7 +203,7 @@ protected function inyectarFertilizante($programacion)
     });
 
     // Clonar la configuración actual para crear un nuevo estado de S4
-    $s4Final = $s4Actual->replicate();
+    $s4Final = $s4Actual;
     $nuevoS4Id = (string) Str::uuid();  // Generar un nuevo UUID
     $s4Final['id']= $nuevoS4Id;
 
@@ -292,7 +292,7 @@ protected function inyectarFertilizante($programacion)
         // Verificar si el flujo acumulado cumple con los requisitos
         if ($flujoAcumulado >= $cuentasEsperadas) {
                 // Crear una nueva instancia de S5 para el nuevo estado
-                $s5Final = $s5Actual->replicate();
+                $s5Final = $s5Actual;
                 $s5Final['flux1'] = 0;
                 $s5Final['flux2'] = 0;
                 $s5Final['id'] = (string) Str::uuid();
@@ -317,7 +317,7 @@ protected function inyectarFertilizante($programacion)
         }
 
         // Si el flujo no cumple con los requisitos en el tiempo límite, retornar false
-        $s5Final = $s5Actual->replicate();
+        $s5Final = $s5Actual;
         $s5Final['flux1'] = 0;
         $s5Final['flux2'] = 0;
         $s5Final['id'] = (string) Str::uuid();
@@ -350,7 +350,7 @@ protected function inyectarFertilizante($programacion)
         });
 
         // Clonar la configuración actual para crear un nuevo estado de S1
-        $s1Final = $s1Actual->replicate();
+        $s1Final = $s1Actual;
         $s1Final->id = (string) Str::uuid();  // Asignar un nuevo UUID
 
         // Buscar el comando de hardware correcto en la caché
@@ -468,7 +468,7 @@ protected function inyectarFertilizante($programacion)
        
 
         // Clonar la configuración actual para crear un nuevo estado de S2
-        $s2Final = $s2Actual->replicate();
+        $s2Final = $s2Actual;
         $nuevoS2Id = (string) Str::uuid();  // Generar un nuevo UUID
         $s2Final['id'] = $nuevoS2Id;
 
@@ -518,7 +518,7 @@ protected function inyectarFertilizante($programacion)
         });
 
         // Clonar la configuración actual para crear un nuevo estado de S3
-        $s3Final = $s3Actual->replicate();
+        $s3Final = $s3Actual;
         $nuevoS3Id = (string) Str::uuid();  // Generar un nuevo UUID
         $s3Final['id'] = $nuevoS3Id;
 
@@ -568,7 +568,7 @@ protected function inyectarFertilizante($programacion)
             });
 
             // Clonar la configuración actual para crear un nuevo estado de S4
-            $s4Final = $s4Actual->replicate();
+            $s4Final = $s4Actual;
             $nuevoS4Id = (string) Str::uuid();  // Generar un nuevo UUID
             $s4Final['id'] = $nuevoS4Id;
 
