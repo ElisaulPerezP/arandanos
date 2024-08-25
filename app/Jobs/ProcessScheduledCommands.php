@@ -103,6 +103,8 @@ class ProcessScheduledCommands implements ShouldQueue
                     Archivador::dispatch('programacions', $programacion, 'update', ['column' => 'id', 'value' => $programacion['id']]);
                 }
             }
+            Cache::forget('programaciones_pendientes');
+
         } catch (\Exception $e) {
             Log::error('Error en ProcessScheduledCommands job.', ['exception' => $e->getMessage()]);
         }
