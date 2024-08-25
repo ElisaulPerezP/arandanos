@@ -269,7 +269,7 @@ protected function inyectarFertilizante($programacion)
 
 
         $comandoBuscado = '{"actions":["pump1:on:' . ($concentracion * 10) . '","pump2:off:1"]}';
-        Log::info('el comando de hardware buscado es: '. json_encode($comandoBuscado));
+        Log::info('el comando de hardware buscado es: ' . $comandoBuscado);
         // Buscar el comando de hardware correspondiente en la caché
         $comandoHardware = Cache::rememberForever("comando_hardware_s4_{$comandoBuscado}", function () use ($comandoBuscado) {
             return ComandoHardware::where('sistema', 's4')
