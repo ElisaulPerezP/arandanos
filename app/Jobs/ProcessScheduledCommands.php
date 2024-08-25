@@ -46,7 +46,7 @@ class ProcessScheduledCommands implements ShouldQueue
             $currentMinute = now()->startOfMinute()->timestamp;
             Log::info( "El minuto invetigado es:  $currentMinute");
 
-            $programaciones = Cache::rememberForever('programacions_pendientes', function () use ($currentMinute) {
+            $programaciones = Cache::rememberForever('programaciones_pendientes', function () use ($currentMinute) {
                 return Programacion::where('hora_unix', $currentMinute)
                     ->whereNotIn('estado', ['ejecutado_exitosamente', 'ejecutandose', 'cancelado'])
                     ->with('comando')
