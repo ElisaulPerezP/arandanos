@@ -41,30 +41,45 @@ class RiegoEventListener implements ShouldQueue
         try {
             //Log::info('si esta entrando al try');
             // Encender electrovalvulas
+            Log::info('En zona 1');
+
             $this->encenderElectrovalvulas($programacion);
+            Log::info('En zona 2');
 
             // Encender motor principal
             $this->encenderMotorPrincipal();
+            Log::info('En zona 3');
 
             // Inyectar fertilizante
             $this->inyectarFertilizante($programacion);
+            Log::info('En zona 4');
 
             // Monitorear flujo
             $resultado = $this->monitorearFlujo($timeoutTime, $programacion);
+            Log::info('En zona 5');
 
             // Llenar tanques si el riego fue exitoso
             if ($resultado) {
                 $this->llenarTanques();
+                Log::info('En zona 6');
+
                 $this->marcarEventoExitoso($programacion);
             } else {
                 $this->marcarEventoFallido($programacion);
                 
             }
+            Log::info('En zona 7');
 
             // Apagar todos los sistemas después del riego
             $this->apagarElectrovalvulas($programacion);
+            Log::info('En zona 8');
+
             $this->apagarMotorPrincipal();
+            Log::info('En zona 9');
+
             $this->apagarInyectores();
+            Log::info('En zona 10');
+
 
         } catch (\Exception $e) {
             Log::error('Error en el manejo del evento de riego', ['descripcion' => $programacion, 'error' => $e->getMessage()]);
@@ -109,7 +124,7 @@ class RiegoEventListener implements ShouldQueue
         $comandoBuscado = 'on:valvula' . $camellon;
         $comandoHardware = Cache::rememberForever("comando_hardware_{$comandoBuscado}", function () use ($comandoBuscado) {
             return ComandoHardware::where('sistema', 's2')
-                                ->where('comando', $comandoBuscado)
+                                ->where('comando', $comandoBuscado^*)
                                 ->first()->toArray();
         });
 
