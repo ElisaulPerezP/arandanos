@@ -69,15 +69,19 @@ class ProcessScheduledCommands implements ShouldQueue
                         'riego' => RiegoEvent::class,
                         default => null,
                     };
-    
+
                     if ($event) {
                         event(new $event($programacion));
                         $programacion['estado'] = 'ejecutandose';
                         $programacion['updated_at'] = now();
-    
+
+
                         // Actualizar la caché
                         Cache::put("programacion_{$programacion['id']}", $programacion, 60);
     
+                        // Elimina la clave 'comando'
+                        unset($programacion['comando']);   
+
                         // Despachar la actualización a la base de datos
                         Archivador::dispatch('programacions', $programacion, 'update', ['column' => 'id', 'value' => $programacion['id']]);
                         Log::info("programacion es : " . json_encode($programacion));
@@ -92,7 +96,10 @@ class ProcessScheduledCommands implements ShouldQueue
                     // Actualizar la caché
                     Cache::put("programacion_{$programacion['id']}", $programacion, 600);
     
+
+                    unset($programacion['comando']); 
                     // Despachar la actualización a la base de datos
+
                     Archivador::dispatch('programacions', $programacion, 'update', ['column' => 'id', 'value' => $programacion['id']]);
                 }
             }
