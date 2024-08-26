@@ -167,8 +167,8 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
                     else:
                         report_error(api_error_url, "El comando no contiene acciones válidas.")
 
-                # Espera hasta el próximo segundo
-                time.sleep(1 - time.time() % 1)
+            # Espera hasta el próximo segundo
+            time.sleep(1)
 
 
     # Función para reportar estado a la API
@@ -187,7 +187,7 @@ def main(output_file, output_neg_file, selector_url, estado_url, apagado_url, ap
                 report_status(estado_url, status_message, api_error_url)
 
             # Espera hasta el próximo segundo
-            time.sleep(1 - time.time() % 1)
+            time.sleep(1)
 
     # Iniciar hilos
     command_thread = Thread(target=handle_commands)
