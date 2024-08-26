@@ -905,3 +905,57 @@ sudo systemctl enable arandanos-scripts.service
 
 php artisan queue:failed-table
 php artisan migrate
+
+
+sudo nano /etc/systemd/system/laravel-worker-telegrafo.service
+
+
+[Unit]
+Description=Laravel Worker Telegrafo
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+Restart=always
+ExecStart=/usr/bin/php /var/www/arandanos/artisan queue:work redis --queue=telegrafo --tries=2
+ExecStopPost=/bin/rm -f /var/run/laravel-worker-telegrafo.pid
+PIDFile=/var/run/laravel-worker-telegrafo.pid
+TasksMax=4
+MemoryLimit=25M
+MemoryMax=100M
+
+[Install]
+WantedBy=multi-user.target
+
+
+sudo nano /etc/systemd/system/laravel-worker-manejador.service
+
+
+[Unit]
+Description=Laravel Worker Manejador
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+Restart=always
+ExecStart=/usr/bin/php /var/www/arandanos/artisan queue:work redis --queue=manejador --tries=2
+ExecStopPost=/bin/rm -f /var/run/laravel-worker-manejador.pid
+PIDFile=/var/run/laravel-worker-manejador.pid
+TasksMax=4
+MemoryLimit=25M
+MemoryMax=100M
+
+[Install]
+WantedBy=multi-user.target
+
+
+sudo systemctl daemon-reload
+
+
+sudo systemctl start laravel-worker-telegrafo
+sudo systemctl enable laravel-worker-telegrafo
+
+sudo systemctl start laravel-worker-manejador
+sudo systemctl enable laravel-worker-manejador
