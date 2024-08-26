@@ -290,38 +290,45 @@ protected function inyectarFertilizante($programacion)
     //TODO: revisar el sleep que hay en el siguiente metodo
     protected function monitorearFlujo($timeoutTime, $programacion)
     {
+        Log::info('En zona 5.1');
 
         // Obtener el comando desde la caché
         $comando = Cache::rememberForever("comando_{$programacion['comando_id']}", function () use ($programacion) {
             return Comando::find($programacion['comando_id']);
         });
+        Log::info('En zona 5.2');
 
         // Parsear la descripción del comando para obtener el volumen
         parse_str(str_replace(',', '&', $comando['descripcion']), $params);
         $volumen = $params['volumen'];
+        Log::info('En zona 5.3');
 
         // Calcular el volumen esperado en términos de cuentas
         $cuentasEsperadas = $volumen * 30;
 
         // Inicializar el contador de flujo
         $flujoAcumulado = 0;
-        
+        Log::info('En zona 5.4');
+
         while (Carbon::now()->lessThan($timeoutTime)) {
             // Obtener el estado del sistema desde la caché
             $estadoSistema = Cache::rememberForever('estado_sistema', function () {
                 return EstadoSistema::first()->toArray();
             });
-    
+            Log::info('En zona 5.5');
+
             // Obtener la configuración actual de s5 desde la caché como objeto
             $s5Actual = Cache::rememberForever("estado_s5_actual", function () use ($estadoSistema) {
                 return S5::find($estadoSistema["s5_id"]);
             });
-    
+            Log::info('En zona 5.6');
+
             // Obtener el estado actual del flujo
             $flujoActual1 = $s5Actual['flux1'];
             $flujoActual2 = $s5Actual['flux2'];
             $flujoActual = $flujoActual1 + $flujoActual2;
-    
+            Log::info('En zona 5.7');
+
             // Acumular el flujo
             $flujoAcumulado += $flujoActual;
     
@@ -332,6 +339,7 @@ protected function inyectarFertilizante($programacion)
                 $s5Final['flux1'] = 0;
                 $s5Final['flux2'] = 0;
                 $s5Final['id'] = (string) Str::uuid();
+                Log::info('En zona 5.8');
 
                 // Guardar el nuevo estado en la caché
                 Cache::forever('estado_s5_actual', $s5Final);
@@ -339,10 +347,12 @@ protected function inyectarFertilizante($programacion)
                 // Actualizar el estado del sistema en la caché
                 $estadoSistema['s5_id'] = $s5Final['id'];
                 Cache::forever('estado_sistema', $estadoSistema);
+                Log::info('En zona 5.9');
 
                 // Despachar los trabajos para actualizar la base de datos
                 Archivador::dispatch('s5', $s5Final);
                 Archivador::dispatch('estado_sistemas', ['s5_id' => $estadoSistema['s5_id']], 'update', ['column' => 'id', 'value' => $estadoSistema['id']]);
+                Log::info('En zona 5.10');
 
 
                 Log::info('El flujo cumple con los requisitos', ['flujo_acumulado' => $flujoAcumulado, 'cuentas_esperadas' => $cuentasEsperadas]);
