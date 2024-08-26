@@ -72,7 +72,7 @@ class SincronizarSistemaListener implements ShouldQueue
                 $nuevaProgramacion = [
                     'id' => (string) Str::uuid(),
                     'cultivo_id' => $cultivo->id,
-                    'comando_id' => $comandoId,
+                    'comando_id' => $comandoId["id"],
                     'hora_unix' => $programacionData['hora_unix'],
                     'estado' => $programacionData['estado'],
                     'created_at' => now(),
@@ -86,7 +86,7 @@ class SincronizarSistemaListener implements ShouldQueue
             $programacionesPendientes = Cache::get('programaciones_pendientes', []);
 
             // Agregar la nueva programación a la lista
-            $programacionesPendientes[] = $nuevaProgramacion;
+            $programacionesPendientes[] = $nuevasProgramaciones;
 
             // Guardar la lista actualizada en la caché
             Cache::put('programaciones_pendientes', $programacionesPendientes, 1000);
