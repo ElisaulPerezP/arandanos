@@ -29,8 +29,7 @@ class Minutero extends Command
      */
     public function handle()
     {
-    // Programa el trabajo FetchRevistaData como un job
-    dispatch(new ProcessScheduledCommands());
-    dispatch(new FetchRevistaData());
+        ProcessScheduledCommands::dispatch()->onQueue('manejador');
+        FetchRevistaData::dispatch()->onQueue('telegrafo');
     }
 }
