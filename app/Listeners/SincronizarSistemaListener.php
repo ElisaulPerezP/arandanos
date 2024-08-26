@@ -72,7 +72,7 @@ class SincronizarSistemaListener implements ShouldQueue
                 $nuevaProgramacion = [
                     'id' => (string) Str::uuid(),
                     'cultivo_id' => $cultivo->id,
-                    'comando_id' => $comandoId["id"],
+                    'comando_id' => $comandoId,
                     'hora_unix' => $programacionData['hora_unix'],
                     'estado' => $programacionData['estado'],
                     'created_at' => now(),
