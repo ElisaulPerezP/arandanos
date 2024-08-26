@@ -80,7 +80,7 @@ class SincronizarSistemaListener implements ShouldQueue
                 ];
 
                 $nuevasProgramaciones[] = $nuevaProgramacion;
-                Cache::forever("programacion_{$nuevaProgramacion['id']}", $nuevaProgramacion);
+                //Cache::forever("programacion_{$nuevaProgramacion['id']}", $nuevaProgramacion);
             }
             // Obtener la lista de programaciones pendientes desde la caché
             $programacionesPendientes = Cache::get('programaciones_pendientes', []);
